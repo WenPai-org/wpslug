@@ -128,7 +128,7 @@ class WPSlug_Admin
             <?php printf( esc_html__( 'Version: %s', 'wpslug' ), esc_html( WPSLUG_VERSION ) ); ?>
         </span>
         <a href="https://wpslug.com/document" target="_blank" class="button button-secondary" style="margin-left: 10px;">
-            <?php esc_html_e( 'Document', 'wpslug' ); ?>
+            <?php esc_html_e( 'Documentation', 'wpslug' ); ?>
         </a>
         <a href="https://sharecms.com/forums/" target="_blank" class="button button-secondary">
             <?php esc_html_e( 'Support', 'wpslug' ); ?>
@@ -274,7 +274,7 @@ class WPSlug_Admin
             </form>
 
             <div class="wpslug-card">
-                <h2><?php _e("Preview Conversion", "wpslug"); ?></h2>
+                <h2><?php _e("Preview", "wpslug"); ?></h2>
                 <div id="wpslug-status" class="wpslug-notice" style="display:none;"></div>
                 <p><?php _e(
                     "Test your conversion settings with live preview.",

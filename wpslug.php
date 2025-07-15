@@ -1,7 +1,7 @@
 <?php
 
 /*
-Plugin Name: WPSlug - Smart Permalink Manager
+Plugin Name: WPSlug
 Plugin URI: https://wpslug.com
 Description: Advanced slug management plugin with Chinese Pinyin support and SEO optimization.
 Version: 1.0.0

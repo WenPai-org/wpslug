@@ -19,6 +19,7 @@ class WPSlug_Core {
             $this->admin = new WPSlug_Admin();
         }
 
+        $this->init_update_checker();
         $this->initHooks();
     }
 
@@ -38,6 +39,28 @@ class WPSlug_Core {
             add_action('manage_posts_custom_column', array($this, 'displaySlugColumn'), 10, 2);
             add_filter('manage_pages_columns', array($this, 'addSlugColumn'));
             add_action('manage_pages_custom_column', array($this, 'displaySlugColumn'), 10, 2);
+        }
+    }
+    private function init_update_checker()
+    {
+        if (
+            file_exists(
+                plugin_dir_path(__FILE__) .
+                    "../lib/plugin-update-checker/plugin-update-checker.php"
+            )
+        ) {
+            require_once plugin_dir_path(__FILE__) .
+                "../lib/plugin-update-checker/plugin-update-checker.php";
+
+            if (
+                class_exists('YahnisElsts\PluginUpdateChecker\v5p3\PucFactory')
+            ) {
+                $this->update_checker = \YahnisElsts\PluginUpdateChecker\v5p3\PucFactory::buildUpdateChecker(
+                    "https://updates.weixiaoduo.com/wpslug.json",
+                    WPSLUG_PLUGIN_DIR . "wpslug.php",
+                    "wpslug"
+                );
+            }
         }
     }
 

@@ -266,11 +266,25 @@ class WPSlug_Settings
 
     public function getTranslationServices()
     {
-        return [
+        $services = [
             "none" => __("None", "wpslug"),
             "google" => __("Google Translate", "wpslug"),
             "baidu" => __("Baidu Translate", "wpslug"),
         ];
+        
+        // 动态检测 WPMind 是否可用
+        if (function_exists('wpmind_is_available') && wpmind_is_available()) {
+            // WPMind 可用，添加到服务列表顶部（推荐）
+            $services = array_merge(
+                ["wpmind" => __("WPMind AI (Recommended)", "wpslug")],
+                $services
+            );
+        } elseif (class_exists('\\WPMind\\WPMind')) {
+            // WPMind 已安装但未配置
+            $services["wpmind"] = __("WPMind AI (Not Configured)", "wpslug");
+        }
+        
+        return $services;
     }
 
     public function getLanguages()

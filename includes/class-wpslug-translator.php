@@ -7,6 +7,15 @@ if (!defined('ABSPATH')) {
 class WPSlug_Translator {
     private $converter;
 
+    /**
+     * 防止循环调用的静态标志
+     * 当使用 WPMind 翻译时，WPMind 内部可能触发 sanitize_title filter
+     * 如果没有保护，会导致无限递归
+     * 
+     * @var bool
+     */
+    private static $is_translating = false;
+
     public function __construct() {
         $this->converter = null;
     }
@@ -16,9 +25,23 @@ class WPSlug_Translator {
             return '';
         }
 
+        // 防止循环调用：如果正在翻译中，直接回退到拼音
+        if (self::$is_translating) {
+            return $this->fallbackTranslate($text, $options);
+        }
+
         $service = isset($options['translation_service']) ? $options['translation_service'] : 'none';
         
         switch ($service) {
+            case 'wpmind':
+                // WPMind 服务需要循环保护
+                self::$is_translating = true;
+                try {
+                    $result = $this->translateWPMind($text, $options);
+                } finally {
+                    self::$is_translating = false;
+                }
+                return $result;
             case 'google':
                 return $this->translateGoogle($text, $options);
             case 'baidu':
@@ -164,6 +187,96 @@ class WPSlug_Translator {
             }
             return $this->fallbackTranslate($text, $options);
         }
+    }
+
+    /**
+     * 使用 WPMind AI 翻译
+     *
+     * @param string $text 要翻译的文本
+     * @param array $options 选项
+     * @return string 翻译后的文本（slug 格式）
+     */
+    private function translateWPMind($text, $options) {
+        $debug_mode = isset($options['debug_mode']) && $options['debug_mode'];
+        
+        // 1. 先检查本地缓存（避免重复调用 API）
+        $cache_key = 'wpslug_wpmind_' . md5($text);
+        $cached = get_transient($cache_key);
+        if ($cached !== false) {
+            if ($debug_mode) {
+                error_log('[WPSlug] WPMind cache hit for: ' . $text);
+            }
+            return $cached;
+        }
+
+        // 2. 检查 WPMind 是否可用
+        if (!function_exists('wpmind_is_available') || !wpmind_is_available()) {
+            if ($debug_mode) {
+                error_log('[WPSlug] WPMind not available, falling back to pinyin');
+            }
+            return $this->fallbackTranslate($text, $options);
+        }
+
+        // 3. 文本长度限制（避免超时）
+        if (mb_strlen($text) > 200) {
+            if ($debug_mode) {
+                error_log('[WPSlug] Text too long (' . mb_strlen($text) . ' chars), using pinyin');
+            }
+            return $this->fallbackTranslate($text, $options);
+        }
+
+        // 4. 中文字符数限制
+        $chinese_count = preg_match_all('/[\x{4e00}-\x{9fff}]/u', $text);
+        if ($chinese_count > 50) {
+            if ($debug_mode) {
+                error_log('[WPSlug] Too many Chinese characters (' . $chinese_count . '), using pinyin');
+            }
+            return $this->fallbackTranslate($text, $options);
+        }
+
+        // 5. 获取语言设置
+        $source_lang = isset($options['translation_source_lang']) ? $options['translation_source_lang'] : 'zh';
+        $target_lang = isset($options['translation_target_lang']) ? $options['translation_target_lang'] : 'en';
+
+        // 6. 调用 WPMind API
+        $start_time = microtime(true);
+        
+        $result = wpmind_translate($text, $source_lang, $target_lang, [
+            'context'     => 'wpslug_translation',
+            'format'      => 'slug',
+            'cache_ttl'   => 86400,  // WPMind 内部缓存 1 天
+            'max_tokens'  => 100,
+            'temperature' => 0.3,
+        ]);
+
+        $elapsed_time = round((microtime(true) - $start_time) * 1000);
+
+        // 7. 处理结果
+        if (is_wp_error($result)) {
+            if ($debug_mode) {
+                error_log('[WPSlug] WPMind error: ' . $result->get_error_message() . ' (took ' . $elapsed_time . 'ms)');
+            }
+            return $this->fallbackTranslate($text, $options);
+        }
+
+        $slug = $this->cleanTranslatedText($result);
+
+        // 8. 验证结果有效性
+        if (empty($slug)) {
+            if ($debug_mode) {
+                error_log('[WPSlug] WPMind returned empty result, using pinyin');
+            }
+            return $this->fallbackTranslate($text, $options);
+        }
+
+        // 9. 缓存结果（7 天）
+        set_transient($cache_key, $slug, 7 * DAY_IN_SECONDS);
+
+        if ($debug_mode) {
+            error_log('[WPSlug] WPMind translated "' . $text . '" to "' . $slug . '" in ' . $elapsed_time . 'ms');
+        }
+
+        return $slug;
     }
 
     private function fallbackTranslate($text, $options) {

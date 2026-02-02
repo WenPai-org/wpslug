@@ -199,12 +199,16 @@ class WPSlug_Translator {
     private function translateWPMind($text, $options) {
         $debug_mode = isset($options['debug_mode']) && $options['debug_mode'];
         
-        // 1. 先检查本地缓存（避免重复调用 API）
-        $cache_key = 'wpslug_wpmind_' . md5($text);
+        // 获取语言设置（提前获取以便用于缓存键）
+        $source_lang = isset($options['translation_source_lang']) ? $options['translation_source_lang'] : 'zh';
+        $target_lang = isset($options['translation_target_lang']) ? $options['translation_target_lang'] : 'en';
+        
+        // 1. 先检查本地缓存（缓存键包含语言设置）
+        $cache_key = 'wpslug_wpmind_' . md5($text . '_' . $source_lang . '_' . $target_lang);
         $cached = get_transient($cache_key);
         if ($cached !== false) {
             if ($debug_mode) {
-                error_log('[WPSlug] WPMind cache hit for: ' . $text);
+                error_log('[WPSlug] WPMind cache hit for: ' . $text . ' (' . $source_lang . ' -> ' . $target_lang . ')');
             }
             return $cached;
         }
@@ -234,11 +238,7 @@ class WPSlug_Translator {
             return $this->fallbackTranslate($text, $options);
         }
 
-        // 5. 获取语言设置
-        $source_lang = isset($options['translation_source_lang']) ? $options['translation_source_lang'] : 'zh';
-        $target_lang = isset($options['translation_target_lang']) ? $options['translation_target_lang'] : 'en';
-
-        // 6. 调用 WPMind API
+        // 5. 调用 WPMind API（语言设置已在前面获取）
         $start_time = microtime(true);
         
         $result = wpmind_translate($text, $source_lang, $target_lang, [

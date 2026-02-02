@@ -740,6 +740,35 @@ class WPSlug_Admin
                     </tr>
                 </table>
             </div>
+
+            <div class="wpslug-api-section" data-service="wpmind">
+                <h4><?php _e("WPMind AI Translation", "wpslug"); ?></h4>
+                <div class="wpslug-wpmind-status">
+                    <?php if (function_exists('wpmind_is_available') && wpmind_is_available()): ?>
+                        <p class="description" style="color: #2e7d32;">
+                            <span class="dashicons dashicons-yes-alt"></span>
+                            <?php _e("WPMind is active and configured. No additional settings required.", "wpslug"); ?>
+                        </p>
+                        <p class="description">
+                            <?php _e("WPMind uses AI to translate titles to SEO-friendly slugs. It provides more accurate and context-aware translations compared to traditional translation services.", "wpslug"); ?>
+                        </p>
+                        <p class="description">
+                            <a href="<?php echo admin_url('options-general.php?page=wpmind'); ?>">
+                                <?php _e("Configure WPMind Settings", "wpslug"); ?> →
+                            </a>
+                        </p>
+                    <?php else: ?>
+                        <p class="description" style="color: #d32f2f;">
+                            <span class="dashicons dashicons-warning"></span>
+                            <?php _e("WPMind plugin is not active or not configured.", "wpslug"); ?>
+                        </p>
+                        <p class="description">
+                            <?php _e("Please install and activate the WPMind plugin to use AI-powered translation.", "wpslug"); ?>
+                            <a href="https://wpcy.com/mind/" target="_blank"><?php _e("Learn more", "wpslug"); ?></a>
+                        </p>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
         <?php
     }

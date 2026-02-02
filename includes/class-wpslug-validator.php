@@ -135,7 +135,8 @@ class WPSlug_Validator {
     }
     
     public static function validateTranslationService($service) {
-        $valid_services = array('none', 'google', 'baidu');
+        // 注意：wpmind 服务需要在此列表中才能保存
+        $valid_services = array('none', 'google', 'baidu', 'wpmind');
         return self::validateSelect($service, $valid_services, 'none');
     }
     

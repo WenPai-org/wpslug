@@ -30,6 +30,9 @@ class WPSlug_Converter {
                 case 'pinyin':
                     $result = $this->convertPinyin($text, $options);
                     break;
+                case 'semantic_pinyin':
+                    $result = $this->convertSemanticPinyin($text, $options);
+                    break;
                 case 'transliteration':
                     $result = $this->convertTransliteration($text, $options);
                     break;
@@ -69,6 +72,89 @@ class WPSlug_Converter {
             $this->settings->logError('Pinyin conversion error: ' . $e->getMessage());
             return $this->cleanBasicSlug($text, $options);
         }
+    }
+
+    /**
+     * 语义化拼音转换（使用 WPMind AI）
+     * 
+     * 与普通拼音不同，这个方法会按词语分隔而非按字分隔
+     * 例如 "你好世界" → "nihao-shijie" 而非 "ni-hao-shi-jie"
+     */
+    private function convertSemanticPinyin($text, $options) {
+        $debug_mode = isset($options['debug_mode']) && $options['debug_mode'];
+        
+        try {
+            // 1. 检查是否是中文
+            if ($this->detectLanguage($text) !== 'zh') {
+                return $this->cleanBasicSlug($text, $options);
+            }
+
+            // 2. 检查 WPMind 是否可用
+            if (!function_exists('wpmind_pinyin') || !function_exists('wpmind_is_available') || !wpmind_is_available()) {
+                if ($debug_mode) {
+                    error_log('[WPSlug] WPMind not available for semantic pinyin, falling back to regular pinyin');
+                }
+                return $this->convertPinyin($text, $options);
+            }
+
+            // 3. 文本长度限制（避免超时）
+            if (mb_strlen($text) > 200) {
+                if ($debug_mode) {
+                    error_log('[WPSlug] Text too long for semantic pinyin, using regular pinyin');
+                }
+                return $this->convertPinyin($text, $options);
+            }
+
+            // 4. 调用 WPMind AI 进行语义化拼音转换
+            $result = wpmind_pinyin($text, [
+                'context'   => 'wpslug_semantic_pinyin',
+                'cache_ttl' => 604800, // 7天
+            ]);
+
+            // 5. 处理结果
+            if (is_wp_error($result)) {
+                if ($debug_mode) {
+                    error_log('[WPSlug] WPMind pinyin error: ' . $result->get_error_message());
+                }
+                return $this->convertPinyin($text, $options);
+            }
+
+            // 6. 清理结果
+            $slug = $this->cleanSemanticPinyinResult($result, $options);
+
+            if (empty($slug)) {
+                if ($debug_mode) {
+                    error_log('[WPSlug] WPMind returned empty pinyin, using regular pinyin');
+                }
+                return $this->convertPinyin($text, $options);
+            }
+
+            if ($debug_mode) {
+                error_log('[WPSlug] Semantic pinyin: "' . $text . '" → "' . $slug . '"');
+            }
+
+            return $slug;
+
+        } catch (Exception $e) {
+            $this->settings->logError('Semantic pinyin error: ' . $e->getMessage());
+            return $this->convertPinyin($text, $options);
+        }
+    }
+
+    /**
+     * 清理语义化拼音结果
+     */
+    private function cleanSemanticPinyinResult($text, $options) {
+        // 移除可能的引号和空格
+        $text = trim($text, " \t\n\r\0\x0B\"'");
+        
+        // 确保只有小写字母、数字和连字符
+        $text = preg_replace('/[^a-zA-Z0-9\-]/', '-', $text);
+        $text = strtolower($text);
+        $text = preg_replace('/-+/', '-', $text);
+        $text = trim($text, '-');
+        
+        return $text;
     }
 
     private function convertTransliteration($text, $options) {
@@ -163,7 +249,7 @@ class WPSlug_Converter {
     }
 
     public function getSupportedModes() {
-        return array('pinyin', 'transliteration', 'translation');
+        return array('pinyin', 'semantic_pinyin', 'transliteration', 'translation');
     }
 
     public function isModeSupported($mode) {

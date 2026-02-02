@@ -237,14 +237,24 @@ class WPSlug_Settings
 
     public function getConversionModes()
     {
-        return [
+        $modes = [
             "pinyin" => __("Chinese Pinyin Conversion", "wpslug"),
-            "transliteration" => __(
-                "Foreign Language Transliteration",
-                "wpslug"
-            ),
-            "translation" => __("Multi-language Translation", "wpslug"),
         ];
+        
+        // 如果 WPMind 可用，添加语义化拼音选项
+        if (function_exists('wpmind_is_available') && wpmind_is_available()) {
+            $modes["semantic_pinyin"] = __("Semantic Pinyin (WPMind AI)", "wpslug");
+        } elseif (class_exists('\\WPMind\\WPMind')) {
+            $modes["semantic_pinyin"] = __("Semantic Pinyin (Requires WPMind)", "wpslug");
+        }
+        
+        $modes["transliteration"] = __(
+            "Foreign Language Transliteration",
+            "wpslug"
+        );
+        $modes["translation"] = __("Multi-language Translation", "wpslug");
+        
+        return $modes;
     }
 
     public function getTransliterationMethods()

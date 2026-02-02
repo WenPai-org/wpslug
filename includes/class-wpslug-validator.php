@@ -130,7 +130,7 @@ class WPSlug_Validator {
     }
     
     public static function validateConversionMode($mode) {
-        $valid_modes = array('pinyin', 'transliteration', 'translation');
+        $valid_modes = array('pinyin', 'semantic_pinyin', 'transliteration', 'translation');
         return self::validateSelect($mode, $valid_modes, 'pinyin');
     }
     

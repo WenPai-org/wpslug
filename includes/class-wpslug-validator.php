@@ -157,6 +157,15 @@ class WPSlug_Validator {
             if ($service === 'baidu' && (empty($options['baidu_app_id']) || empty($options['baidu_secret_key']))) {
                 $errors[] = __('Baidu App ID and Secret Key are required for Baidu Translate service.', 'wpslug');
             }
+            
+            // WPMind 需要已配置
+            if ($service === 'wpmind') {
+                if (!function_exists('wpmind_is_available')) {
+                    $errors[] = __('WPMind plugin is not installed.', 'wpslug');
+                } elseif (!wpmind_is_available()) {
+                    $errors[] = __('WPMind is not configured. Please configure it in WPMind settings.', 'wpslug');
+                }
+            }
         }
         
         return empty($errors) ? true : $errors;

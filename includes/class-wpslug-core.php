@@ -48,7 +48,6 @@ class WPSlug_Core {
     {
         return;
     }
-    }
 
     public function processSanitizeTitle($title, $raw_title = '', $context = 'display') {
         if ($context !== 'save' || empty($title)) {

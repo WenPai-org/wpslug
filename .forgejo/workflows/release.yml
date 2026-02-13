@@ -56,10 +56,11 @@ jobs:
           fi
           echo "Version consistency check passed: $VERSION"
 
-      - name: Install PHP
+      - name: Install dependencies
         run: |
-          apt-get update -qq && apt-get install -y -qq php-cli > /dev/null 2>&1
+          apt-get update -qq && apt-get install -y -qq php-cli rsync zip > /dev/null 2>&1
           php --version
+          rsync --version | head -1
 
       - name: PHP Lint
         run: |

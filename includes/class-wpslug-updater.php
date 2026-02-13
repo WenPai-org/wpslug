@@ -94,6 +94,7 @@ class WPSlug_Updater
         return (object) [
             "slug"         => $data["slug"] ?? $this->slug,
             "plugin"       => $this->plugin_file,
+            "version"      => $data["version"] ?? "",
             "new_version"  => $data["version"] ?? "",
             "url"          => $data["url"] ?? "",
             "package"      => $data["package"] ?? "",

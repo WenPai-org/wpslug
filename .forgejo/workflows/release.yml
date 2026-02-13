@@ -160,8 +160,9 @@ jobs:
         run: |
           set -euo pipefail
 
-          if [ -z "${RELEASE_TOKEN:-}" ]; then
-            echo "::error::Missing RELEASE_TOKEN secret"
+          AUTH_TOKEN="${RELEASE_TOKEN:-${GITHUB_TOKEN:-}}"
+          if [ -z "$AUTH_TOKEN" ]; then
+            echo "::error::Missing auth token: set RELEASE_TOKEN or use default GITHUB_TOKEN"
             exit 1
           fi
 
@@ -171,7 +172,7 @@ jobs:
           ZIP_NAME="${{ steps.build.outputs.zip_name }}"
           SHA256="${{ steps.checksum.outputs.sha256 }}"
           API_URL="${GITHUB_SERVER_URL%/}/api/v1/repos/${GITHUB_REPOSITORY}"
-          AUTH_HEADER="Authorization: token ${RELEASE_TOKEN}"
+          AUTH_HEADER="Authorization: token ${AUTH_TOKEN}"
           printf -v RELEASE_NOTES '## %s %s\n\n### Checksums\n\n| File | SHA-256 |\n|------|---------|\n| %s | %s |\n' "$SLUG" "$TAG" "$ZIP_NAME" "$SHA256"
 
           echo ">>> Resolving release ${TAG}"

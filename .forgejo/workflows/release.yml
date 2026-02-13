@@ -5,7 +5,7 @@ name: Release Plugin
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 env:
   PLUGIN_SLUG: ${{ github.event.repository.name }}
@@ -41,24 +41,19 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           MAIN_FILE="${{ steps.detect.outputs.main_file }}"
-
-          # Extract Version header - supports both "* Version:" and "Version:" formats
-          HEADER_VERSION=$(grep -i "Version:" "$MAIN_FILE" | grep -v "Requires" | grep -v "Tested" | head -1 | sed 's/.*Version:[[:space:]]*//' | sed 's/[[:space:]]*$//' | tr -d '')
+          HEADER_VERSION=$(grep -i "Version:" "$MAIN_FILE" | grep -v "Requires" | grep -v "Tested" | head -1 | sed "s/.*Version:[[:space:]]*//" | sed "s/[[:space:]]*$//" | tr -d "\r")
           echo "Extracted header version: [$HEADER_VERSION]"
-
           if [ "$HEADER_VERSION" != "$VERSION" ]; then
             echo "::error::Version mismatch: tag=$VERSION, header=$HEADER_VERSION"
             exit 1
           fi
-
           if [ -f "readme.txt" ]; then
-            STABLE_TAG=$(grep -i "^Stable tag:" readme.txt | head -1 | sed 's/.*Stable tag:[[:space:]]*//' | sed 's/[[:space:]]*$//' | tr -d '')
+            STABLE_TAG=$(grep -i "^Stable tag:" readme.txt | head -1 | sed "s/.*Stable tag:[[:space:]]*//" | sed "s/[[:space:]]*$//" | tr -d "\r")
             if [ -n "$STABLE_TAG" ] && [ "$STABLE_TAG" != "$VERSION" ]; then
               echo "::error::Stable tag mismatch: tag=$VERSION, readme=$STABLE_TAG"
               exit 1
             fi
           fi
-
           echo "Version consistency check passed: $VERSION"
 
       - name: Install PHP
@@ -87,32 +82,30 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           SLUG="${{ env.PLUGIN_SLUG }}"
           ZIP_NAME="${SLUG}-${VERSION}.zip"
-
           mkdir -p /tmp/build/${SLUG}
-
-          rsync -a --exclude='.git' \
-                   --exclude='.github' \
-                   --exclude='.forgejo' \
-                   --exclude='.gitignore' \
-                   --exclude='.gitattributes' \
-                   --exclude='.editorconfig' \
-                   --exclude='.env*' \
-                   --exclude='node_modules' \
-                   --exclude='tests' \
-                   --exclude='phpunit.xml*' \
-                   --exclude='phpcs.xml*' \
-                   --exclude='phpstan.neon*' \
-                   --exclude='composer.json' \
-                   --exclude='composer.lock' \
-                   --exclude='package.json' \
-                   --exclude='package-lock.json' \
-                   --exclude='Gruntfile.js' \
-                   --exclude='webpack.config.js' \
-                   --exclude='*.md' \
-                   --exclude='LICENSE' \
-                   --exclude='Makefile' \
-                   ./ /tmp/build/${SLUG}/
-
+          rsync -a \
+            --exclude=".git" \
+            --exclude=".github" \
+            --exclude=".forgejo" \
+            --exclude=".gitignore" \
+            --exclude=".gitattributes" \
+            --exclude=".editorconfig" \
+            --exclude=".env*" \
+            --exclude="node_modules" \
+            --exclude="tests" \
+            --exclude="phpunit.xml*" \
+            --exclude="phpcs.xml*" \
+            --exclude="phpstan.neon*" \
+            --exclude="composer.json" \
+            --exclude="composer.lock" \
+            --exclude="package.json" \
+            --exclude="package-lock.json" \
+            --exclude="Gruntfile.js" \
+            --exclude="webpack.config.js" \
+            --exclude="*.md" \
+            --exclude="LICENSE" \
+            --exclude="Makefile" \
+            ./ /tmp/build/${SLUG}/
           cd /tmp/build
           zip -r /tmp/${ZIP_NAME} ${SLUG}/
           echo "zip_path=/tmp/${ZIP_NAME}" >> $GITHUB_OUTPUT
@@ -124,7 +117,7 @@ jobs:
         run: |
           ZIP_PATH="${{ steps.build.outputs.zip_path }}"
           ZIP_NAME="${{ steps.build.outputs.zip_name }}"
-          SHA256=$(sha256sum "$ZIP_PATH" | cut -d' ' -f1)
+          SHA256=$(sha256sum "$ZIP_PATH" | cut -d" " -f1)
           echo "$SHA256  $ZIP_NAME" > "${ZIP_PATH}.sha256"
           echo "sha256=$SHA256" >> $GITHUB_OUTPUT
           echo "SHA-256: $SHA256"

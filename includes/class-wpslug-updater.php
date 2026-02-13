@@ -91,15 +91,16 @@ class WPSlug_Updater
 
         $data = $response["plugins"][$this->plugin_file];
 
-        return [
-            "slug"        => $data["slug"] ?? $this->slug,
-            "version"     => $data["version"] ?? "",
-            "url"         => $data["url"] ?? "",
-            "package"     => $data["package"] ?? "",
-            "icons"       => $data["icons"] ?? [],
-            "banners"     => $data["banners"] ?? [],
-            "requires"    => $data["requires"] ?? "",
-            "tested"      => $data["tested"] ?? "",
+        return (object) [
+            "slug"         => $data["slug"] ?? $this->slug,
+            "plugin"       => $this->plugin_file,
+            "new_version"  => $data["version"] ?? "",
+            "url"          => $data["url"] ?? "",
+            "package"      => $data["package"] ?? "",
+            "icons"        => $data["icons"] ?? [],
+            "banners"      => $data["banners"] ?? [],
+            "requires"     => $data["requires"] ?? "",
+            "tested"       => $data["tested"] ?? "",
             "requires_php" => $data["requires_php"] ?? "",
         ];
     }

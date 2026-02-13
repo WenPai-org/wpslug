@@ -42,14 +42,17 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           MAIN_FILE="${{ steps.detect.outputs.main_file }}"
 
-          HEADER_VERSION=$(grep -i "^[[:space:]]*\*[[:space:]]*Version:" "$MAIN_FILE" | head -1 | sed 's/.*Version:[[:space:]]*//' | tr -d '[:space:]')
+          # Extract Version header - supports both "* Version:" and "Version:" formats
+          HEADER_VERSION=$(grep -i "Version:" "$MAIN_FILE" | grep -v "Requires" | grep -v "Tested" | head -1 | sed 's/.*Version:[[:space:]]*//' | sed 's/[[:space:]]*$//' | tr -d '')
+          echo "Extracted header version: [$HEADER_VERSION]"
+
           if [ "$HEADER_VERSION" != "$VERSION" ]; then
             echo "::error::Version mismatch: tag=$VERSION, header=$HEADER_VERSION"
             exit 1
           fi
 
           if [ -f "readme.txt" ]; then
-            STABLE_TAG=$(grep -i "^Stable tag:" readme.txt | head -1 | sed 's/.*Stable tag:[[:space:]]*//' | tr -d '[:space:]')
+            STABLE_TAG=$(grep -i "^Stable tag:" readme.txt | head -1 | sed 's/.*Stable tag:[[:space:]]*//' | sed 's/[[:space:]]*$//' | tr -d '')
             if [ -n "$STABLE_TAG" ] && [ "$STABLE_TAG" != "$VERSION" ]; then
               echo "::error::Stable tag mismatch: tag=$VERSION, readme=$STABLE_TAG"
               exit 1

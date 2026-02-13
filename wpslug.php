@@ -10,6 +10,9 @@ Author URI: https://wpslug.com
 License: GPL2
 Text Domain: wpslug
 Domain Path: /languages
+Update URI: https://updates.wenpai.org
+Requires at least: 6.0
+Requires PHP: 7.4
 */
 
 if (!defined("ABSPATH")) {

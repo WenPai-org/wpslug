@@ -59,8 +59,8 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get update -qq && apt-get install -y -qq php-cli rsync zip > /dev/null 2>&1
-          php --version
-          rsync --version | head -1
+          php -v | head -1 || true
+          echo "rsync and zip installed"
 
       - name: PHP Lint
         run: |

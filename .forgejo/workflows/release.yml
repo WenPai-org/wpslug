@@ -89,29 +89,7 @@ jobs:
           RELEASE_DIR="/tmp/release"
           mkdir -p /tmp/build/${SLUG}
           mkdir -p ${RELEASE_DIR}
-          rsync -a \
-            --exclude=".git" \
-            --exclude=".github" \
-            --exclude=".forgejo" \
-            --exclude=".gitignore" \
-            --exclude=".gitattributes" \
-            --exclude=".editorconfig" \
-            --exclude=".env*" \
-            --exclude="node_modules" \
-            --exclude="tests" \
-            --exclude="phpunit.xml*" \
-            --exclude="phpcs.xml*" \
-            --exclude="phpstan.neon*" \
-            --exclude="composer.json" \
-            --exclude="composer.lock" \
-            --exclude="package.json" \
-            --exclude="package-lock.json" \
-            --exclude="Gruntfile.js" \
-            --exclude="webpack.config.js" \
-            --exclude="*.md" \
-            --exclude="LICENSE" \
-            --exclude="Makefile" \
-            ./ /tmp/build/${SLUG}/
+          rsync -a             --exclude=".git"             --exclude=".github"             --exclude=".forgejo"             --exclude=".gitignore"             --exclude=".gitattributes"             --exclude=".editorconfig"             --exclude=".env*"             --exclude="node_modules"             --exclude="tests"             --exclude="phpunit.xml*"             --exclude="phpcs.xml*"             --exclude="phpstan.neon*"             --exclude="composer.json"             --exclude="composer.lock"             --exclude="package.json"             --exclude="package-lock.json"             --exclude="Gruntfile.js"             --exclude="webpack.config.js"             --exclude="*.md"             --exclude="LICENSE"             --exclude="Makefile"             ./ /tmp/build/${SLUG}/
           cd /tmp/build
           zip -r ${RELEASE_DIR}/${ZIP_NAME} ${SLUG}/
           echo "zip_path=${RELEASE_DIR}/${ZIP_NAME}" >> $GITHUB_OUTPUT
@@ -132,21 +110,53 @@ jobs:
           echo "Release dir contents:"
           ls -la "$RELEASE_DIR"
 
-      - name: Create Release
-        uses: actions/forgejo-release@v2
-        with:
-          direction: upload
-          url: https://feicode.com
-          token: ${{ secrets.RELEASE_TOKEN }}
-          tag: ${{ steps.version.outputs.tag }}
-          title: ${{ steps.version.outputs.tag }}
-          release-dir: ${{ steps.build.outputs.release_dir }}
-          verbose: true
-          release-notes: |
-            ## ${{ env.PLUGIN_SLUG }} ${{ steps.version.outputs.tag }}
+      - name: Create Release & Upload Assets
+        env:
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          SLUG="${{ env.PLUGIN_SLUG }}"
+          RELEASE_DIR="${{ steps.build.outputs.release_dir }}"
+          ZIP_NAME="${{ steps.build.outputs.zip_name }}"
+          SHA256="${{ steps.checksum.outputs.sha256 }}"
+          API_URL="https://feicode.com/api/v1/repos/${GITHUB_REPOSITORY}"
 
-            ### Checksums
+          RELEASE_NOTES=$(cat <<NOTES
+## ${SLUG} ${TAG}
 
-            | File | SHA-256 |
-            |------|---------|
-            | ${{ steps.build.outputs.zip_name }} | ${{ steps.checksum.outputs.sha256 }} |
+### Checksums
+
+| File | SHA-256 |
+|------|---------|
+| ${ZIP_NAME} | ${SHA256} |
+NOTES
+          )
+
+          echo ">>> Creating release ${TAG}..."
+          RESPONSE=$(curl -sf -X POST \
+            -H "Authorization: token ${RELEASE_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n --arg tag "$TAG" --arg name "$TAG" --arg body "$RELEASE_NOTES" \
+              '{tag_name: $tag, name: $name, body: $body, draft: false, prerelease: false}')" \
+            "${API_URL}/releases")
+
+          RELEASE_ID=$(echo "$RESPONSE" | jq -r '.id')
+          if [ -z "$RELEASE_ID" ] || [ "$RELEASE_ID" = "null" ]; then
+            echo "::error::Failed to create release"
+            echo "$RESPONSE"
+            exit 1
+          fi
+          echo "Release created: ID=${RELEASE_ID}"
+
+          echo ">>> Uploading assets..."
+          for FILE in "${RELEASE_DIR}"/*; do
+            FILENAME=$(basename "$FILE")
+            echo "  Uploading: ${FILENAME}"
+            curl -sf -X POST \
+              -H "Authorization: token ${RELEASE_TOKEN}" \
+              -F "attachment=@${FILE}" \
+              "${API_URL}/releases/${RELEASE_ID}/assets?name=${FILENAME}" > /dev/null
+            echo "  Done: ${FILENAME}"
+          done
+
+          echo ">>> Release ${TAG} published with all assets"

@@ -83,7 +83,9 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           SLUG="${{ env.PLUGIN_SLUG }}"
           ZIP_NAME="${SLUG}-${VERSION}.zip"
+          RELEASE_DIR="/tmp/release"
           mkdir -p /tmp/build/${SLUG}
+          mkdir -p ${RELEASE_DIR}
           rsync -a \
             --exclude=".git" \
             --exclude=".github" \
@@ -108,20 +110,24 @@ jobs:
             --exclude="Makefile" \
             ./ /tmp/build/${SLUG}/
           cd /tmp/build
-          zip -r /tmp/${ZIP_NAME} ${SLUG}/
-          echo "zip_path=/tmp/${ZIP_NAME}" >> $GITHUB_OUTPUT
+          zip -r ${RELEASE_DIR}/${ZIP_NAME} ${SLUG}/
+          echo "zip_path=${RELEASE_DIR}/${ZIP_NAME}" >> $GITHUB_OUTPUT
           echo "zip_name=${ZIP_NAME}" >> $GITHUB_OUTPUT
-          echo "Built: ${ZIP_NAME} ($(du -h /tmp/${ZIP_NAME} | cut -f1))"
+          echo "release_dir=${RELEASE_DIR}" >> $GITHUB_OUTPUT
+          echo "Built: ${ZIP_NAME} ($(du -h ${RELEASE_DIR}/${ZIP_NAME} | cut -f1))"
 
       - name: Calculate SHA-256
         id: checksum
         run: |
           ZIP_PATH="${{ steps.build.outputs.zip_path }}"
           ZIP_NAME="${{ steps.build.outputs.zip_name }}"
+          RELEASE_DIR="${{ steps.build.outputs.release_dir }}"
           SHA256=$(sha256sum "$ZIP_PATH" | cut -d" " -f1)
-          echo "$SHA256  $ZIP_NAME" > "${ZIP_PATH}.sha256"
+          echo "$SHA256  $ZIP_NAME" > "${RELEASE_DIR}/${ZIP_NAME}.sha256"
           echo "sha256=$SHA256" >> $GITHUB_OUTPUT
           echo "SHA-256: $SHA256"
+          echo "Release dir contents:"
+          ls -la "$RELEASE_DIR"
 
       - name: Create Release
         uses: actions/forgejo-release@v2
@@ -131,7 +137,8 @@ jobs:
           token: ${{ secrets.RELEASE_TOKEN }}
           tag: ${{ steps.version.outputs.tag }}
           title: ${{ steps.version.outputs.tag }}
-          release-dir: /tmp/
+          release-dir: ${{ steps.build.outputs.release_dir }}
+          verbose: true
           release-notes: |
             ## ${{ env.PLUGIN_SLUG }} ${{ steps.version.outputs.tag }}
 
@@ -139,4 +146,4 @@ jobs:
 
             | File | SHA-256 |
             |------|---------|
-            | ${{ steps.build.outputs.zip_name }} | `${{ steps.checksum.outputs.sha256 }}` |
+            | ${{ steps.build.outputs.zip_name }} | ${{ steps.checksum.outputs.sha256 }} |

@@ -4,7 +4,7 @@
 Plugin Name: WPSlug
 Plugin URI: https://wpslug.com
 Description: Advanced slug management plugin with Chinese Pinyin support and SEO optimization.
-Version: 1.0.5
+Version: 1.0.6
 Author: WPSlug.com
 Author URI: https://wpslug.com
 License: GPL2
@@ -19,7 +19,7 @@ if (!defined("ABSPATH")) {
     exit();
 }
 
-define("WPSLUG_VERSION", "1.0.5");
+define("WPSLUG_VERSION", "1.0.6");
 define("WPSLUG_PLUGIN_DIR", plugin_dir_path(__FILE__));
 define("WPSLUG_PLUGIN_URL", plugin_dir_url(__FILE__));
 define("WPSLUG_PLUGIN_BASENAME", plugin_basename(__FILE__));
@@ -56,6 +56,7 @@ class WPSlug
         $this->loadDependencies();
         $this->loadTextdomain();
         $this->core = new WPSlug_Core();
+        new WPSlug_Updater(WPSLUG_PLUGIN_BASENAME, WPSLUG_VERSION);
     }
 
     private function checkRequirements()
@@ -91,6 +92,7 @@ class WPSlug
         require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-translator.php";
         require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-converter.php";
         require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-core.php";
+        require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-updater.php";
 
         if (is_admin()) {
             require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-admin.php";

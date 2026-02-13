@@ -1,5 +1,6 @@
 # 文派统一插件发布 CI Workflow
 # 触发：push tag v*
+# 运行环境：forgejo-ci-php:latest (Alpine + php-cli + git + rsync + zip + node)
 name: Release Plugin
 
 on:
@@ -16,6 +17,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Verify tools
+        run: |
+          php -v | head -1
+          git --version
+          rsync --version | head -1
+          zip --version | head -2
 
       - name: Extract version from tag
         id: version
@@ -56,13 +64,8 @@ jobs:
           fi
           echo "Version consistency check passed: $VERSION"
 
-      - name: Install dependencies
-        run: |
-          apt-get update -qq && apt-get install -y -qq php-cli rsync zip > /dev/null 2>&1
-          php -v | head -1 || true
-          echo "rsync and zip installed"
-
       - name: PHP Lint
+        shell: bash
         run: |
           ERRORS=0
           while IFS= read -r file; do

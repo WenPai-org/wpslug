@@ -127,10 +127,10 @@ class WPSlug_Admin
         <span style="font-size: 13px; padding-left: 10px;">
             <?php printf( esc_html__( 'Version: %s', 'wpslug' ), esc_html( WPSLUG_VERSION ) ); ?>
         </span>
-        <a href="https://wpslug.com/document" target="_blank" class="button button-secondary" style="margin-left: 10px;">
+        <a href="https://wpcy.com/slug/" target="_blank" class="button button-secondary" style="margin-left: 10px;">
             <?php esc_html_e( 'Documentation', 'wpslug' ); ?>
         </a>
-        <a href="https://sharecms.com/forums/" target="_blank" class="button button-secondary">
+        <a href="https://wpcy.com/c/wpslug/" target="_blank" class="button button-secondary">
             <?php esc_html_e( 'Support', 'wpslug' ); ?>
         </a>
     </h1>

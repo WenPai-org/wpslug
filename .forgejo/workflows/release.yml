@@ -127,7 +127,6 @@ jobs:
             --exclude="*.md" \
             --exclude="LICENSE" \
             --exclude="Makefile" \
-            --exclude="lib" \
             ./ "$BUILD_DIR/"
 
           (
@@ -252,6 +251,7 @@ jobs:
           DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_COMMAND_MODE: ${{ secrets.DEPLOY_COMMAND_MODE }}
           DEPLOY_SITE_PATH: ${{ secrets.DEPLOY_SITE_PATH }}
           DEPLOY_WP_USER: ${{ secrets.DEPLOY_WP_USER }}
           DEPLOY_COMPOSER_SCRIPT: ${{ secrets.DEPLOY_COMPOSER_SCRIPT }}
@@ -260,10 +260,8 @@ jobs:
 
           : "${DEPLOY_HOST:?DEPLOY_HOST is required when this step is enabled}"
           DEPLOY_PORT="${DEPLOY_PORT:-22}"
-          DEPLOY_USER="${DEPLOY_USER:-root}"
-          DEPLOY_SITE_PATH="${DEPLOY_SITE_PATH:-/www/wwwroot/wptea.com}"
-          DEPLOY_WP_USER="${DEPLOY_WP_USER:-www}"
-          DEPLOY_COMPOSER_SCRIPT="${DEPLOY_COMPOSER_SCRIPT:-/opt/wenpai-infra/ops/wp-post-release-composer.sh}"
+          DEPLOY_USER="${DEPLOY_USER:-wpdeploy}"
+          DEPLOY_COMMAND_MODE="${DEPLOY_COMMAND_MODE:-runner}"
           SLUG="${{ env.PLUGIN_SLUG }}"
 
           install -m 700 -d ~/.ssh
@@ -273,5 +271,72 @@ jobs:
           ssh-keyscan -p "$DEPLOY_PORT" -H "$DEPLOY_HOST" >> "$HOME/.ssh/known_hosts" 2>/dev/null || true
 
           # Run only for this plugin to reduce release-time impact.
-          ssh -i "$KEY_PATH" -p "$DEPLOY_PORT" -o StrictHostKeyChecking=yes "${DEPLOY_USER}@${DEPLOY_HOST}" \
-            "bash '$DEPLOY_COMPOSER_SCRIPT' --site '$DEPLOY_SITE_PATH' --wp-user '$DEPLOY_WP_USER' --plugin '$SLUG' --strict"
+          if [[ "$DEPLOY_COMMAND_MODE" == "runner" ]]; then
+            DEPLOY_COMPOSER_SCRIPT="${DEPLOY_COMPOSER_SCRIPT:-/usr/local/sbin/wp-post-release-composer-runner}"
+            ssh -i "$KEY_PATH" -p "$DEPLOY_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes "${DEPLOY_USER}@${DEPLOY_HOST}" \
+              "sudo '$DEPLOY_COMPOSER_SCRIPT' '$SLUG'"
+          else
+            DEPLOY_SITE_PATH="${DEPLOY_SITE_PATH:-/www/wwwroot/wptea.com}"
+            DEPLOY_WP_USER="${DEPLOY_WP_USER:-www}"
+            DEPLOY_COMPOSER_SCRIPT="${DEPLOY_COMPOSER_SCRIPT:-/opt/wenpai-infra/ops/wp-post-release-composer.sh}"
+            ssh -i "$KEY_PATH" -p "$DEPLOY_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes "${DEPLOY_USER}@${DEPLOY_HOST}" \
+              "bash '$DEPLOY_COMPOSER_SCRIPT' --site '$DEPLOY_SITE_PATH' --wp-user '$DEPLOY_WP_USER' --plugin '$SLUG' --strict"
+          fi
+
+      - name: Verify update API metadata (optional)
+        if: ${{ secrets.UPDATE_API_BASE != '' }}
+        shell: bash
+        env:
+          UPDATE_API_BASE: ${{ secrets.UPDATE_API_BASE }}
+          VERIFY_FROM_VERSION: ${{ secrets.VERIFY_FROM_VERSION }}
+        run: |
+          set -euo pipefail
+
+          API_BASE="${UPDATE_API_BASE%/}"
+          FROM_VERSION="${VERIFY_FROM_VERSION:-0.0.0}"
+          SLUG="${{ env.PLUGIN_SLUG }}"
+          MAIN_FILE="${{ steps.detect.outputs.main_file }}"
+          VERSION="${{ steps.version.outputs.version }}"
+          TAG="${{ steps.version.outputs.tag }}"
+          PLUGIN_FILE="${SLUG}/${MAIN_FILE}"
+
+          echo "Verify update-check: ${PLUGIN_FILE} from ${FROM_VERSION} -> ${VERSION}"
+          REQUEST_JSON=$(jq -cn --arg plugin_file "$PLUGIN_FILE" --arg from "$FROM_VERSION" '{plugins: {($plugin_file): {Version: $from}}}')
+
+          curl -sS -f -X POST \
+            -H "Content-Type: application/json" \
+            --data "$REQUEST_JSON" \
+            "${API_BASE}/api/v1/update-check" > /tmp/update-check.json
+
+          jq -e --arg plugin_file "$PLUGIN_FILE" '.plugins[$plugin_file]' /tmp/update-check.json > /dev/null
+          API_VERSION=$(jq -r --arg plugin_file "$PLUGIN_FILE" '.plugins[$plugin_file].version // empty' /tmp/update-check.json)
+          API_PACKAGE=$(jq -r --arg plugin_file "$PLUGIN_FILE" '.plugins[$plugin_file].package // empty' /tmp/update-check.json)
+
+          if [[ "$API_VERSION" != "$VERSION" ]]; then
+            echo "::error::update-check version mismatch: expected=${VERSION}, actual=${API_VERSION}"
+            cat /tmp/update-check.json
+            exit 1
+          fi
+
+          if [[ "$API_PACKAGE" != *"/releases/download/${TAG}/"* ]]; then
+            echo "::error::update-check package mismatch: ${API_PACKAGE}"
+            exit 1
+          fi
+
+          echo "Verify plugin info: ${SLUG}"
+          curl -sS -f "${API_BASE}/api/v1/plugins/${SLUG}/info" > /tmp/plugin-info.json
+          INFO_VERSION=$(jq -r '.version // empty' /tmp/plugin-info.json)
+          INFO_PACKAGE=$(jq -r '.download_link // empty' /tmp/plugin-info.json)
+
+          if [[ "$INFO_VERSION" != "$VERSION" ]]; then
+            echo "::error::plugin-info version mismatch: expected=${VERSION}, actual=${INFO_VERSION}"
+            cat /tmp/plugin-info.json
+            exit 1
+          fi
+
+          if [[ "$INFO_PACKAGE" != *"/releases/download/${TAG}/"* ]]; then
+            echo "::error::plugin-info download_link mismatch: ${INFO_PACKAGE}"
+            exit 1
+          fi
+
+          echo "Update API verification passed"

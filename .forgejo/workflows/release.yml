@@ -277,7 +277,7 @@ jobs:
           KEY_PATH="$HOME/.ssh/deploy_key"
           printf '%s\n' "$DEPLOY_SSH_KEY" > "$KEY_PATH"
           chmod 600 "$KEY_PATH"
-          ssh-keyscan -p "$DEPLOY_PORT" -H "$DEPLOY_HOST" >> "$HOME/.ssh/known_hosts" 2>/dev/null || true
+          ssh-keyscan -t rsa,ecdsa,ed25519 -p "$DEPLOY_PORT" -H "$DEPLOY_HOST" >> "$HOME/.ssh/known_hosts" 2>/dev/null || true
 
           # Run only for this plugin to reduce release-time impact.
           if [[ "$DEPLOY_COMMAND_MODE" == "runner" ]]; then

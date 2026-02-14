@@ -56,7 +56,7 @@ class WPSlug
         $this->loadDependencies();
         $this->loadTextdomain();
         $this->core = new WPSlug_Core();
-        new WPSlug_Updater(WPSLUG_PLUGIN_BASENAME, WPSLUG_VERSION);
+        new WenPai_Updater( WPSLUG_PLUGIN_BASENAME, WPSLUG_VERSION );
     }
 
     private function checkRequirements()
@@ -92,7 +92,7 @@ class WPSlug
         require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-translator.php";
         require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-converter.php";
         require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-core.php";
-        require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-updater.php";
+        require_once WPSLUG_PLUGIN_DIR . "includes/class-wenpai-updater.php";
 
         if (is_admin()) {
             require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-admin.php";

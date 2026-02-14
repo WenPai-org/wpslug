@@ -41,27 +41,12 @@ class WPSlug_Core {
             add_action('manage_pages_custom_column', array($this, 'displaySlugColumn'), 10, 2);
         }
     }
+    /**
+     * Disabled: migrated to WPSlug_Updater (Update URI)
+     */
     private function init_update_checker()
     {
-        if (
-            file_exists(
-                plugin_dir_path(__FILE__) .
-                    "../lib/plugin-update-checker/plugin-update-checker.php"
-            )
-        ) {
-            require_once plugin_dir_path(__FILE__) .
-                "../lib/plugin-update-checker/plugin-update-checker.php";
-
-            if (
-                class_exists('YahnisElsts\PluginUpdateChecker\v5p3\PucFactory')
-            ) {
-                $this->update_checker = \YahnisElsts\PluginUpdateChecker\v5p3\PucFactory::buildUpdateChecker(
-                    "https://updates.weixiaoduo.com/wpslug.json",
-                    WPSLUG_PLUGIN_DIR . "wpslug.php",
-                    "wpslug"
-                );
-            }
-        }
+        return;
     }
 
     public function processSanitizeTitle($title, $raw_title = '', $context = 'display') {

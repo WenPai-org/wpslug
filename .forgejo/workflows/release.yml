@@ -161,8 +161,9 @@ jobs:
         run: |
           set -euo pipefail
 
-          if [ -z "${RELEASE_TOKEN:-}" ]; then
-            echo "::error::Missing RELEASE_TOKEN secret"
+          AUTH_TOKEN="${RELEASE_TOKEN:-${GITHUB_TOKEN:-}}"
+          if [ -z "$AUTH_TOKEN" ]; then
+            echo "::error::Missing auth token: set RELEASE_TOKEN or use default GITHUB_TOKEN"
             exit 1
           fi
 
@@ -172,7 +173,7 @@ jobs:
           ZIP_NAME="${{ steps.build.outputs.zip_name }}"
           SHA256="${{ steps.checksum.outputs.sha256 }}"
           API_URL="${GITHUB_SERVER_URL%/}/api/v1/repos/${GITHUB_REPOSITORY}"
-          AUTH_HEADER="Authorization: token ${RELEASE_TOKEN}"
+          AUTH_HEADER="Authorization: token ${AUTH_TOKEN}"
           printf -v RELEASE_NOTES '## %s %s\n\n### Checksums\n\n| File | SHA-256 |\n|------|---------|\n| %s | %s |\n' "$SLUG" "$TAG" "$ZIP_NAME" "$SHA256"
 
           echo ">>> Resolving release ${TAG}"
@@ -243,3 +244,34 @@ jobs:
           echo ">>> Release ${TAG} published successfully"
           echo "Release URL: ${GITHUB_SERVER_URL%/}/${GITHUB_REPOSITORY}/releases/tag/${TAG}"
 
+      - name: Run post-release composer repair on target site (optional)
+        if: ${{ secrets.DEPLOY_HOST != '' && secrets.DEPLOY_SSH_KEY != '' }}
+        shell: bash
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_SITE_PATH: ${{ secrets.DEPLOY_SITE_PATH }}
+          DEPLOY_WP_USER: ${{ secrets.DEPLOY_WP_USER }}
+          DEPLOY_COMPOSER_SCRIPT: ${{ secrets.DEPLOY_COMPOSER_SCRIPT }}
+        run: |
+          set -euo pipefail
+
+          : "${DEPLOY_HOST:?DEPLOY_HOST is required when this step is enabled}"
+          DEPLOY_PORT="${DEPLOY_PORT:-22}"
+          DEPLOY_USER="${DEPLOY_USER:-root}"
+          DEPLOY_SITE_PATH="${DEPLOY_SITE_PATH:-/www/wwwroot/wptea.com}"
+          DEPLOY_WP_USER="${DEPLOY_WP_USER:-www}"
+          DEPLOY_COMPOSER_SCRIPT="${DEPLOY_COMPOSER_SCRIPT:-/opt/wenpai-infra/ops/wp-post-release-composer.sh}"
+          SLUG="${{ env.PLUGIN_SLUG }}"
+
+          install -m 700 -d ~/.ssh
+          KEY_PATH="$HOME/.ssh/deploy_key"
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$KEY_PATH"
+          chmod 600 "$KEY_PATH"
+          ssh-keyscan -p "$DEPLOY_PORT" -H "$DEPLOY_HOST" >> "$HOME/.ssh/known_hosts" 2>/dev/null || true
+
+          # Run only for this plugin to reduce release-time impact.
+          ssh -i "$KEY_PATH" -p "$DEPLOY_PORT" -o StrictHostKeyChecking=yes "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "bash '$DEPLOY_COMPOSER_SCRIPT' --site '$DEPLOY_SITE_PATH' --wp-user '$DEPLOY_WP_USER' --plugin '$SLUG' --strict"

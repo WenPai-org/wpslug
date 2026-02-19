@@ -31,7 +31,7 @@ class WenPai_Updater {
      *
      * @var string
      */
-    const VERSION = '1.0.0';
+    const VERSION = '1.1.0';
 
     /**
      * 云桥 API 地址。
@@ -168,24 +168,50 @@ class WenPai_Updater {
 
         $response = $this->api_request( "plugins/{$this->slug}/info" );
 
-        if ( is_wp_error( $response ) ) {
+        if ( ! is_wp_error( $response ) && ! isset( $response['error'] ) && ! empty( $response['name'] ) ) {
+            $info                = new stdClass();
+            $info->name          = $response['name'];
+            $info->slug          = $response['slug'] ?? $this->slug;
+            $info->version       = $response['version'] ?? '';
+            $info->author        = $response['author'] ?? '';
+            $info->homepage      = $response['homepage'] ?? '';
+            $info->download_link = $response['download_link'] ?? '';
+            $info->requires      = $response['requires'] ?? '';
+            $info->tested        = $response['tested'] ?? '';
+            $info->requires_php  = $response['requires_php'] ?? '';
+            $info->last_updated  = $response['last_updated'] ?? '';
+            $info->icons         = $response['icons'] ?? [];
+            $info->banners       = $response['banners'] ?? [];
+            $info->sections      = $response['sections'] ?? [];
+            $info->external      = true;
+
+            return $info;
+        }
+
+        // API 不可用或插件未注册时，用本地插件头信息兜底
+        $plugin_path = WP_PLUGIN_DIR . '/' . $this->plugin_file;
+        if ( ! file_exists( $plugin_path ) ) {
             return $result;
         }
 
-        $info                = new stdClass();
-        $info->name          = $response['name'] ?? '';
-        $info->slug          = $response['slug'] ?? $this->slug;
-        $info->version       = $response['version'] ?? '';
-        $info->author        = $response['author'] ?? '';
-        $info->homepage      = $response['homepage'] ?? '';
-        $info->download_link = $response['download_link'] ?? '';
-        $info->requires      = $response['requires'] ?? '';
-        $info->tested        = $response['tested'] ?? '';
-        $info->requires_php  = $response['requires_php'] ?? '';
-        $info->last_updated  = $response['last_updated'] ?? '';
-        $info->icons         = $response['icons'] ?? [];
-        $info->banners       = $response['banners'] ?? [];
-        $info->sections      = $response['sections'] ?? [];
+        if ( ! function_exists( 'get_plugin_data' ) ) {
+            require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        }
+
+        $plugin_data = get_plugin_data( $plugin_path );
+
+        $info               = new stdClass();
+        $info->name         = $plugin_data['Name'] ?? $this->slug;
+        $info->slug         = $this->slug;
+        $info->version      = $this->version;
+        $info->author       = $plugin_data['AuthorName'] ?? '';
+        $info->homepage     = $plugin_data['PluginURI'] ?? '';
+        $info->requires     = $plugin_data['RequiresWP'] ?? '';
+        $info->requires_php = $plugin_data['RequiresPHP'] ?? '';
+        $info->sections     = [
+            'description' => $plugin_data['Description'] ?? '',
+        ];
+        $info->external     = true;
 
         return $info;
     }

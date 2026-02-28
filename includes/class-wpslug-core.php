@@ -10,6 +10,18 @@ class WPSlug_Core {
     private $optimizer;
     private $admin;
 
+    /**
+     * Post types that should never have slug conversion applied.
+     * Covers ACF Pro / SCF internal types and other known plugin internals.
+     */
+    private static $excluded_post_types = array(
+        'acf-field-group',
+        'acf-field',
+        'acf-post-type',
+        'acf-taxonomy',
+        'acf-ui-options-page',
+    );
+
     public function __construct() {
         $this->settings = new WPSlug_Settings();
         $this->converter = new WPSlug_Converter();
@@ -54,6 +66,11 @@ class WPSlug_Core {
             return $title;
         }
 
+        // Skip when ACF internal post types are being saved
+        if ($this->isAcfInternalRequest()) {
+            return $title;
+        }
+
         try {
             $options = $this->settings->getOptions();
 
@@ -84,6 +101,9 @@ class WPSlug_Core {
             }
 
             $post_type = $data['post_type'];
+            if (in_array($post_type, self::$excluded_post_types, true)) {
+                return $data;
+            }
             if (!$this->settings->isPostTypeEnabled($post_type)) {
                 return $data;
             }
@@ -230,6 +250,10 @@ class WPSlug_Core {
                 return $slug;
             }
 
+            if (in_array($post_type, self::$excluded_post_types, true)) {
+                return $slug;
+            }
+
             if (!$this->settings->isPostTypeEnabled($post_type)) {
                 return $slug;
             }
@@ -287,6 +311,10 @@ class WPSlug_Core {
             $options = $this->settings->getOptions();
 
             if (!$options['enable_conversion'] || !$options['auto_convert']) {
+                return;
+            }
+
+            if (in_array($post->post_type, self::$excluded_post_types, true)) {
                 return;
             }
 
@@ -377,6 +405,38 @@ class WPSlug_Core {
         } catch (Exception $e) {
             $this->settings->logError('activate error: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Detect if the current execution context is saving an ACF internal post type.
+     * Checks the call stack for ACF's internal post type class or field save functions.
+     */
+    private function isAcfInternalRequest() {
+        if (function_exists('get_current_screen')) {
+            $screen = get_current_screen();
+            if ($screen && in_array($screen->post_type, self::$excluded_post_types, true)) {
+                return true;
+            }
+        }
+
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15);
+        foreach ($trace as $frame) {
+            if (isset($frame['class']) && strpos($frame['class'], 'ACF_Internal_Post_Type') !== false) {
+                return true;
+            }
+            if (isset($frame['class']) && strpos($frame['class'], 'ACF_Field_Group') !== false) {
+                return true;
+            }
+            if (isset($frame['function']) && in_array($frame['function'], array(
+                'acf_update_field',
+                'acf_import_field_group',
+                'acf_import_internal_post_type',
+            ), true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function deactivate() {

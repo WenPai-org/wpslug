@@ -376,6 +376,16 @@ class WPSlug_Settings
 
     public function isPostTypeEnabled($post_type)
     {
+        $excluded = array(
+            'acf-field-group',
+            'acf-field',
+            'acf-post-type',
+            'acf-taxonomy',
+            'acf-ui-options-page',
+        );
+        if (in_array($post_type, $excluded, true)) {
+            return false;
+        }
         $enabled_post_types = $this->getOption("enabled_post_types", []);
         return empty($enabled_post_types) ||
             in_array($post_type, $enabled_post_types);

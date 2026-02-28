@@ -31,7 +31,7 @@ class WenPai_Updater {
      *
      * @var string
      */
-    const VERSION = '1.1.0';
+    const VERSION = '1.1.1';
 
     /**
      * 云桥 API 地址。

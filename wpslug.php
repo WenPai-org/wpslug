@@ -4,7 +4,7 @@
 Plugin Name: WPSlug
 Plugin URI: https://wpcy.com/slug
 Description: Advanced slug management plugin with Chinese Pinyin support and SEO optimization.
-Version: 1.1.1
+Version: 1.2.0
 Author: WPSlug
 Author URI: https://wpcy.com/slug
 License: GPL2

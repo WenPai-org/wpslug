@@ -278,6 +278,12 @@ class WenPai_Updater {
             return $text;
         }
 
+        // 截断 feicode-ai 自动追加的 AI 摘要（以 HTML 注释标记为界）
+        $text = preg_replace( '/---\s*\n\s*<!--\s*feicode-ai.*$/s', '', $text );
+
+        // 去掉 Checksums 表格（不适合在 WordPress 弹窗展示）
+        $text = preg_replace( '/^###?\s+Checksums\s*\n+(\|.*\n)+/mi', '', $text );
+
         // 去掉 CI 自动生成的冗余标题行（WordPress 弹窗已显示插件名和版本）
         $text = preg_replace( '/^##\s+\S+\s+v[\d.]+\s*\n+/m', '', $text );
         $text = preg_replace( '/^###?\s+What\'s Changed\s*\n+/mi', '', $text );

@@ -66,6 +66,13 @@ class WPSlug_Core {
             return $title;
         }
 
+        // Skip during admin menu registration — sanitize_title() is used to
+        // generate hook suffixes, not content slugs.  Stop-word removal would
+        // mangle the suffix and break plugins that match it (e.g. AIOWPM).
+        if (doing_action('admin_menu') || doing_action('network_admin_menu') || doing_action('user_admin_menu')) {
+            return $title;
+        }
+
         // Skip when ACF internal post types are being saved
         if ($this->isAcfInternalRequest()) {
             return $title;

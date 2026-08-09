@@ -110,3 +110,4 @@
 - [CX] 发布包 Plugin Check 清除 hidden file、readme、替代函数等错误。FeiCode 自托管 Update URI 和既有 WPSlug 品牌是明确目录政策例外；忽略这两个代码后 0 errors，原始剩余 33 warnings。
 - [CX] npm audit 从 2 个 high（第一轮旧快照曾为 26）降至 0；使用 `adm-zip` 0.6.0 override，`@wordpress/env` 11.12.0、Playwright 1.62.1。
 - [CX] 行为测试 25/25，E2E 2/2。真实云凭据、最低版本和多站点运行矩阵仍未覆盖。
+- [CX] FeiCode 评审入口：PR #47 `https://feicode.com/WenPai-org/wpslug/pulls/47`，`refs/pull/47/head` 已核对为第二轮提交；未合并、未发布。

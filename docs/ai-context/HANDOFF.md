@@ -23,3 +23,4 @@
 - [CX] PHP 行为测试扩至 25 assertions：新增持久自定义 slug 保护、云失败回退、导入导出密钥隔离、批量幂等。
 - [CX] 发布包增加 `readme.txt`，排除 `.ci-trigger`、`.wp-env.json`、scripts；三处 `strip_tags` 改用 `wp_strip_all_tags`。
 - [CX] 组件拆分与迁移边界见 `docs/audits/wpslug-component-migration-plan-2026-08-09.md`。
+- [CX] 第二轮提交 `a7aa776` 已通过 AGit 正常评审引用推送到 FeiCode PR #47：https://feicode.com/WenPai-org/wpslug/pulls/47；未合并、未发布。

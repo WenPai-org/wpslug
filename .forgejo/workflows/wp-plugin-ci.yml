@@ -18,6 +18,27 @@ jobs:
         run: |
           parallel-lint --exclude vendor --exclude node_modules .
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install test dependencies
+        run: npm ci
+
+      - name: PHP behavior tests
+        run: npm run test:php
+
+      - name: WordPress 7.0.3 E2E
+        run: |
+          npm run wp-env:start
+          npm test
+
+      - name: Stop WordPress test environment
+        if: always()
+        run: npm run wp-env:stop
+
       - name: PHPCS 代码规范检查
         run: |
           # 如果仓库有自定义 phpcs 配置则使用，否则用默认 WordPress 标准

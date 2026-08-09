@@ -61,19 +61,19 @@ class WPSlug
 
     private function checkRequirements()
     {
-        if (version_compare(PHP_VERSION, "7.0", "<")) {
+        if (version_compare(PHP_VERSION, "7.4", "<")) {
             add_action('admin_notices', function() {
                 echo '<div class="notice notice-error"><p>';
-                echo esc_html__('WP Slug requires PHP 7.0 or higher. Please upgrade your PHP version.', 'wpslug');
+                echo esc_html__('WPSlug requires PHP 7.4 or higher. Please upgrade your PHP version.', 'wpslug');
                 echo '</p></div>';
             });
             return false;
         }
 
-        if (version_compare(get_bloginfo("version"), "5.0", "<")) {
+        if (version_compare(get_bloginfo("version"), "6.0", "<")) {
             add_action('admin_notices', function() {
                 echo '<div class="notice notice-error"><p>';
-                echo esc_html__('WP Slug requires WordPress 5.0 or higher. Please upgrade your WordPress version.', 'wpslug');
+                echo esc_html__('WPSlug requires WordPress 6.0 or higher. Please upgrade your WordPress version.', 'wpslug');
                 echo '</p></div>';
             });
             return false;
@@ -171,10 +171,11 @@ class WPSlug
     public static function uninstall()
     {
         try {
-            if (class_exists("WPSlug_Settings")) {
-                $settings = new WPSlug_Settings();
-                $settings->uninstall();
-            }
+            require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-validator.php";
+            require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-settings.php";
+
+            $settings = new WPSlug_Settings();
+            $settings->uninstall();
             
             delete_option('wpslug_activation_redirect');
             

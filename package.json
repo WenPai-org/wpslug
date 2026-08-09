@@ -3,6 +3,7 @@
   "version": "1.2.1",
   "description": "文派素格 🍤（WPSlug.com）更友好美观的 WordPress 文章、页面、媒体别名 slug ，支持拼音和翻译等自动生成。",
   "scripts": {
+    "test:php": "php tests/php/run.php",
     "test": "playwright test",
     "wp-env:start": "wp-env start",
     "wp-env:stop": "wp-env stop",
@@ -17,7 +18,7 @@
   "author": "",
   "license": "GPL-2.0-or-later",
   "devDependencies": {
-    "@playwright/test": "^1.58.2",
-    "@wordpress/env": "^11.2.0"
+    "@playwright/test": "^1.62.1",
+    "@wordpress/env": "^11.12.0"
   }
 }

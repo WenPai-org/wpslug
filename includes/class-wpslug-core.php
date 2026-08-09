@@ -36,15 +36,17 @@ class WPSlug_Core {
     }
 
     private function initHooks() {
-        add_filter('sanitize_title', array($this, 'processSanitizeTitle'), 9, 3);
+        // Conversion is intentionally limited to explicit post, term and media
+        // write paths. A global sanitize_title filter also runs for menu slugs,
+        // plugin internals and other unrelated identifiers, and could trigger a
+        // paid/cloud translation request outside a content save.
         add_filter('wp_insert_post_data', array($this, 'processPostData'), 10, 2);
         add_filter('wp_insert_term_data', array($this, 'processTermData'), 10, 3);
         add_filter('wp_update_term_data', array($this, 'processTermDataUpdate'), 10, 4);
         add_filter('sanitize_file_name', array($this, 'processFileName'), 10, 2);
-        add_filter('wp_unique_post_slug', array($this, 'processUniquePostSlug'), 10, 6);
-        add_filter('pre_category_nicename', array($this, 'preCategoryNicename'), 10, 2);
-        
-        add_action('transition_post_status', array($this, 'handlePostStatusTransition'), 10, 3);
+        // wp_insert_post_data and the term data filters are the single write
+        // paths. Publish-transition/unique-slug hooks used to rewrite an
+        // already chosen slug a second time.
 
         if (is_admin()) {
             add_filter('manage_posts_columns', array($this, 'addSlugColumn'));
@@ -119,6 +121,12 @@ class WPSlug_Core {
                 return $data;
             }
 
+            // A slug explicitly supplied by a user, REST client or importer is
+            // authoritative, including while an auto-draft is first saved.
+            if (!empty($postarr['post_name'])) {
+                return $data;
+            }
+
             if (!empty($data['post_name']) && !$this->shouldUpdateSlug($postarr)) {
                 return $data;
             }
@@ -174,6 +182,11 @@ class WPSlug_Core {
             }
 
             if (!$this->settings->isTaxonomyEnabled($taxonomy)) {
+                return $data;
+            }
+
+            $existing_term = get_term($term_id, $taxonomy);
+            if (!is_wp_error($existing_term) && !empty($existing_term->slug)) {
                 return $data;
             }
 

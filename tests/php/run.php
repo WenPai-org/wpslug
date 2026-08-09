@@ -1,0 +1,128 @@
+<?php
+
+declare(strict_types=1);
+
+const ABSPATH = __DIR__ . '/';
+const WPSLUG_PLUGIN_DIR = __DIR__ . '/../../';
+const WPSLUG_VERSION = '1.2.1';
+const DAY_IN_SECONDS = 86400;
+
+$GLOBALS['wpslug_options'] = [];
+$GLOBALS['wpslug_hooks'] = [];
+$GLOBALS['wpslug_remote_args'] = null;
+$GLOBALS['wpslug_posts'] = [];
+$GLOBALS['wpslug_terms'] = [];
+
+function add_filter($hook, $callback, $priority = 10, $accepted_args = 1) { $GLOBALS['wpslug_hooks']['filter'][$hook][] = $callback; }
+function add_action($hook, $callback, $priority = 10, $accepted_args = 1) { $GLOBALS['wpslug_hooks']['action'][$hook][] = $callback; }
+function is_admin() { return false; }
+function wp_parse_args($args, $defaults = []) { return array_merge($defaults, is_array($args) ? $args : []); }
+function get_option($name, $default = false) { return $name === 'wpslug_options' ? ($GLOBALS['wpslug_options'] ?: $default) : $default; }
+function update_option($name, $value) { if ($name === 'wpslug_options') { $GLOBALS['wpslug_options'] = $value; } return true; }
+function add_option($name, $value) { return update_option($name, $value); }
+function delete_option($name) { return true; }
+function home_url() { return 'https://example.test'; }
+function current_time($type) { return '2026-08-09 00:00:00'; }
+function wp_debug_backtrace_summary() { return 'test'; }
+function __($text, $domain = null) { return $text; }
+function sanitize_text_field($value) { return is_scalar($value) ? trim((string) $value) : ''; }
+function sanitize_textarea_field($value) { return sanitize_text_field($value); }
+function get_post_types($args = []) { return ['post', 'page', 'product']; }
+function get_taxonomies($args = []) { return ['category', 'post_tag', 'product_cat']; }
+function get_post($id) { return $GLOBALS['wpslug_posts'][$id] ?? null; }
+function get_term($id, $taxonomy = '') { return $GLOBALS['wpslug_terms'][$id] ?? null; }
+function is_wp_error($value) { return $value instanceof WP_Error; }
+function wp_unique_term_slug($slug, $term) { return $slug; }
+function doing_action($hook) { return false; }
+function get_current_screen() { return null; }
+function wp_remote_post($url, $args) { $GLOBALS['wpslug_remote_args'] = $args; return ['response' => ['code' => 200], 'body' => '{"data":{"translations":[{"translatedText":"Hello World"}]}}']; }
+function wp_remote_retrieve_response_code($response) { return $response['response']['code']; }
+function wp_remote_retrieve_body($response) { return $response['body']; }
+function wp_rand($min, $max) { return $min; }
+function get_transient($key) { return false; }
+function set_transient($key, $value, $ttl) { return true; }
+function wp_json_encode($value) { return json_encode($value); }
+function wpmind_is_available() { return true; }
+function wpmind_translate($text, $from = 'auto', $to = 'en', $options = []) { return 'semantic-translation'; }
+function wpmind_pinyin($text, $options = []) { return 'wenpai-suge'; }
+
+class WP_Error {}
+
+require WPSLUG_PLUGIN_DIR . 'includes/class-wpslug-validator.php';
+require WPSLUG_PLUGIN_DIR . 'includes/class-wpslug-settings.php';
+require WPSLUG_PLUGIN_DIR . 'includes/class-wpslug-pinyin.php';
+require WPSLUG_PLUGIN_DIR . 'includes/class-wpslug-optimizer.php';
+require WPSLUG_PLUGIN_DIR . 'includes/class-wpslug-transliterator.php';
+require WPSLUG_PLUGIN_DIR . 'includes/class-wpslug-translator.php';
+require WPSLUG_PLUGIN_DIR . 'includes/class-wpslug-converter.php';
+require WPSLUG_PLUGIN_DIR . 'includes/class-wpslug-core.php';
+
+$tests = 0;
+function check($condition, string $message): void {
+    global $tests;
+    $tests++;
+    if (!$condition) {
+        fwrite(STDERR, "FAIL: {$message}\n");
+        exit(1);
+    }
+    echo "ok {$tests} - {$message}\n";
+}
+
+$core = new WPSlug_Core();
+check(empty($GLOBALS['wpslug_hooks']['filter']['sanitize_title']), 'does not globally intercept sanitize_title');
+check(empty($GLOBALS['wpslug_hooks']['filter']['wp_unique_post_slug']), 'does not rewrite during uniqueness resolution');
+check(empty($GLOBALS['wpslug_hooks']['action']['transition_post_status']), 'does not rewrite on publish transition');
+
+$base = ['post_title' => '文派素格', 'post_name' => 'manual-slug', 'post_type' => 'post'];
+$out = $core->processPostData($base, ['post_name' => 'manual-slug', 'post_status' => 'auto-draft']);
+check($out['post_name'] === 'manual-slug', 'preserves explicitly supplied post slug');
+
+$base['post_name'] = '';
+$out = $core->processPostData($base, ['post_status' => 'auto-draft']);
+check($out['post_name'] === 'wen-pai-su-ge', 'generates pinyin for a new post without a slug');
+
+$GLOBALS['wpslug_terms'][7] = (object) ['slug' => 'kept-term'];
+$term = $core->processTermDataUpdate(['name' => '新分类', 'slug' => 'kept-term'], 7, 'category', []);
+check($term['slug'] === 'kept-term', 'preserves an existing term slug on name update');
+
+$translator = new WPSlug_Translator();
+$result = $translator->translate('你好', [
+    'translation_service' => 'google',
+    'google_api_key' => 'test-key',
+    'translation_source_lang' => 'auto',
+    'translation_target_lang' => 'en',
+]);
+check($result === 'Hello-World', 'normalizes a successful Google translation');
+check(!array_key_exists('source', $GLOBALS['wpslug_remote_args']['body']), 'omits Google source when automatic detection is selected');
+check(in_array('wpmind', $translator->getSupportedServices(), true), 'reports WPMind as a supported translation service');
+check($translator->isServiceConfigured('wpmind', []), 'detects an available WPMind integration');
+$wpmind = $translator->translate('文派素格', ['translation_service' => 'wpmind', 'translation_source_lang' => 'zh', 'translation_target_lang' => 'en']);
+check($wpmind === 'semantic-translation', 'uses the current WPMind translation function contract');
+$semantic = (new WPSlug_Converter())->convert('文派素格', ['conversion_mode' => 'semantic_pinyin']);
+check($semantic === 'wenpai-suge', 'uses the current WPMind semantic pinyin function contract');
+
+$admin_source = file_get_contents(WPSLUG_PLUGIN_DIR . 'includes/class-wpslug-admin.php');
+check(strpos($admin_source, 'Received input data') === false, 'does not write API credentials to debug logs');
+check(substr_count($admin_source, 'current_user_can("manage_options")') >= 3, 'protects settings page and AJAX endpoints with manage_options');
+
+$settings = new WPSlug_Settings();
+$GLOBALS['wpslug_options']['google_api_key'] = 'google-secret';
+$GLOBALS['wpslug_options']['baidu_secret_key'] = 'baidu-secret';
+$export = json_decode($settings->exportOptions(), true);
+check(!isset($export['options']['google_api_key'], $export['options']['baidu_secret_key']), 'excludes translation secrets from settings exports');
+$redactor = new ReflectionMethod($settings, 'redactSensitiveContext');
+$redactor->setAccessible(true);
+$redacted = $redactor->invoke($settings, ['options' => ['google_api_key' => 'secret', 'mode' => 'translation']]);
+check($redacted['options']['google_api_key'] === '[redacted]' && $redacted['options']['mode'] === 'translation', 'redacts nested credentials before persisting error context');
+
+$updater_source = file_get_contents(WPSLUG_PLUGIN_DIR . 'includes/class-wenpai-updater.php');
+check(strpos($updater_source, 'str_starts_with') === false, 'keeps updater compatible with declared PHP 7.4 minimum');
+
+$main_source = file_get_contents(WPSLUG_PLUGIN_DIR . 'wpslug.php');
+check(strpos($main_source, 'version_compare(PHP_VERSION, "7.4"') !== false, 'runtime PHP requirement matches plugin metadata');
+check(strpos($main_source, 'require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-settings.php"') !== false, 'loads uninstall dependencies before deleting plugin options');
+
+$release_source = file_get_contents(WPSLUG_PLUGIN_DIR . '.forgejo/workflows/release.yml');
+check(strpos($release_source, 'DEPLOY_HOST') === false, 'release workflow does not deploy to a WordPress site');
+
+echo "PASS: {$tests} assertions\n";

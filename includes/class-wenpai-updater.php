@@ -274,7 +274,7 @@ class WPSlug_Updater {
      * @return string HTML。
      */
     private function markdown_to_html( string $text ): string {
-        if ( empty( $text ) || str_starts_with( trim( $text ), '<' ) ) {
+        if ( empty( $text ) || 0 === strpos( trim( $text ), '<' ) ) {
             return $text;
         }
 

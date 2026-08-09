@@ -669,12 +669,12 @@ class WPSlug_Admin
                     <tr>
                         <th scope="row"><?php _e("API Key", "wpslug"); ?></th>
                         <td>
-                            <input type="text"
+                            <input type="password"
                                    name="wpslug_options[google_api_key]"
                                    value="<?php echo esc_attr(
                                        $options["google_api_key"]
                                    ); ?>"
-                                   class="regular-text">
+                                   class="regular-text" autocomplete="new-password">
                             <button type="button" class="button wpslug-test-api" data-service="google">
                                 <?php _e("Test API", "wpslug"); ?>
                             </button>
@@ -718,12 +718,12 @@ class WPSlug_Admin
                             "wpslug"
                         ); ?></th>
                         <td>
-                            <input type="text"
+                            <input type="password"
                                    name="wpslug_options[baidu_secret_key]"
                                    value="<?php echo esc_attr(
                                        $options["baidu_secret_key"]
                                    ); ?>"
-                                   class="regular-text">
+                                   class="regular-text" autocomplete="new-password">
                             <button type="button" class="button wpslug-test-api" data-service="baidu">
                                 <?php _e("Test API", "wpslug"); ?>
                             </button>
@@ -1220,32 +1220,11 @@ class WPSlug_Admin
 
     public function validateOptions($input)
     {
-        if (defined("WP_DEBUG") && WP_DEBUG) {
-            error_log(
-                "WP Slug - Received input data: " .
-                    json_encode($input, JSON_PRETTY_PRINT)
-            );
-        }
-
         $validated = $this->settings->validateOptions($input);
-
-        if (defined("WP_DEBUG") && WP_DEBUG) {
-            error_log(
-                "WP Slug - Validated data: " .
-                    json_encode($validated, JSON_PRETTY_PRINT)
-            );
-        }
 
         if (!empty($validated)) {
             $current_options = $this->settings->getOptions();
             $merged_options = array_merge($current_options, $validated);
-
-            if (defined("WP_DEBUG") && WP_DEBUG) {
-                error_log(
-                    "WP Slug - Final merged options: " .
-                        json_encode($merged_options, JSON_PRETTY_PRINT)
-                );
-            }
 
             if (
                 isset($_POST["wpslug_current_tab"]) &&
@@ -1320,7 +1299,11 @@ class WPSlug_Admin
     {
         check_ajax_referer("wpslug_nonce", "nonce");
 
-        $text = sanitize_text_field($_POST["text"]);
+        if (!current_user_can("manage_options")) {
+            wp_send_json_error(["message" => __("You are not allowed to manage WPSlug settings.", "wpslug")], 403);
+        }
+
+        $text = isset($_POST["text"]) ? sanitize_text_field(wp_unslash($_POST["text"])) : "";
         $options = $this->settings->getOptions();
 
         if (empty($text)) {
@@ -1355,7 +1338,11 @@ class WPSlug_Admin
     {
         check_ajax_referer("wpslug_nonce", "nonce");
 
-        $service = sanitize_text_field($_POST["service"]);
+        if (!current_user_can("manage_options")) {
+            wp_send_json_error(["message" => __("You are not allowed to manage WPSlug settings.", "wpslug")], 403);
+        }
+
+        $service = isset($_POST["service"]) ? sanitize_text_field(wp_unslash($_POST["service"])) : "";
         $options = $this->settings->getOptions();
 
         if ($service === "google") {
@@ -1471,8 +1458,12 @@ class WPSlug_Admin
         $converted_count = 0;
 
         foreach ($post_ids as $post_id) {
+            if (!current_user_can("edit_post", $post_id)) {
+                continue;
+            }
+
             $post = get_post($post_id);
-            if (!$post) {
+            if (!$post || !$this->settings->isPostTypeEnabled($post->post_type)) {
                 continue;
             }
 

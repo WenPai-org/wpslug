@@ -67,4 +67,14 @@ WPSLUG_MATRIX_MODE=e2e tests/scripts/run-compat-matrix.sh
 | Security Scan / `security-scan (pull_request)` | 176 | 同上 |
 | WordPress Plugin CI / `ci (pull_request)` | 177 | 同上 |
 
-公开 Actions jobs API 对 run number 和 internal id 均返回 HTTP 404；commit status 的 `/jobs/0` 是当前可取得的最细粒度。第三轮提交推送后需重新记录新 head 对应 runs。
+公开 Actions jobs API 对 run number 和 internal id 均返回 HTTP 404；commit status 的 `/jobs/0` 是当前可取得的最细粒度。
+
+第三轮代码提交 `c804297a8ac861e3d79ea065b7cc7eeb3cbf41f6` 推送到 PR #47 后重新查询：
+
+| Workflow/context | Run | 状态 |
+|---|---|---|
+| Gitleaks / `gitleaks (pull_request)` | 178 | `waiting` / `pending`；`need_approval=true`；`approved_by=0` |
+| Security Scan / `security-scan (pull_request)` | 179 | 同上 |
+| WordPress Plugin CI / `ci (pull_request)` | 180 | 同上 |
+
+三项均为 `Blocked by required conditions`，created/updated 均为 `2026-08-09T19:11:31+08:00`。PR 保持 open、merged=false、mergeable=true；本轮未审批、未合并、未发布。

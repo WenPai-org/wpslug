@@ -186,6 +186,8 @@ class WPSlug_Optimizer {
                 LIMIT 1
             ", $slug, $post_type, $post_id);
             
+            // $query is prepared with placeholders immediately above.
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
             if (!$wpdb->get_var($query)) {
                 break;
             }

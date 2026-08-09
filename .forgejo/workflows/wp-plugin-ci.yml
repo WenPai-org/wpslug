@@ -27,30 +27,37 @@ jobs:
       - name: Install test dependencies
         run: npm ci
 
+      - name: Install PHP quality dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Focused first-party PHPCS
+        run: composer phpcs
+
+      - name: PHPStan with WordPress stubs
+        run: composer phpstan
+
       - name: PHP behavior tests
         run: npm run test:php
+
+      - name: Audit development dependencies
+        run: npm audit --registry=https://registry.npmjs.org
 
       - name: WordPress 7.0.3 E2E
         run: |
           npm run wp-env:start
+          npx wp-env run cli wp plugin install plugin-check --activate
+          npx wp-env run cli wp plugin check wpslug \
+            --mode=update \
+            --ignore-codes=plugin_updater_detected,trademarked_term \
+            --ignore-warnings \
+            --exclude-directories=lib,tests,docs,scripts,vendor,node_modules \
+            --exclude-files=.ci-trigger,.wp-env.json,composer.json,composer.lock,package.json,package-lock.json,phpcs.xml.dist,phpstan.neon.dist \
+            --format=strict-table
           npm test
 
       - name: Stop WordPress test environment
         if: always()
         run: npm run wp-env:stop
-
-      - name: PHPCS 代码规范检查
-        run: |
-          # 如果仓库有自定义 phpcs 配置则使用，否则用默认 WordPress 标准
-          if [ -f phpcs.xml ] || [ -f phpcs.xml.dist ] || [ -f .phpcs.xml ] || [ -f .phpcs.xml.dist ]; then
-            phpcs .
-          else
-            phpcs --standard=WordPress-Extra \
-              --extensions=php \
-              --ignore=vendor/*,node_modules/*,tests/*,lib/* \
-              --report=full \
-              -s .
-          fi
 
       - name: Gitleaks 密钥泄露扫描
         run: |

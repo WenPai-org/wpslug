@@ -101,3 +101,12 @@
 
 - [CX] 本地审计分支已有提交。
 - [CX] `git push -u origin codex/wpslug-audit-20260809` 被 FeiCode pre-receive hook 拒绝：用户 `wenpai` 无权直接推送该分支；远端提示可使用 `refs/for/...` 创建 PR。本轮未越权创建 PR。
+
+
+## 第二轮复核（2026-08-09）
+
+- [CX] first-party PHPCS 聚焦安全、nonce、输出、数据库、i18n 和前缀，退出码 0；历史 10500/800 是包含格式和 vendor 的旧宽口径，已由可执行聚焦门槛替代，不声称全仓 WordPress-Extra 零告警。
+- [CX] PHPStan 配置 WordPress stubs，指定主文件、core、translator、admin AJAX 和 updater，退出码 0。
+- [CX] 发布包 Plugin Check 清除 hidden file、readme、替代函数等错误。FeiCode 自托管 Update URI 和既有 WPSlug 品牌是明确目录政策例外；忽略这两个代码后 0 errors，原始剩余 33 warnings。
+- [CX] npm audit 从 2 个 high（第一轮旧快照曾为 26）降至 0；使用 `adm-zip` 0.6.0 override，`@wordpress/env` 11.12.0、Playwright 1.62.1。
+- [CX] 行为测试 25/25，E2E 2/2。真实云凭据、最低版本和多站点运行矩阵仍未覆盖。

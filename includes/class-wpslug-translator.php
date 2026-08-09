@@ -256,14 +256,7 @@ class WPSlug_Translator {
 
         $elapsed_time = round((microtime(true) - $start_time) * 1000);
 
-        // 7. 处理结果
-        if (is_wp_error($result)) {
-            if ($debug_mode) {
-                error_log('[WPSlug] WPMind error: ' . $result->get_error_message() . ' (took ' . $elapsed_time . 'ms)');
-            }
-            return $this->fallbackTranslate($text, $options);
-        }
-
+        // WPMind's public contract returns a string and handles provider errors internally.
         $slug = $this->cleanTranslatedText($result);
 
         // 8. 验证结果有效性
@@ -296,7 +289,7 @@ class WPSlug_Translator {
     }
 
     private function cleanTranslatedText($text) {
-        $text = strip_tags($text);
+        $text = wp_strip_all_tags($text);
         $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $text = preg_replace('/&.+?;/', '', $text);
         $text = preg_replace('/[^a-zA-Z0-9\s\-_]/', '', $text);

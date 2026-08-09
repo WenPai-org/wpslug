@@ -201,15 +201,15 @@ class WPSlug_Updater {
         $plugin_data = get_plugin_data( $plugin_path );
 
         $info               = new stdClass();
-        $info->name         = $plugin_data['Name'] ?? $this->slug;
+        $info->name         = $plugin_data['Name'];
         $info->slug         = $this->slug;
         $info->version      = $this->version;
-        $info->author       = $plugin_data['AuthorName'] ?? '';
-        $info->homepage     = $plugin_data['PluginURI'] ?? '';
-        $info->requires     = $plugin_data['RequiresWP'] ?? '';
-        $info->requires_php = $plugin_data['RequiresPHP'] ?? '';
+        $info->author       = $plugin_data['AuthorName'];
+        $info->homepage     = $plugin_data['PluginURI'];
+        $info->requires     = $plugin_data['RequiresWP'];
+        $info->requires_php = $plugin_data['RequiresPHP'];
         $info->sections     = [
-            'description' => $plugin_data['Description'] ?? '',
+            'description' => $plugin_data['Description'],
         ];
         $info->external     = true;
 

@@ -31,7 +31,6 @@ class WPSlug_Core {
             $this->admin = new WPSlug_Admin();
         }
 
-        $this->init_update_checker();
         $this->initHooks();
     }
 
@@ -55,14 +54,6 @@ class WPSlug_Core {
             add_action('manage_pages_custom_column', array($this, 'displaySlugColumn'), 10, 2);
         }
     }
-    /**
-     * Disabled: migrated to WPSlug_Updater (Update URI)
-     */
-    private function init_update_checker()
-    {
-        return;
-    }
-
     public function processSanitizeTitle($title, $raw_title = '', $context = 'display') {
         if ($context !== 'save' || empty($title)) {
             return $title;
@@ -307,7 +298,9 @@ class WPSlug_Core {
                 return $slug;
             }
 
-            $tag_name = isset($_POST['tag-name']) ? sanitize_text_field($_POST['tag-name']) : $name;
+            // Legacy method is not registered as a hook; keep input handling safe if called directly.
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing
+            $tag_name = isset($_POST['tag-name']) ? sanitize_text_field(wp_unslash($_POST['tag-name'])) : $name;
 
             if ($tag_name) {
                 $converted_slug = $this->converter->convert($tag_name, $options);
@@ -447,7 +440,7 @@ class WPSlug_Core {
             if (isset($frame['class']) && strpos($frame['class'], 'ACF_Field_Group') !== false) {
                 return true;
             }
-            if (isset($frame['function']) && in_array($frame['function'], array(
+            if (in_array($frame['function'], array(
                 'acf_update_field',
                 'acf_import_field_group',
                 'acf_import_internal_post_type',

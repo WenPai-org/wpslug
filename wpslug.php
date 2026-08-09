@@ -7,7 +7,8 @@ Description: Advanced slug management plugin with Chinese Pinyin support and SEO
 Version: 1.2.1
 Author: WPSlug
 Author URI: https://wpcy.com/slug
-License: GPL2
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: wpslug
 Domain Path: /languages
 Update URI: https://updates.wenpai.net
@@ -223,6 +224,8 @@ if (is_admin()) {
     add_action('admin_init', function() {
         if (get_option('wpslug_activation_redirect', false)) {
             delete_option('wpslug_activation_redirect');
+            // Read-only activation context flag supplied by WordPress core.
+            // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             if (!isset($_GET['activate-multi'])) {
                 wp_safe_redirect(admin_url('options-general.php?page=wpslug'));
                 exit;

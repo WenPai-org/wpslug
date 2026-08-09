@@ -426,7 +426,19 @@ class WPSlug_Settings
         }
 
         $options = $data["options"];
+        $current_options = $this->getOptions();
+        foreach (["google_api_key", "baidu_secret_key"] as $secret_key) {
+            unset($options[$secret_key]);
+        }
         $validated_options = $this->validateOptions($options);
+
+        // Import files are intentionally credential-free. Preserve secrets
+        // already stored on this site and ignore any injected secret fields.
+        foreach (["google_api_key", "baidu_secret_key"] as $secret_key) {
+            $validated_options[$secret_key] = isset($current_options[$secret_key])
+                ? $current_options[$secret_key]
+                : "";
+        }
 
         if (update_option($this->option_name, $validated_options)) {
             return true;

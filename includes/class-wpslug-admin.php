@@ -45,9 +45,11 @@ class WPSlug_Admin
 
     public function hideDefaultNotices()
     {
-        if (isset($_GET["page"]) && $_GET["page"] == "wpslug") {
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only admin route.
+        if (isset($_GET["page"]) && "wpslug" === sanitize_key(wp_unslash($_GET["page"]))) {
             echo "<style>.settings-error.notice-success { display: none !important; }</style>";
         }
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
     }
 
     public function addAdminMenu()
@@ -85,7 +87,8 @@ class WPSlug_Admin
 
     public function showAdminNotices()
     {
-        if (isset($_GET["page"]) && $_GET["page"] == "wpslug") {
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only admin status parameters.
+        if (isset($_GET["page"]) && "wpslug" === sanitize_key(wp_unslash($_GET["page"]))) {
             if (
                 isset($_GET["settings-updated"]) &&
                 $_GET["settings-updated"] == "true"
@@ -97,19 +100,20 @@ class WPSlug_Admin
             }
 
             if (isset($_GET["wpslug-error"])) {
-                $error_message = sanitize_text_field($_GET["wpslug-error"]);
+                $error_message = sanitize_text_field(wp_unslash($_GET["wpslug-error"]));
                 echo '<div class="notice notice-error is-dismissible"><p>' .
                     esc_html($error_message) .
                     "</p></div>";
             }
         }
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
     }
 
     public function displayAdminPage()
     {
         if (!current_user_can("manage_options")) {
             wp_die(
-                __(
+                esc_html__(
                     "You do not have sufficient permissions to access this page.",
                     "wpslug"
                 )
@@ -117,15 +121,20 @@ class WPSlug_Admin
         }
 
         $options = $this->settings->getOptions();
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only tab selector.
         $current_tab = isset($_GET["tab"])
-            ? sanitize_text_field($_GET["tab"])
+            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only tab selector.
+            ? sanitize_key(wp_unslash($_GET["tab"]))
             : "general";
         ?>
         <div class="wrap">
 
         <h1><?php echo esc_html( get_admin_page_title() ); ?>
         <span style="font-size: 13px; padding-left: 10px;">
-            <?php printf( esc_html__( 'Version: %s', 'wpslug' ), esc_html( WPSLUG_VERSION ) ); ?>
+            <?php
+            /* translators: %s: plugin version. */
+            printf( esc_html__( 'Version: %s', 'wpslug' ), esc_html( WPSLUG_VERSION ) );
+            ?>
         </span>
         <a href="https://wpcy.com/slug/" target="_blank" class="button button-secondary" style="margin-left: 10px;">
             <?php esc_html_e( 'Documentation', 'wpslug' ); ?>
@@ -143,13 +152,13 @@ class WPSlug_Admin
                 ); ?>">
 
                 <div class="wpslug-card">
-                    <h2><?php _e("Slug Settings", "wpslug"); ?></h2>
+                    <h2><?php esc_html_e("Slug Settings", "wpslug"); ?></h2>
                     <div class="wpslug-tabs">
                         <button type="button" class="wpslug-tab <?php echo $current_tab ===
                         "general"
                             ? "active"
                             : ""; ?>" data-tab="general">
-                            <?php _e("General", "wpslug"); ?>
+                            <?php esc_html_e("General", "wpslug"); ?>
                         </button>
                         <button type="button" class="wpslug-tab <?php echo $current_tab ===
                         "pinyin"
@@ -159,7 +168,7 @@ class WPSlug_Admin
 ] !== "pinyin"
     ? "display:none;"
     : ""; ?>">
-                            <?php _e("Pinyin", "wpslug"); ?>
+                            <?php esc_html_e("Pinyin", "wpslug"); ?>
                         </button>
                         <button type="button" class="wpslug-tab <?php echo $current_tab ===
                         "transliteration"
@@ -169,7 +178,7 @@ class WPSlug_Admin
 ] !== "transliteration"
     ? "display:none;"
     : ""; ?>">
-                            <?php _e("Transliteration", "wpslug"); ?>
+                            <?php esc_html_e("Transliteration", "wpslug"); ?>
                         </button>
                         <button type="button" class="wpslug-tab <?php echo $current_tab ===
                         "translation"
@@ -179,25 +188,25 @@ class WPSlug_Admin
 ] !== "translation"
     ? "display:none;"
     : ""; ?>">
-                            <?php _e("Translation", "wpslug"); ?>
+                            <?php esc_html_e("Translation", "wpslug"); ?>
                         </button>
                         <button type="button" class="wpslug-tab <?php echo $current_tab ===
                         "seo"
                             ? "active"
                             : ""; ?>" data-tab="seo">
-                            <?php _e("SEO Optimization", "wpslug"); ?>
+                            <?php esc_html_e("SEO Optimization", "wpslug"); ?>
                         </button>
                         <button type="button" class="wpslug-tab <?php echo $current_tab ===
                         "media"
                             ? "active"
                             : ""; ?>" data-tab="media">
-                            <?php _e("Media Files", "wpslug"); ?>
+                            <?php esc_html_e("Media Files", "wpslug"); ?>
                         </button>
                         <button type="button" class="wpslug-tab <?php echo $current_tab ===
                         "advanced"
                             ? "active"
                             : ""; ?>" data-tab="advanced">
-                            <?php _e("Advanced", "wpslug"); ?>
+                            <?php esc_html_e("Advanced", "wpslug"); ?>
                         </button>
                     </div>
 
@@ -262,11 +271,11 @@ class WPSlug_Admin
                             false
                         ); ?>
                         <button type="button" id="wpslug-reset-settings" class="button button-secondary">
-                            <?php _e("Reset to Defaults", "wpslug"); ?>
+                            <?php esc_html_e("Reset to Defaults", "wpslug"); ?>
                         </button>
                         <?php if (defined("WP_DEBUG") && WP_DEBUG): ?>
                         <button type="button" id="wpslug-debug-checkboxes" class="button button-secondary">
-                            <?php _e("Debug Checkboxes", "wpslug"); ?>
+                            <?php esc_html_e("Debug Checkboxes", "wpslug"); ?>
                         </button>
                         <?php endif; ?>
                     </div>
@@ -274,20 +283,20 @@ class WPSlug_Admin
             </form>
 
             <div class="wpslug-card">
-                <h2><?php _e("Preview", "wpslug"); ?></h2>
+                <h2><?php esc_html_e("Preview", "wpslug"); ?></h2>
                 <div id="wpslug-status" class="wpslug-notice" style="display:none;"></div>
-                <p><?php _e(
+                <p><?php esc_html_e(
                     "Test your conversion settings with live preview.",
                     "wpslug"
                 ); ?></p>
                 <div class="wpslug-preview-section">
                     <div class="wpslug-preview-input">
-                        <input type="text" id="wpslug-preview-input" placeholder="<?php _e(
+                        <input type="text" id="wpslug-preview-input" placeholder="<?php esc_html_e(
                             "Enter text to preview conversion...",
                             "wpslug"
                         ); ?>" />
                         <button type="button" id="wpslug-preview-button" class="button button-primary">
-                            <?php _e("Preview", "wpslug"); ?>
+                            <?php esc_html_e("Preview", "wpslug"); ?>
                         </button>
                     </div>
                     <div id="wpslug-preview-result"></div>
@@ -302,8 +311,8 @@ class WPSlug_Admin
     {
         ?>
         <div class="wpslug-section-header">
-            <h3><?php _e("General Settings", "wpslug"); ?></h3>
-            <p><?php _e(
+            <h3><?php esc_html_e("General Settings", "wpslug"); ?></h3>
+            <p><?php esc_html_e(
                 "Configure basic plugin behavior and choose your conversion method.",
                 "wpslug"
             ); ?></p>
@@ -311,7 +320,7 @@ class WPSlug_Admin
 
         <table class="form-table">
             <tr>
-                <th scope="row"><?php _e("Enable Plugin", "wpslug"); ?></th>
+                <th scope="row"><?php esc_html_e("Enable Plugin", "wpslug"); ?></th>
                 <td>
                     <input type="hidden" name="wpslug_options[enable_conversion]" value="0">
                     <label>
@@ -323,7 +332,7 @@ class WPSlug_Admin
                                    $options["enable_conversion"]
                                ); ?>
                                id="enable_conversion">
-                        <?php _e(
+                        <?php esc_html_e(
                             "Enable automatic slug conversion for your content",
                             "wpslug"
                         ); ?>
@@ -331,7 +340,7 @@ class WPSlug_Admin
                 </td>
             </tr>
             <tr class="wpslug-dependent" data-depends="enable_conversion">
-                <th scope="row"><?php _e("Conversion Mode", "wpslug"); ?></th>
+                <th scope="row"><?php esc_html_e("Conversion Mode", "wpslug"); ?></th>
                 <td>
                     <select name="wpslug_options[conversion_mode]" id="conversion_mode">
                         <?php foreach (
@@ -349,7 +358,7 @@ class WPSlug_Admin
                         <?php endforeach; ?>
                     </select>
                     <p class="description">
-                        <?php _e(
+                        <?php esc_html_e(
                             "Select the conversion method. Pinyin for Chinese, Transliteration for Cyrillic/Arabic scripts, Translation for other languages.",
                             "wpslug"
                         ); ?>
@@ -357,7 +366,7 @@ class WPSlug_Admin
                 </td>
             </tr>
             <tr class="wpslug-dependent" data-depends="enable_conversion">
-                <th scope="row"><?php _e("Auto Convert", "wpslug"); ?></th>
+                <th scope="row"><?php esc_html_e("Auto Convert", "wpslug"); ?></th>
                 <td>
                     <input type="hidden" name="wpslug_options[auto_convert]" value="0">
                     <label>
@@ -365,7 +374,7 @@ class WPSlug_Admin
                                name="wpslug_options[auto_convert]"
                                value="1"
                                <?php checked(1, $options["auto_convert"]); ?>>
-                        <?php _e(
+                        <?php esc_html_e(
                             "Automatically convert slugs when saving posts and terms",
                             "wpslug"
                         ); ?>
@@ -373,7 +382,7 @@ class WPSlug_Admin
                 </td>
             </tr>
             <tr class="wpslug-dependent" data-depends="enable_conversion">
-                <th scope="row"><?php _e("Force Lowercase", "wpslug"); ?></th>
+                <th scope="row"><?php esc_html_e("Force Lowercase", "wpslug"); ?></th>
                 <td>
                     <input type="hidden" name="wpslug_options[force_lowercase]" value="0">
                     <label>
@@ -384,7 +393,7 @@ class WPSlug_Admin
                                    1,
                                    $options["force_lowercase"]
                                ); ?>>
-                        <?php _e(
+                        <?php esc_html_e(
                             "Convert all slugs to lowercase for consistency",
                             "wpslug"
                         ); ?>
@@ -392,7 +401,7 @@ class WPSlug_Admin
                 </td>
             </tr>
             <tr class="wpslug-dependent" data-depends="enable_conversion">
-                <th scope="row"><?php _e("Maximum Length", "wpslug"); ?></th>
+                <th scope="row"><?php esc_html_e("Maximum Length", "wpslug"); ?></th>
                 <td>
                     <input type="number"
                            name="wpslug_options[max_length]"
@@ -403,7 +412,7 @@ class WPSlug_Admin
                            max="500"
                            class="small-text">
                     <p class="description">
-                        <?php _e(
+                        <?php esc_html_e(
                             "Maximum length of generated slugs (0 = no limit).",
                             "wpslug"
                         ); ?>
@@ -418,8 +427,8 @@ class WPSlug_Admin
     {
         ?>
         <div class="wpslug-section-header">
-            <h3><?php _e("Chinese Pinyin Settings", "wpslug"); ?></h3>
-            <p><?php _e(
+            <h3><?php esc_html_e("Chinese Pinyin Settings", "wpslug"); ?></h3>
+            <p><?php esc_html_e(
                 "Configure Chinese characters to Pinyin romanization.",
                 "wpslug"
             ); ?></p>
@@ -427,24 +436,24 @@ class WPSlug_Admin
 
         <table class="form-table">
             <tr>
-                <th scope="row"><?php _e("Pinyin Format", "wpslug"); ?></th>
+                <th scope="row"><?php esc_html_e("Pinyin Format", "wpslug"); ?></th>
                 <td>
                     <select name="wpslug_options[pinyin_format]" id="pinyin_format">
                         <option value="full" <?php selected(
                             $options["pinyin_format"],
                             "full"
                         ); ?>>
-                            <?php _e("Full Pinyin (ni-hao)", "wpslug"); ?>
+                            <?php esc_html_e("Full Pinyin (ni-hao)", "wpslug"); ?>
                         </option>
                         <option value="first" <?php selected(
                             $options["pinyin_format"],
                             "first"
                         ); ?>>
-                            <?php _e("First Letter Only (n-h)", "wpslug"); ?>
+                            <?php esc_html_e("First Letter Only (n-h)", "wpslug"); ?>
                         </option>
                     </select>
                     <p class="description">
-                        <?php _e(
+                        <?php esc_html_e(
                             "Choose between full pinyin or first letters only. First letter mode creates very concise URLs and automatically disables SEO optimization.",
                             "wpslug"
                         ); ?>
@@ -452,30 +461,30 @@ class WPSlug_Admin
                 </td>
             </tr>
             <tr>
-                <th scope="row"><?php _e("Word Separator", "wpslug"); ?></th>
+                <th scope="row"><?php esc_html_e("Word Separator", "wpslug"); ?></th>
                 <td>
                     <select name="wpslug_options[pinyin_separator]">
                         <option value="-" <?php selected(
                             $options["pinyin_separator"],
                             "-"
                         ); ?>>
-                            <?php _e("Dash (-)", "wpslug"); ?>
+                            <?php esc_html_e("Dash (-)", "wpslug"); ?>
                         </option>
                         <option value="_" <?php selected(
                             $options["pinyin_separator"],
                             "_"
                         ); ?>>
-                            <?php _e("Underscore (_)", "wpslug"); ?>
+                            <?php esc_html_e("Underscore (_)", "wpslug"); ?>
                         </option>
                         <option value="" <?php selected(
                             $options["pinyin_separator"],
                             ""
                         ); ?>>
-                            <?php _e("No Separator", "wpslug"); ?>
+                            <?php esc_html_e("No Separator", "wpslug"); ?>
                         </option>
                     </select>
                     <p class="description">
-                        <?php _e(
+                        <?php esc_html_e(
                             "Choose the separator between pinyin words.",
                             "wpslug"
                         ); ?>
@@ -483,7 +492,7 @@ class WPSlug_Admin
                 </td>
             </tr>
             <tr>
-                <th scope="row"><?php _e("Preserve Settings", "wpslug"); ?></th>
+                <th scope="row"><?php esc_html_e("Preserve Settings", "wpslug"); ?></th>
                 <td>
                     <input type="hidden" name="wpslug_options[preserve_english]" value="0">
                     <label>
@@ -494,7 +503,7 @@ class WPSlug_Admin
                                    1,
                                    $options["preserve_english"]
                                ); ?>>
-                        <?php _e(
+                        <?php esc_html_e(
                             "Preserve English letters in mixed content",
                             "wpslug"
                         ); ?>
@@ -508,10 +517,10 @@ class WPSlug_Admin
                                    1,
                                    $options["preserve_numbers"]
                                ); ?>>
-                        <?php _e("Preserve numbers in slugs", "wpslug"); ?>
+                        <?php esc_html_e("Preserve numbers in slugs", "wpslug"); ?>
                     </label>
                     <p class="description">
-                        <?php _e(
+                        <?php esc_html_e(
                             "Keep English letters and numbers when converting mixed language content.",
                             "wpslug"
                         ); ?>
@@ -526,8 +535,8 @@ class WPSlug_Admin
     {
         ?>
         <div class="wpslug-section-header">
-            <h3><?php _e("Transliteration Settings", "wpslug"); ?></h3>
-            <p><?php _e(
+            <h3><?php esc_html_e("Transliteration Settings", "wpslug"); ?></h3>
+            <p><?php esc_html_e(
                 "Convert foreign scripts (Cyrillic, Arabic, Greek) to Latin alphabet.",
                 "wpslug"
             ); ?></p>
@@ -535,7 +544,7 @@ class WPSlug_Admin
 
         <table class="form-table">
             <tr>
-                <th scope="row"><?php _e(
+                <th scope="row"><?php esc_html_e(
                     "Transliteration Method",
                     "wpslug"
                 ); ?></th>
@@ -556,7 +565,7 @@ class WPSlug_Admin
                         <?php endforeach; ?>
                     </select>
                     <p class="description">
-                        <?php _e(
+                        <?php esc_html_e(
                             "Choose the transliteration method. iconv and Intl provide better accuracy if available.",
                             "wpslug"
                         ); ?>
@@ -571,8 +580,8 @@ class WPSlug_Admin
     {
         ?>
         <div class="wpslug-section-header">
-            <h3><?php _e("Translation Settings", "wpslug"); ?></h3>
-            <p><?php _e(
+            <h3><?php esc_html_e("Translation Settings", "wpslug"); ?></h3>
+            <p><?php esc_html_e(
                 "Use online translation services to convert text to English slugs.",
                 "wpslug"
             ); ?></p>
@@ -580,7 +589,7 @@ class WPSlug_Admin
 
         <table class="form-table">
             <tr>
-                <th scope="row"><?php _e(
+                <th scope="row"><?php esc_html_e(
                     "Translation Service",
                     "wpslug"
                 ); ?></th>
@@ -601,7 +610,7 @@ class WPSlug_Admin
                         <?php endforeach; ?>
                     </select>
                     <p class="description">
-                        <?php _e(
+                        <?php esc_html_e(
                             "Choose translation service. Useful for non-English content to generate English slugs.",
                             "wpslug"
                         ); ?>
@@ -609,7 +618,7 @@ class WPSlug_Admin
                 </td>
             </tr>
             <tr>
-                <th scope="row"><?php _e("Source Language", "wpslug"); ?></th>
+                <th scope="row"><?php esc_html_e("Source Language", "wpslug"); ?></th>
                 <td>
                     <select name="wpslug_options[translation_source_lang]">
                         <?php foreach (
@@ -627,7 +636,7 @@ class WPSlug_Admin
                         <?php endforeach; ?>
                     </select>
                     <p class="description">
-                        <?php _e(
+                        <?php esc_html_e(
                             "Source language for translation. Auto-detect is recommended.",
                             "wpslug"
                         ); ?>
@@ -635,7 +644,7 @@ class WPSlug_Admin
                 </td>
             </tr>
             <tr>
-                <th scope="row"><?php _e("Target Language", "wpslug"); ?></th>
+                <th scope="row"><?php esc_html_e("Target Language", "wpslug"); ?></th>
                 <td>
                     <select name="wpslug_options[translation_target_lang]">
                         <?php foreach (
@@ -653,7 +662,7 @@ class WPSlug_Admin
                         <?php endforeach; ?>
                     </select>
                     <p class="description">
-                        <?php _e(
+                        <?php esc_html_e(
                             "Target language for translation. English is recommended for SEO.",
                             "wpslug"
                         ); ?>
@@ -664,10 +673,10 @@ class WPSlug_Admin
 
         <div class="wpslug-api-sections">
             <div class="wpslug-api-section" data-service="google">
-                <h4><?php _e("Google Translate API", "wpslug"); ?></h4>
+                <h4><?php esc_html_e("Google Translate API", "wpslug"); ?></h4>
                 <table class="form-table">
                     <tr>
-                        <th scope="row"><?php _e("API Key", "wpslug"); ?></th>
+                        <th scope="row"><?php esc_html_e("API Key", "wpslug"); ?></th>
                         <td>
                             <input type="password"
                                    name="wpslug_options[google_api_key]"
@@ -676,15 +685,15 @@ class WPSlug_Admin
                                    ); ?>"
                                    class="regular-text" autocomplete="new-password">
                             <button type="button" class="button wpslug-test-api" data-service="google">
-                                <?php _e("Test API", "wpslug"); ?>
+                                <?php esc_html_e("Test API", "wpslug"); ?>
                             </button>
                             <p class="description">
-                                <?php _e(
+                                <?php esc_html_e(
                                     "Enter your Google Translate API key.",
                                     "wpslug"
                                 ); ?>
                                 <a href="https://cloud.google.com/translate/docs/setup" target="_blank">
-                                    <?php _e("Get API Key", "wpslug"); ?>
+                                    <?php esc_html_e("Get API Key", "wpslug"); ?>
                                 </a>
                             </p>
                         </td>
@@ -693,10 +702,10 @@ class WPSlug_Admin
             </div>
 
             <div class="wpslug-api-section" data-service="baidu">
-                <h4><?php _e("Baidu Translate API", "wpslug"); ?></h4>
+                <h4><?php esc_html_e("Baidu Translate API", "wpslug"); ?></h4>
                 <table class="form-table">
                     <tr>
-                        <th scope="row"><?php _e("App ID", "wpslug"); ?></th>
+                        <th scope="row"><?php esc_html_e("App ID", "wpslug"); ?></th>
                         <td>
                             <input type="text"
                                    name="wpslug_options[baidu_app_id]"
@@ -705,7 +714,7 @@ class WPSlug_Admin
                                    ); ?>"
                                    class="regular-text">
                             <p class="description">
-                                <?php _e(
+                                <?php esc_html_e(
                                     "Enter your Baidu Translate App ID.",
                                     "wpslug"
                                 ); ?>
@@ -713,7 +722,7 @@ class WPSlug_Admin
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row"><?php _e(
+                        <th scope="row"><?php esc_html_e(
                             "Secret Key",
                             "wpslug"
                         ); ?></th>
@@ -725,15 +734,15 @@ class WPSlug_Admin
                                    ); ?>"
                                    class="regular-text" autocomplete="new-password">
                             <button type="button" class="button wpslug-test-api" data-service="baidu">
-                                <?php _e("Test API", "wpslug"); ?>
+                                <?php esc_html_e("Test API", "wpslug"); ?>
                             </button>
                             <p class="description">
-                                <?php _e(
+                                <?php esc_html_e(
                                     "Enter your Baidu Translate Secret Key.",
                                     "wpslug"
                                 ); ?>
                                 <a href="https://fanyi-api.baidu.com/doc/21" target="_blank">
-                                    <?php _e("Get API Key", "wpslug"); ?>
+                                    <?php esc_html_e("Get API Key", "wpslug"); ?>
                                 </a>
                             </p>
                         </td>
@@ -742,29 +751,29 @@ class WPSlug_Admin
             </div>
 
             <div class="wpslug-api-section" data-service="wpmind">
-                <h4><?php _e("WPMind AI Translation", "wpslug"); ?></h4>
+                <h4><?php esc_html_e("WPMind AI Translation", "wpslug"); ?></h4>
                 <div class="wpslug-wpmind-status">
                     <?php if (function_exists('wpmind_is_available') && wpmind_is_available()): ?>
                         <p class="description" style="color: #2e7d32;">
                             <span class="dashicons dashicons-yes-alt"></span>
-                            <?php _e("WPMind is active and configured. No additional settings required.", "wpslug"); ?>
+                            <?php esc_html_e("WPMind is active and configured. No additional settings required.", "wpslug"); ?>
                         </p>
                         <p class="description">
-                            <?php _e("WPMind uses AI to translate titles to SEO-friendly slugs. It provides more accurate and context-aware translations compared to traditional translation services.", "wpslug"); ?>
+                            <?php esc_html_e("WPMind uses AI to translate titles to SEO-friendly slugs. It provides more accurate and context-aware translations compared to traditional translation services.", "wpslug"); ?>
                         </p>
                         <p class="description">
-                            <a href="<?php echo admin_url('options-general.php?page=wpmind'); ?>">
-                                <?php _e("Configure WPMind Settings", "wpslug"); ?> →
+                            <a href="<?php echo esc_url(admin_url('options-general.php?page=wpmind')); ?>">
+                                <?php esc_html_e("Configure WPMind Settings", "wpslug"); ?> →
                             </a>
                         </p>
                     <?php else: ?>
                         <p class="description" style="color: #d32f2f;">
                             <span class="dashicons dashicons-warning"></span>
-                            <?php _e("WPMind plugin is not active or not configured.", "wpslug"); ?>
+                            <?php esc_html_e("WPMind plugin is not active or not configured.", "wpslug"); ?>
                         </p>
                         <p class="description">
-                            <?php _e("Please install and activate the WPMind plugin to use AI-powered translation.", "wpslug"); ?>
-                            <a href="https://wpcy.com/mind/" target="_blank"><?php _e("Learn more", "wpslug"); ?></a>
+                            <?php esc_html_e("Please install and activate the WPMind plugin to use AI-powered translation.", "wpslug"); ?>
+                            <a href="https://wpcy.com/mind/" target="_blank"><?php esc_html_e("Learn more", "wpslug"); ?></a>
                         </p>
                     <?php endif; ?>
                 </div>
@@ -777,8 +786,8 @@ class WPSlug_Admin
     {
         ?>
         <div class="wpslug-section-header">
-            <h3><?php _e("SEO Optimization", "wpslug"); ?></h3>
-            <p><?php _e(
+            <h3><?php esc_html_e("SEO Optimization", "wpslug"); ?></h3>
+            <p><?php esc_html_e(
                 "Optimize slugs for better search engine performance and user experience.",
                 "wpslug"
             ); ?></p>
@@ -786,7 +795,7 @@ class WPSlug_Admin
 
         <table class="form-table">
             <tr>
-                <th scope="row"><?php _e(
+                <th scope="row"><?php esc_html_e(
                     "Enable SEO Optimization",
                     "wpslug"
                 ); ?></th>
@@ -801,13 +810,13 @@ class WPSlug_Admin
                                    1,
                                    $options["enable_seo_optimization"]
                                ); ?>>
-                        <?php _e(
+                        <?php esc_html_e(
                             "Enable SEO-friendly slug optimization",
                             "wpslug"
                         ); ?>
                     </label>
                     <p class="description">
-                        <?php _e(
+                        <?php esc_html_e(
                             "Apply SEO best practices to generated slugs.",
                             "wpslug"
                         ); ?>
@@ -815,7 +824,7 @@ class WPSlug_Admin
                 </td>
             </tr>
             <tr class="wpslug-seo-dependent">
-                <th scope="row"><?php _e("Smart Punctuation", "wpslug"); ?></th>
+                <th scope="row"><?php esc_html_e("Smart Punctuation", "wpslug"); ?></th>
                 <td>
                     <input type="hidden" name="wpslug_options[smart_punctuation]" value="0">
                     <label>
@@ -826,13 +835,13 @@ class WPSlug_Admin
                                    1,
                                    $options["smart_punctuation"]
                                ); ?>>
-                        <?php _e(
+                        <?php esc_html_e(
                             "Intelligently handle punctuation marks",
                             "wpslug"
                         ); ?>
                     </label>
                     <p class="description">
-                        <?php _e(
+                        <?php esc_html_e(
                             "Convert colons, semicolons, and other punctuation to hyphens or remove them.",
                             "wpslug"
                         ); ?>
@@ -840,7 +849,7 @@ class WPSlug_Admin
                 </td>
             </tr>
             <tr class="wpslug-seo-dependent">
-                <th scope="row"><?php _e(
+                <th scope="row"><?php esc_html_e(
                     "Mixed Content Optimization",
                     "wpslug"
                 ); ?></th>
@@ -854,13 +863,13 @@ class WPSlug_Admin
                                    1,
                                    $options["mixed_content_optimization"]
                                ); ?>>
-                        <?php _e(
+                        <?php esc_html_e(
                             "Optimize mixed language and number content",
                             "wpslug"
                         ); ?>
                     </label>
                     <p class="description">
-                        <?php _e(
+                        <?php esc_html_e(
                             "Better handling of content mixing languages with numbers and English text.",
                             "wpslug"
                         ); ?>
@@ -868,7 +877,7 @@ class WPSlug_Admin
                 </td>
             </tr>
             <tr class="wpslug-seo-dependent">
-                <th scope="row"><?php _e("Remove Stop Words", "wpslug"); ?></th>
+                <th scope="row"><?php esc_html_e("Remove Stop Words", "wpslug"); ?></th>
                 <td>
                     <input type="hidden" name="wpslug_options[remove_stop_words]" value="0">
                     <label>
@@ -880,13 +889,13 @@ class WPSlug_Admin
                                    1,
                                    $options["remove_stop_words"]
                                ); ?>>
-                        <?php _e(
+                        <?php esc_html_e(
                             "Remove common stop words from slugs",
                             "wpslug"
                         ); ?>
                     </label>
                     <p class="description">
-                        <?php _e(
+                        <?php esc_html_e(
                             'Remove words like "the", "a", "an", "and", etc. to create cleaner slugs.',
                             "wpslug"
                         ); ?>
@@ -894,7 +903,7 @@ class WPSlug_Admin
                 </td>
             </tr>
             <tr class="wpslug-seo-dependent wpslug-stopwords-dependent">
-                <th scope="row"><?php _e("Maximum Words", "wpslug"); ?></th>
+                <th scope="row"><?php esc_html_e("Maximum Words", "wpslug"); ?></th>
                 <td>
                     <input type="number"
                            name="wpslug_options[seo_max_words]"
@@ -905,7 +914,7 @@ class WPSlug_Admin
                            max="30"
                            class="small-text">
                     <p class="description">
-                        <?php _e(
+                        <?php esc_html_e(
                             "Maximum number of words to keep in slug for SEO optimization.",
                             "wpslug"
                         ); ?>
@@ -913,7 +922,7 @@ class WPSlug_Admin
                 </td>
             </tr>
             <tr class="wpslug-seo-dependent wpslug-stopwords-dependent">
-                <th scope="row"><?php _e("Stop Words List", "wpslug"); ?></th>
+                <th scope="row"><?php esc_html_e("Stop Words List", "wpslug"); ?></th>
                 <td>
                     <textarea name="wpslug_options[stop_words_list]"
                               rows="3"
@@ -923,7 +932,7 @@ class WPSlug_Admin
                                   $options["stop_words_list"]
                               ); ?></textarea>
                     <p class="description">
-                        <?php _e(
+                        <?php esc_html_e(
                             "Comma-separated list of stop words to remove from slugs.",
                             "wpslug"
                         ); ?>
@@ -938,8 +947,8 @@ class WPSlug_Admin
     {
         ?>
         <div class="wpslug-section-header">
-            <h3><?php _e("Media Files", "wpslug"); ?></h3>
-            <p><?php _e(
+            <h3><?php esc_html_e("Media Files", "wpslug"); ?></h3>
+            <p><?php esc_html_e(
                 "Configure how media file names are handled during upload.",
                 "wpslug"
             ); ?></p>
@@ -947,7 +956,7 @@ class WPSlug_Admin
 
         <table class="form-table">
             <tr>
-                <th scope="row"><?php _e(
+                <th scope="row"><?php esc_html_e(
                     "Media File Conversion",
                     "wpslug"
                 ); ?></th>
@@ -961,13 +970,13 @@ class WPSlug_Admin
                                    1,
                                    $options["disable_file_convert"]
                                ); ?>>
-                        <?php _e(
+                        <?php esc_html_e(
                             "Disable automatic file name conversion for uploaded media",
                             "wpslug"
                         ); ?>
                     </label>
                     <p class="description">
-                        <?php _e(
+                        <?php esc_html_e(
                             "When checked, media files will not be converted automatically.",
                             "wpslug"
                         ); ?>
@@ -975,7 +984,7 @@ class WPSlug_Admin
                 </td>
             </tr>
             <tr>
-                <th scope="row"><?php _e(
+                <th scope="row"><?php esc_html_e(
                     "Media Conversion Mode",
                     "wpslug"
                 ); ?></th>
@@ -985,7 +994,7 @@ class WPSlug_Admin
                             $options["media_conversion_mode"],
                             "normal"
                         ); ?>>
-                            <?php _e(
+                            <?php esc_html_e(
                                 "Normal Conversion (same as content)",
                                 "wpslug"
                             ); ?>
@@ -994,7 +1003,7 @@ class WPSlug_Admin
                             $options["media_conversion_mode"],
                             "md5"
                         ); ?>>
-                            <?php _e(
+                            <?php esc_html_e(
                                 "MD5 Hash (generates unique hash)",
                                 "wpslug"
                             ); ?>
@@ -1003,14 +1012,14 @@ class WPSlug_Admin
                             $options["media_conversion_mode"],
                             "none"
                         ); ?>>
-                            <?php _e(
+                            <?php esc_html_e(
                                 "No Conversion (keep original)",
                                 "wpslug"
                             ); ?>
                         </option>
                     </select>
                     <p class="description">
-                        <?php _e(
+                        <?php esc_html_e(
                             "Choose how media file names should be processed. MD5 creates unique hashes for file names.",
                             "wpslug"
                         ); ?>
@@ -1018,7 +1027,7 @@ class WPSlug_Admin
                 </td>
             </tr>
             <tr>
-                <th scope="row"><?php _e("Media File Prefix", "wpslug"); ?></th>
+                <th scope="row"><?php esc_html_e("Media File Prefix", "wpslug"); ?></th>
                 <td>
                     <input type="text"
                            name="wpslug_options[media_file_prefix]"
@@ -1027,7 +1036,7 @@ class WPSlug_Admin
                            ); ?>"
                            class="regular-text">
                     <p class="description">
-                        <?php _e(
+                        <?php esc_html_e(
                             'Optional prefix to add to all media file names (e.g., "img-", "file-").',
                             "wpslug"
                         ); ?>
@@ -1035,7 +1044,7 @@ class WPSlug_Admin
                 </td>
             </tr>
             <tr>
-                <th scope="row"><?php _e(
+                <th scope="row"><?php esc_html_e(
                     "Preserve Original Extension",
                     "wpslug"
                 ); ?></th>
@@ -1049,13 +1058,13 @@ class WPSlug_Admin
                                    1,
                                    $options["preserve_media_extension"]
                                ); ?>>
-                        <?php _e(
+                        <?php esc_html_e(
                             "Always preserve the original file extension",
                             "wpslug"
                         ); ?>
                     </label>
                     <p class="description">
-                        <?php _e(
+                        <?php esc_html_e(
                             "Ensures file extensions are kept even when using MD5 conversion.",
                             "wpslug"
                         ); ?>
@@ -1070,8 +1079,8 @@ class WPSlug_Admin
     {
         ?>
         <div class="wpslug-section-header">
-            <h3><?php _e("Advanced Settings", "wpslug"); ?></h3>
-            <p><?php _e(
+            <h3><?php esc_html_e("Advanced Settings", "wpslug"); ?></h3>
+            <p><?php esc_html_e(
                 "Advanced options and content type configuration for power users.",
                 "wpslug"
             ); ?></p>
@@ -1079,9 +1088,9 @@ class WPSlug_Admin
 
         <table class="form-table">
             <tr>
-                <th scope="row"><?php _e("Content Types", "wpslug"); ?></th>
+                <th scope="row"><?php esc_html_e("Content Types", "wpslug"); ?></th>
                 <td>
-                    <h4><?php _e("Post Types", "wpslug"); ?></h4>
+                    <h4><?php esc_html_e("Post Types", "wpslug"); ?></h4>
                     <div class="wpslug-checkbox-grid">
                         <?php
                         $post_types = get_post_types(
@@ -1103,7 +1112,7 @@ class WPSlug_Admin
                                        value="<?php echo esc_attr(
                                            $post_type->name
                                        ); ?>"
-                                       <?php echo $checked; ?>>
+                                       <?php echo esc_attr($checked); ?>>
                                 <span><?php echo esc_html(
                                     $post_type->label
                                 ); ?></span>
@@ -1113,13 +1122,13 @@ class WPSlug_Admin
                         ?>
                     </div>
                     <p class="description">
-                        <?php _e(
+                        <?php esc_html_e(
                             "Select post types to apply slug conversion.",
                             "wpslug"
                         ); ?>
                     </p>
 
-                    <h4><?php _e("Taxonomies", "wpslug"); ?></h4>
+                    <h4><?php esc_html_e("Taxonomies", "wpslug"); ?></h4>
                     <div class="wpslug-checkbox-grid">
                         <?php
                         $taxonomies = get_taxonomies(
@@ -1141,7 +1150,7 @@ class WPSlug_Admin
                                        value="<?php echo esc_attr(
                                            $taxonomy->name
                                        ); ?>"
-                                       <?php echo $checked; ?>>
+                                       <?php echo esc_attr($checked); ?>>
                                 <span><?php echo esc_html(
                                     $taxonomy->label
                                 ); ?></span>
@@ -1151,7 +1160,7 @@ class WPSlug_Admin
                         ?>
                     </div>
                     <p class="description">
-                        <?php _e(
+                        <?php esc_html_e(
                             "Select taxonomies to apply slug conversion.",
                             "wpslug"
                         ); ?>
@@ -1159,7 +1168,7 @@ class WPSlug_Admin
                 </td>
             </tr>
             <tr>
-                <th scope="row"><?php _e("Display Options", "wpslug"); ?></th>
+                <th scope="row"><?php esc_html_e("Display Options", "wpslug"); ?></th>
                 <td>
                     <input type="hidden" name="wpslug_options[show_slug_column]" value="0">
                     <label>
@@ -1170,7 +1179,7 @@ class WPSlug_Admin
                                    1,
                                    $options["show_slug_column"]
                                ); ?>>
-                        <?php _e(
+                        <?php esc_html_e(
                             "Show slug column in post and page lists for easy reference",
                             "wpslug"
                         ); ?>
@@ -1200,18 +1209,18 @@ class WPSlug_Admin
         ?>
         <div class="notice notice-info">
             <p>
-                <strong><?php _e(
+                <strong><?php esc_html_e(
                     "WP Slug Plugin Active",
                     "wpslug"
                 ); ?></strong> -
-                <?php _e(
+                <?php esc_html_e(
                     "Your slugs are automatically converted based on your WP Slug settings.",
                     "wpslug"
                 ); ?>
-                <a href="<?php echo admin_url(
+                <a href="<?php echo esc_url(admin_url(
                     "options-general.php?page=wpslug"
-                ); ?>" class="button button-small" style="margin-left: 10px;">
-                    <?php _e("Configure WP Slug", "wpslug"); ?>
+                )); ?>" class="button button-small" style="margin-left: 10px;">
+                    <?php esc_html_e("Configure WP Slug", "wpslug"); ?>
                 </a>
             </p>
         </div>
@@ -1227,10 +1236,14 @@ class WPSlug_Admin
             $merged_options = array_merge($current_options, $validated);
 
             if (
+                // Settings API verifies the options nonce before this sanitize callback.
+                // phpcs:ignore WordPress.Security.NonceVerification.Missing
                 isset($_POST["wpslug_current_tab"]) &&
+                // phpcs:ignore WordPress.Security.NonceVerification.Missing
                 !empty($_POST["wpslug_current_tab"])
             ) {
-                $tab = sanitize_text_field($_POST["wpslug_current_tab"]);
+                // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                $tab = sanitize_text_field(wp_unslash($_POST["wpslug_current_tab"]));
                 set_transient("wpslug_admin_tab", $tab, 60);
             }
 
@@ -1354,7 +1367,6 @@ class WPSlug_Admin
                         "wpslug"
                     ),
                 ]);
-                return;
             }
         } elseif ($service === "baidu") {
             $app_id = trim($options["baidu_app_id"]);
@@ -1366,13 +1378,11 @@ class WPSlug_Admin
                         "wpslug"
                     ),
                 ]);
-                return;
             }
         } else {
             wp_send_json_error([
                 "message" => __("Invalid service selected.", "wpslug"),
             ]);
-            return;
         }
 
         $test_text = "Hello World";
@@ -1441,6 +1451,7 @@ class WPSlug_Admin
 
         $modes = $this->settings->getConversionModes();
         $action_text = sprintf(
+            /* translators: %s: active conversion mode label. */
             __("Convert Slugs (%s)", "wpslug"),
             $modes[$options["conversion_mode"]]
         );
@@ -1494,16 +1505,20 @@ class WPSlug_Admin
 
     public function bulkActionNotice()
     {
+        // The value is added by handleBulkAction after WordPress verifies the bulk-action nonce.
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         if (isset($_GET["wpslug-converted"])) {
-            $count = intval($_GET["wpslug-converted"]);
-            echo '<div class="notice notice-success is-dismissible">';
-            echo "<p>" .
-                sprintf(
-                    __("Successfully converted %d slug(s).", "wpslug"),
-                    $count
-                ) .
-                "</p>";
-            echo "</div>";
+            // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $count = absint($_GET["wpslug-converted"]);
+            $message = sprintf(
+                /* translators: %d: number of converted slugs. */
+                __("Successfully converted %d slug(s).", "wpslug"),
+                $count
+            );
+            printf(
+                '<div class="notice notice-success is-dismissible"><p>%s</p></div>',
+                esc_html($message)
+            );
         }
     }
 }

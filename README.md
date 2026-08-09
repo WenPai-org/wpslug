@@ -15,12 +15,19 @@ WPSlug 默认只为尚无 slug 的新内容自动生成。已有或显式填写�
 ## 开发验证
 
 ```bash
+composer install
+composer phpcs
+composer phpstan
+composer audit
 npm ci
+npm audit --registry=https://registry.npmjs.org
 npm run test:php
 npm run wp-env:start
 npm test
 npm run wp-env:stop
 ```
+
+Plugin Check 需要已安装并启用 Plugin Check 2.x 的 WordPress/WP-CLI 测试环境。`scripts/plugin-check.sh wpslug` 检查与发布包相同的 first-party 范围；仅忽略 FeiCode 自托管更新器和既有 WPSlug 品牌对应的 WordPress.org 目录政策代码。
 
 <!-- CI test 1777893437 -->
  

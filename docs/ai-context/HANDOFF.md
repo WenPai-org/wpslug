@@ -24,3 +24,13 @@
 - [CX] 发布包增加 `readme.txt`，排除 `.ci-trigger`、`.wp-env.json`、scripts；三处 `strip_tags` 改用 `wp_strip_all_tags`。
 - [CX] 组件拆分与迁移边界见 `docs/audits/wpslug-component-migration-plan-2026-08-09.md`。
 - [CX] 第二轮提交 `a7aa776` 已通过 AGit 正常评审引用推送到 FeiCode PR #47：https://feicode.com/WenPai-org/wpslug/pulls/47；未合并、未发布。
+
+## 2026-08-09 — 第三轮最低版本与多站点
+
+- [CX] WordPress 6.0.9/PHP 7.4 首次真实运行发现新文章仍产生 URL 编码中文 slug；原因是标准化 `$postarr` 的标题派生 `post_name` 被误判为用户显式 slug。现改用 WordPress 6.0 原始 caller payload 与 update 标记区分新建、显式 slug 和已有内容更新，并在转换后调用核心唯一化；已发布和 auto-draft 自定义 slug 均保留。
+- [CX] 多站点 uninstall 首次审计确认旧回调只清当前 blog，且原 SQL LIKE 会把下划线当通配符；现逐站清除已知 WPSlug options，恢复 blog/switch stack，并保留文章、term、附件、自定义/生成 slug、相邻命名空间及无关 options。
+- [CX] 最低版本单站、网络激活、子站 blog 2 行为、网络停用、主站/子站卸载矩阵均 PASS；真实子站拼音与已有自定义 slug 保护均通过。完整命令和矩阵见 `docs/audits/wpslug-compat-multisite-matrix-2026-08-09.md`。
+- [CX] 回归：PHP 行为 30/30、WordPress 6.0.9/PHP 7.4 Playwright 2/2、PHPCS 0、PHPStan 0、npm audit official registry 0 vulnerabilities。
+- [CX] Google/Baidu/WPMind 真实云凭据继续 SKIP；未读取或使用生产密钥。
+- [CX] PR #47 修复前 head 的 Gitleaks run 175、Security run 176、WordPress Plugin CI run 177 均 `waiting/pending`、`need_approval=true`，不是 PASS/FAIL；公开 Jobs API 返回 404。
+- [CX] 未部署、未发布、未合并默认分支、未批准远端 CI、未覆盖共享 WIP。

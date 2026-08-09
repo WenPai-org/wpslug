@@ -14,8 +14,14 @@ $GLOBALS['wpslug_posts'] = [];
 $GLOBALS['wpslug_terms'] = [];
 $GLOBALS['wpslug_remote_failure'] = false;
 $GLOBALS['wpslug_post_updates'] = [];
+$GLOBALS['wpslug_unique_slug_collision'] = false;
 
-function add_filter($hook, $callback, $priority = 10, $accepted_args = 1) { $GLOBALS['wpslug_hooks']['filter'][$hook][] = $callback; }
+function add_filter($hook, $callback, $priority = 10, $accepted_args = 1) {
+    $GLOBALS['wpslug_hooks']['filter'][$hook][] = [
+        'callback' => $callback,
+        'accepted_args' => $accepted_args,
+    ];
+}
 function add_action($hook, $callback, $priority = 10, $accepted_args = 1) { $GLOBALS['wpslug_hooks']['action'][$hook][] = $callback; }
 function is_admin() { return false; }
 function wp_parse_args($args, $defaults = []) { return array_merge($defaults, is_array($args) ? $args : []); }
@@ -35,6 +41,9 @@ function get_post($id) { return $GLOBALS['wpslug_posts'][$id] ?? null; }
 function get_term($id, $taxonomy = '') { return $GLOBALS['wpslug_terms'][$id] ?? null; }
 function is_wp_error($value) { return $value instanceof WP_Error; }
 function wp_unique_term_slug($slug, $term) { return $slug; }
+function wp_unique_post_slug($slug, $post_id, $status, $type, $parent) {
+    return $GLOBALS['wpslug_unique_slug_collision'] ? $slug . '-2' : $slug;
+}
 function doing_action($hook) { return false; }
 function get_current_screen() { return null; }
 function wp_remote_post($url, $args) { $GLOBALS['wpslug_remote_args'] = $args; if ($GLOBALS['wpslug_remote_failure']) { return new WP_Error('remote_failure', 'provider unavailable'); } return ['response' => ['code' => 200], 'body' => '{"data":{"translations":[{"translatedText":"Hello World"}]}}']; }
@@ -92,6 +101,10 @@ $core = new WPSlug_Core();
 check(empty($GLOBALS['wpslug_hooks']['filter']['sanitize_title']), 'does not globally intercept sanitize_title');
 check(empty($GLOBALS['wpslug_hooks']['filter']['wp_unique_post_slug']), 'does not rewrite during uniqueness resolution');
 check(empty($GLOBALS['wpslug_hooks']['action']['transition_post_status']), 'does not rewrite on publish transition');
+check(
+    $GLOBALS['wpslug_hooks']['filter']['wp_insert_post_data'][0]['accepted_args'] === 4,
+    'registers all WordPress 6.0 post data arguments'
+);
 
 $base = ['post_title' => '文派素格', 'post_name' => 'manual-slug', 'post_type' => 'post'];
 $out = $core->processPostData($base, ['post_name' => 'manual-slug', 'post_status' => 'auto-draft']);
@@ -107,6 +120,100 @@ check($persisted['post_name'] === 'customer-kept-slug', 'never rewrites a persis
 $base['post_name'] = '';
 $out = $core->processPostData($base, ['post_status' => 'auto-draft']);
 check($out['post_name'] === 'wen-pai-su-ge', 'generates pinyin for a new post without a slug');
+
+$wp60_insert = $core->processPostData(
+    [
+        'post_title' => '文派素格',
+        'post_name' => '%e6%96%87%e6%b4%be%e7%b4%a0%e6%a0%bc',
+        'post_type' => 'post',
+    ],
+    [
+        'post_title' => '文派素格',
+        'post_name' => '%e6%96%87%e6%b4%be%e7%b4%a0%e6%a0%bc',
+        'post_type' => 'post',
+        'post_status' => 'publish',
+    ],
+    [
+        'post_title' => '文派素格',
+        'post_type' => 'post',
+        'post_status' => 'publish',
+    ],
+    false
+);
+check($wp60_insert['post_name'] === 'wen-pai-su-ge', 'converts a WordPress 6.0 title-derived slug on insert');
+
+$GLOBALS['wpslug_unique_slug_collision'] = true;
+$wp60_duplicate = $core->processPostData(
+    [
+        'post_title' => '文派素格',
+        'post_name' => '%e6%96%87%e6%b4%be%e7%b4%a0%e6%a0%bc',
+        'post_type' => 'post',
+        'post_status' => 'publish',
+    ],
+    [
+        'post_title' => '文派素格',
+        'post_name' => '%e6%96%87%e6%b4%be%e7%b4%a0%e6%a0%bc',
+        'post_type' => 'post',
+        'post_status' => 'publish',
+    ],
+    [
+        'post_title' => '文派素格',
+        'post_type' => 'post',
+        'post_status' => 'publish',
+    ],
+    false
+);
+$GLOBALS['wpslug_unique_slug_collision'] = false;
+check($wp60_duplicate['post_name'] === 'wen-pai-su-ge-2', 'uniquifies a converted slug after the post data filter');
+
+$GLOBALS['wpslug_posts'][43] = (object) [
+    'ID' => 43,
+    'post_status' => 'auto-draft',
+    'post_name' => 'auto-draft-custom',
+];
+$auto_draft = $core->processPostData(
+    [
+        'post_title' => '准备发布',
+        'post_name' => 'auto-draft-custom',
+        'post_type' => 'post',
+        'post_status' => 'publish',
+    ],
+    [
+        'ID' => 43,
+        'post_status' => 'publish',
+    ],
+    [
+        'ID' => 43,
+        'post_title' => '准备发布',
+        'post_type' => 'post',
+        'post_status' => 'publish',
+    ],
+    true
+);
+check($auto_draft['post_name'] === 'auto-draft-custom', 'preserves a custom auto-draft slug on publication');
+
+$zero_slug = $core->processPostData(
+    [
+        'post_title' => '数字零',
+        'post_name' => '0',
+        'post_type' => 'post',
+        'post_status' => 'publish',
+    ],
+    [
+        'post_title' => '数字零',
+        'post_name' => '0',
+        'post_type' => 'post',
+        'post_status' => 'publish',
+    ],
+    [
+        'post_title' => '数字零',
+        'post_name' => '0',
+        'post_type' => 'post',
+        'post_status' => 'publish',
+    ],
+    false
+);
+check($zero_slug['post_name'] === '0', 'preserves the explicit slug string zero');
 
 $GLOBALS['wpslug_terms'][7] = (object) ['slug' => 'kept-term'];
 $term = $core->processTermDataUpdate(['name' => '新分类', 'slug' => 'kept-term'], 7, 'category', []);

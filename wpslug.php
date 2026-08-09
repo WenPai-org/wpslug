@@ -175,14 +175,52 @@ class WPSlug
             require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-validator.php";
             require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-settings.php";
 
-            $settings = new WPSlug_Settings();
-            $settings->uninstall();
-            
-            delete_option('wpslug_activation_redirect');
-            
-        } catch (Exception $e) {
+            if (is_multisite()) {
+                $site_ids = get_sites(
+                    array(
+                        "fields" => "ids",
+                        "number" => 0,
+                    )
+                );
+
+                foreach ($site_ids as $site_id) {
+                    $switched = false;
+
+                    try {
+                        if ((int) $site_id !== get_current_blog_id()) {
+                            // Set the guard before switching because a third-party
+                            // switch_blog callback can throw after globals change.
+                            $switched = true;
+                            switch_to_blog((int) $site_id);
+                        }
+
+                        self::uninstallSiteData();
+                    } catch (Throwable $e) {
+                        error_log(
+                            'WP Slug site uninstall error: ' . $e->getMessage()
+                        );
+                    } finally {
+                        if ($switched) {
+                            restore_current_blog();
+                        }
+                    }
+                }
+
+                return;
+            }
+
+            self::uninstallSiteData();
+        } catch (Throwable $e) {
             error_log('WP Slug uninstall error: ' . $e->getMessage());
         }
+    }
+
+    private static function uninstallSiteData()
+    {
+        $settings = new WPSlug_Settings();
+        $settings->uninstall();
+
+        delete_option('wpslug_activation_redirect');
     }
 
     public function getCore()

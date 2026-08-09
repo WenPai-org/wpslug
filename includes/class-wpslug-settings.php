@@ -456,11 +456,6 @@ class WPSlug_Settings
         delete_option("wpslug_conversion_stats");
         delete_option("wpslug_error_log");
         delete_option("wpslug_cache");
-
-        global $wpdb;
-        $wpdb->query(
-            "DELETE FROM {$wpdb->options} WHERE option_name LIKE 'wpslug_%'"
-        );
     }
 
     public function getDefaults()

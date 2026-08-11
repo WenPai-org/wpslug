@@ -46,6 +46,7 @@ class WPSlug
         register_uninstall_hook(__FILE__, ["WPSlug", "uninstall"]);
         
         add_action('init', [$this, 'initLanguages']);
+        add_action('wp_loaded', [$this, 'initLanguages'], 999);
     }
 
     public function loadPlugin()

@@ -27,7 +27,9 @@ jobs:
         run: npm ci
 
       - name: Install PHP quality dependencies
-        run: composer install --no-interaction --prefer-dist
+        env:
+          COMPOSER_MAX_PARALLEL_HTTP: '1'
+        run: composer install --no-interaction --prefer-dist --no-progress
 
       - name: Focused first-party PHPCS
         run: composer phpcs

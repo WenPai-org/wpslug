@@ -111,6 +111,14 @@ class WPSlug
 
     public function loadTextdomain()
     {
+        $locale = function_exists("determine_locale") ? determine_locale() : get_locale();
+        $mo_file = WPSLUG_PLUGIN_DIR . "languages/wpslug-{$locale}.mo";
+
+        if (is_readable($mo_file)) {
+            load_textdomain("wpslug", $mo_file);
+            return;
+        }
+
         load_plugin_textdomain(
             "wpslug",
             false,

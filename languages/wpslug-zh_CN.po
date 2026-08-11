@@ -1,3 +1,4 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: WPSlug\n"
@@ -13,13 +14,11 @@ msgstr ""
 "X-Generator: Poedit 3.6\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-Flags-xgettext: --add-comments=translators:\n"
-"X-Poedit-WPHeader: wpslug.php\n"
-"X-Poedit-SourceCharset: UTF-8\n"
-"X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;"
-"esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;"
-"_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
+"X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: *.min.js\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-WPHeader: wpslug.php\n"
 
 #. Plugin Name of the plugin
 #. Author of the plugin
@@ -150,8 +149,7 @@ msgstr "转换模式"
 msgid ""
 "Select the conversion method. Pinyin for Chinese, Transliteration for "
 "Cyrillic/Arabic scripts, Translation for other languages."
-msgstr ""
-"选择转换方法。拼音用于中文，转写用于西里尔/阿拉伯文字，翻译用于其他语言。"
+msgstr "选择转换方法。拼音用于中文，转写用于西里尔/阿拉伯文字，翻译用于其他语言。"
 
 #: includes/class-wpslug-admin.php:360
 msgid "Auto Convert"
@@ -254,8 +252,8 @@ msgstr "转写方法"
 
 #: includes/class-wpslug-admin.php:559
 msgid ""
-"Choose the transliteration method. iconv and Intl provide better accuracy if "
-"available."
+"Choose the transliteration method. iconv and Intl provide better accuracy if"
+" available."
 msgstr "选择转写方法。如果可用，iconv 和 Intl 提供更好的准确性。"
 
 #: includes/class-wpslug-admin.php:574
@@ -346,7 +344,7 @@ msgid ""
 "WPMind uses AI to translate titles to SEO-friendly slugs. It provides more "
 "accurate and context-aware translations compared to traditional translation "
 "services."
-msgstr ""
+msgstr "WPMind 使用 AI 将标题翻译为对 SEO 友好的别名，相比传统翻译服务能提供更准确、更符合上下文的结果。"
 
 #: includes/class-wpslug-admin.php:757
 msgid "Configure WPMind Settings"
@@ -359,7 +357,7 @@ msgstr "WPMind 插件未激活或未配置。"
 #: includes/class-wpslug-admin.php:766
 msgid ""
 "Please install and activate the WPMind plugin to use AI-powered translation."
-msgstr ""
+msgstr "请安装并启用 WPMind 插件以使用 AI 翻译。"
 
 #: includes/class-wpslug-admin.php:767
 msgid "Learn more"
@@ -417,9 +415,7 @@ msgid "Remove common stop words from slugs"
 msgstr "从别名中删除常见的停用词"
 
 #: includes/class-wpslug-admin.php:889
-msgid ""
-"Remove words like \"the\", \"a\", \"an\", \"and\", etc. to create cleaner "
-"slugs."
+msgid "Remove words like \"the\", \"a\", \"an\", \"and\", etc. to create cleaner slugs."
 msgstr "删除像\"the\"、\"a\"、\"an\"、\"and\"等词语以创建更清洁的别名。"
 
 #: includes/class-wpslug-admin.php:897
@@ -481,8 +477,7 @@ msgid "Media File Prefix"
 msgstr "媒体文件前缀"
 
 #: includes/class-wpslug-admin.php:1030
-msgid ""
-"Optional prefix to add to all media file names (e.g., \"img-\", \"file-\")."
+msgid "Optional prefix to add to all media file names (e.g., \"img-\", \"file-\")."
 msgstr "可选前缀添加到所有媒体文件名（例如：\"img-\"、\"file-\"）。"
 
 #: includes/class-wpslug-admin.php:1038
@@ -849,9 +844,7 @@ msgstr "文派素格（WP Slug ）需要 PHP 7.0 或更高版本。请升级您�
 msgid ""
 "WP Slug requires WordPress 5.0 or higher. Please upgrade your WordPress "
 "version."
-msgstr ""
-"文派素格（WP Slug ）需要 WordPress 5.0 或更高版本。请升级您的 WordPress 版"
-"本。"
+msgstr "文派素格（WP Slug ）需要 WordPress 5.0 或更高版本。请升级您的 WordPress 版本。"
 
 #: wpslug.php:130
 msgid ""
@@ -867,6 +860,82 @@ msgstr "插件激活错误"
 msgid ""
 "An error occurred during plugin activation. Please check your server logs."
 msgstr "插件激活期间发生错误。请检查您的服务器日志。"
+
+msgid ""
+"An active license is required to update the plugin. Please provide a valid "
+"license key in Plugins > Installed Plugins."
+msgstr "更新插件需要有效许可证。请在“插件 > 已安装插件”中提供有效的许可证密钥。"
+
+msgid ""
+"An active license is required to update the theme. Please provide a valid "
+"license key in Appearence > Theme License."
+msgstr "更新主题需要有效许可证。请在“外观 > 主题许可证”中提供有效的许可证密钥。"
+
+msgid "An unexpected error has occured."
+msgstr "发生了意外错误。"
+
+msgid ""
+"An unexpected error has occured. Please try again. If the problem persists, "
+"please contact support."
+msgstr "发生了意外错误。请重试；如果问题仍然存在，请联系支持人员。"
+
+msgid "Current license key:"
+msgstr "当前许可证密钥："
+
+msgid "Deactivation is possible after:"
+msgstr "可停用时间："
+
+msgid "License key:"
+msgstr "许可证密钥："
+
+msgid "The license expired and needs to be renewed to be updated."
+msgstr "许可证已过期，需要续订后才能更新。"
+
+msgid "The license expired on %s and needs to be renewed to be updated."
+msgstr "许可证已于 %s 过期，需要续订后才能更新。"
+
+msgid ""
+"The license has not been activated and its status is still pending. Please "
+"try again or use another license key."
+msgstr "许可证尚未激活，状态仍为待处理。请重试或使用其他许可证密钥。"
+
+msgid ""
+"The license has reached the maximum number of activations and cannot be "
+"activated for this domain."
+msgstr "许可证已达到最大激活次数，无法用于此域名。"
+
+msgid "The license is already in use for this domain."
+msgstr "此域名已在使用该许可证。"
+
+msgid "The license is already inactive for this domain."
+msgstr "此域名的许可证已处于停用状态。"
+
+msgid ""
+"The license is blocked and cannot be updated anymore. Please use another "
+"license key."
+msgstr "许可证已被阻止，无法再更新。请使用其他许可证密钥。"
+
+msgid "The license may not be deactivated yet."
+msgstr "许可证目前可能还不能停用。"
+
+msgid ""
+"The provided license key does not appear to be valid. Please use another "
+"license key."
+msgstr "提供的许可证密钥似乎无效。请使用其他密钥。"
+
+msgid "The provided license key is invalid. Please use another license key."
+msgstr "提供的许可证密钥无效。请使用其他密钥。"
+
+msgid "Theme License -"
+msgstr "主题许可证 -"
+
+msgid ""
+"Unexpected Error! The query to retrieve the license data returned a "
+"malformed response."
+msgstr "意外错误！查询许可证数据时返回了格式错误的响应。"
+
+msgid "API connection failed:"
+msgstr "API 连接失败："
 
 #~ msgid "WPSlug.com"
 #~ msgstr "文派素格"

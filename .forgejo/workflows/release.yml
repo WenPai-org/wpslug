@@ -1,6 +1,6 @@
 # 文派统一插件发布 CI Workflow
 # 触发：push tag v*
-# 运行环境：forgejo-ci-php:latest (Alpine + php-cli + git + rsync + zip + node)
+# 运行环境：ubuntu-latest（需 Python 3、PHP、git、jq、curl）
 # 基于 ci-workflows/wp-release.yml 2026-02-18 版本
 name: Release Plugin
 
@@ -145,7 +145,7 @@ jobs:
           fi
           echo "PHP lint passed"
 
-      - name: Build ZIP
+      - name: Build reproducible ZIP and manifest
         id: build
         shell: bash
         run: |
@@ -153,55 +153,20 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           SLUG="${{ env.PLUGIN_SLUG }}"
           ZIP_NAME="${SLUG}-${VERSION}.zip"
-          BUILD_DIR="/tmp/build/${SLUG}"
           RELEASE_DIR="/tmp/release"
 
-          rm -rf "$BUILD_DIR" "$RELEASE_DIR"
-          mkdir -p "$BUILD_DIR" "$RELEASE_DIR"
-
-          rsync -a \
-            --exclude=".git" \
-            --exclude=".github" \
-            --exclude=".forgejo" \
-            --exclude=".gitignore" \
-            --exclude=".ci-trigger" \
-            --exclude=".wp-env.json" \
-            --exclude=".gitattributes" \
-            --exclude=".editorconfig" \
-            --exclude=".env*" \
-            --exclude=".agent" \
-            --exclude=".vscode" \
-            --exclude="node_modules" \
-            --exclude="vendor" \
-            --exclude="tests" \
-            --exclude="scripts" \
-            --exclude="docs" \
-            --exclude="lib" \
-            --exclude="phpunit.xml*" \
-            --exclude="phpcs.xml*" \
-            --exclude="phpstan.neon*" \
-            --exclude="composer.json" \
-            --exclude="composer.lock" \
-            --exclude="package.json" \
-            --exclude="package-lock.json" \
-            --exclude="Gruntfile.js" \
-            --exclude="webpack.config.js" \
-            --exclude="*.md" \
-            --exclude="LICENSE" \
-            --exclude="Makefile" \
-            ./ "$BUILD_DIR/"
-
-          (
-            cd /tmp/build
-            zip -qr "${RELEASE_DIR}/${ZIP_NAME}" "${SLUG}/"
-          )
+          rm -rf "${RELEASE_DIR}"
+          mkdir -p "${RELEASE_DIR}"
+          python3 scripts/build-candidate.py \
+            --version "${VERSION}" \
+            --output-dir "${RELEASE_DIR}" \
+            --archive-name "${ZIP_NAME}"
 
           echo "zip_path=${RELEASE_DIR}/${ZIP_NAME}" >> "$GITHUB_OUTPUT"
           echo "zip_name=${ZIP_NAME}" >> "$GITHUB_OUTPUT"
           echo "release_dir=${RELEASE_DIR}" >> "$GITHUB_OUTPUT"
-          echo "Built: ${ZIP_NAME} ($(du -h "${RELEASE_DIR}/${ZIP_NAME}" | cut -f1))"
 
-      - name: Calculate SHA-256
+      - name: Verify SHA-256
         id: checksum
         shell: bash
         run: |
@@ -209,8 +174,11 @@ jobs:
           ZIP_PATH="${{ steps.build.outputs.zip_path }}"
           ZIP_NAME="${{ steps.build.outputs.zip_name }}"
           RELEASE_DIR="${{ steps.build.outputs.release_dir }}"
-          SHA256=$(sha256sum "$ZIP_PATH" | cut -d" " -f1)
-          echo "$SHA256  $ZIP_NAME" > "${RELEASE_DIR}/${ZIP_NAME}.sha256"
+          (
+            cd "${RELEASE_DIR}"
+            sha256sum -c "${ZIP_NAME}.sha256"
+          )
+          SHA256=$(cut -d" " -f1 "${RELEASE_DIR}/${ZIP_NAME}.sha256")
           echo "sha256=$SHA256" >> "$GITHUB_OUTPUT"
           echo "SHA-256: $SHA256"
           ls -la "$RELEASE_DIR"

@@ -1,6 +1,6 @@
 <?php
 
-define("WPSLUG_VERSION", "1.2.1");
+define("WPSLUG_VERSION", "1.2.2");
 define("WPSLUG_PLUGIN_FILE", __DIR__ . "/../wpslug.php");
 define("WPSLUG_PLUGIN_DIR", __DIR__ . "/../");
 define("WPSLUG_PLUGIN_URL", "https://example.test/wp-content/plugins/wpslug/");

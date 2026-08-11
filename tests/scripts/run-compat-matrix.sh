@@ -2,7 +2,9 @@
 set -Eeuo pipefail
 
 REPO=$(cd "$(dirname "$0")/../.." && pwd)
-IMAGE=wordpress:php7.4-apache
+IMAGE=${WPSLUG_WORDPRESS_IMAGE:-wordpress:php7.4-apache}
+WP_VERSION=${WPSLUG_WP_VERSION:-6.0.9}
+PHP_PREFIX=${WPSLUG_PHP_PREFIX:-7.4.}
 DB_IMAGE=mariadb:lts
 CLI_PHAR=${WPSLUG_WP_CLI_PHAR:-$(command -v wp)}
 run_id=${WPSLUG_MATRIX_RUN_ID:-$(date +%Y%m%d%H%M%S)-$$-$RANDOM}
@@ -31,7 +33,7 @@ setup_project() {
   done
   docker exec "${project}-db" mariadb-admin ping -uroot -proot --silent >/dev/null
 
-  wp "$project" core download --version=6.0.9 --force
+  wp "$project" core download --version="$WP_VERSION" --force
   wp "$project" config create --dbname=wordpress --dbuser=wordpress --dbpass=wordpress --dbhost="${project}-db" --skip-check
   if [[ "$mode" == multisite ]]; then
     wp "$project" core multisite-install --url="$url" --title="$title" --admin_user=admin --admin_password=password --admin_email=admin@example.test --subdomains=false --skip-email
@@ -46,7 +48,7 @@ wp() {
     -v "${project}-html:/var/www/html" \
     -v "$REPO:/var/www/html/wp-content/plugins/wpslug:ro" \
     -v "$CLI_PHAR:/tmp/wp-cli.phar:ro" \
-    "$IMAGE" php /tmp/wp-cli.phar --allow-root "$@"
+    "$IMAGE" php -d memory_limit=512M /tmp/wp-cli.phar --allow-root "$@"
 }
 assert_eq() {
   local expected=$1 actual=$2 label=$3
@@ -72,10 +74,10 @@ mode=${WPSLUG_MATRIX_MODE:-all}
 trap 'cleanup_project "$single"; cleanup_project "$multi"; rm -f "${LOG}.child-site-id"' EXIT
 
 if [[ "$mode" != multisite ]]; then
-  echo '=== minimum WordPress 6.0.9 / PHP 7.4 ==='
+  echo "=== WordPress ${WP_VERSION} / PHP ${PHP_PREFIX} ==="
   setup_project "$single" "http://localhost:${e2e_port}" WPSlug-Minimum single
-assert_contains '7.4.' "$(wp "$single" eval 'echo PHP_VERSION;')" 'PHP minimum runtime'
-assert_eq '6.0.9' "$(wp "$single" core version)" 'WordPress minimum runtime'
+assert_contains "$PHP_PREFIX" "$(wp "$single" eval 'echo PHP_VERSION;')" 'PHP runtime'
+assert_eq "$WP_VERSION" "$(wp "$single" core version)" 'WordPress runtime'
 wp "$single" plugin activate wpslug
 wp "$single" plugin is-active wpslug
 printf 'PASS: single-site activation\n'
@@ -120,10 +122,10 @@ if [[ "$mode" == single ]]; then
   exit 0
 fi
 
-echo '=== multisite network lifecycle ==='
+echo "=== multisite network lifecycle: WordPress ${WP_VERSION} / PHP ${PHP_PREFIX} ==="
 setup_project "$multi" http://localhost:8911 WPSlug-Multisite multisite
-assert_contains '7.4.' "$(wp "$multi" eval 'echo PHP_VERSION;')" 'multisite PHP minimum runtime'
-assert_eq '6.0.9' "$(wp "$multi" core version)" 'multisite WordPress minimum runtime'
+assert_contains "$PHP_PREFIX" "$(wp "$multi" eval 'echo PHP_VERSION;')" 'multisite PHP runtime'
+assert_eq "$WP_VERSION" "$(wp "$multi" core version)" 'multisite WordPress runtime'
 wp "$multi" plugin activate wpslug --network
 wp "$multi" plugin is-active wpslug --network
 printf 'PASS: network activation\n'

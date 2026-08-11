@@ -1,6 +1,6 @@
 {
   "name": "wpslug",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "文派素格 🍤（WPSlug.com）更友好美观的 WordPress 文章、页面、媒体别名 slug ，支持拼音和翻译等自动生成。",
   "scripts": {
     "test:php": "php tests/php/run.php",

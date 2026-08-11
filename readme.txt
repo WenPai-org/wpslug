@@ -4,7 +4,7 @@ Tags: slug, pinyin, transliteration, translation, media
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,5 +24,12 @@ Media conversion applies only to newly uploaded filenames. Bulk conversion is an
 
 == Changelog ==
 
+= 1.2.2 =
+* Support WordPress 6.0 with PHP 7.4 through WordPress 7.0.
+* Preserve existing and explicitly supplied slugs, including auto-drafts, and keep converted slugs unique.
+* Keep cloud providers and WPMind compatible while safely falling back to local pinyin.
+* Harden settings import/export, AJAX permissions, bulk conversion idempotency, and multisite uninstall cleanup.
+* Keep media normal and legacy MD5 filename modes compatible; no historical media is renamed.
+
 = 1.2.1 =
-* Current stable release.
+* Previous stable release.

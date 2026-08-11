@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 const ABSPATH = __DIR__ . '/';
 const WPSLUG_PLUGIN_DIR = __DIR__ . '/../../';
-const WPSLUG_VERSION = '1.2.1';
+const WPSLUG_VERSION = '1.2.2';
 const DAY_IN_SECONDS = 86400;
 
 $GLOBALS['wpslug_options'] = [];

@@ -10,8 +10,20 @@ async function login(page) {
   await expect(page).toHaveURL(/wp-admin/);
 }
 
+async function ensurePluginActive(page) {
+  await page.goto('/wp-admin/plugins.php');
+  const pluginRow = page.locator('#the-list tr').filter({ hasText: 'WPSlug' }).first();
+  await expect(pluginRow).toBeVisible();
+  const activateLink = pluginRow.getByRole('link', { name: /^Activate$/i });
+  if (await activateLink.count()) {
+    await activateLink.click();
+    await expect(pluginRow.getByRole('link', { name: /^Deactivate$/i })).toBeVisible();
+  }
+}
+
 test('WPSlug settings loads and pinyin preview runs through WordPress AJAX', async ({ page }) => {
   await login(page);
+  await ensurePluginActive(page);
   await page.goto('/wp-admin/options-general.php?page=wpslug');
   await expect(page.getByRole('heading', { name: /WPSlug Settings/i })).toBeVisible();
 

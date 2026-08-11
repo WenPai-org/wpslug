@@ -256,7 +256,14 @@ class WPSlug_Translator {
 
         $elapsed_time = round((microtime(true) - $start_time) * 1000);
 
-        // WPMind's public contract returns a string and handles provider errors internally.
+        // WPMind can return WP_Error when the provider is unavailable or rejects the request.
+        if (is_wp_error($result)) {
+            if ($debug_mode) {
+                error_log('[WPSlug] WPMind error: ' . $result->get_error_message() . ' (took ' . $elapsed_time . 'ms)');
+            }
+            return $this->fallbackTranslate($text, $options);
+        }
+
         $slug = $this->cleanTranslatedText($result);
 
         // 8. 验证结果有效性

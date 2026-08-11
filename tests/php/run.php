@@ -13,6 +13,7 @@ $GLOBALS['wpslug_remote_args'] = null;
 $GLOBALS['wpslug_posts'] = [];
 $GLOBALS['wpslug_terms'] = [];
 $GLOBALS['wpslug_remote_failure'] = false;
+$GLOBALS['wpslug_wpmind_failure'] = false;
 $GLOBALS['wpslug_post_updates'] = [];
 $GLOBALS['wpslug_unique_slug_collision'] = false;
 
@@ -55,7 +56,7 @@ function set_transient($key, $value, $ttl) { return true; }
 function wp_json_encode($value) { return json_encode($value); }
 function wp_strip_all_tags($value) { return strip_tags($value); }
 function wpmind_is_available() { return true; }
-function wpmind_translate($text, $from = 'auto', $to = 'en', $options = []) { return 'semantic-translation'; }
+function wpmind_translate($text, $from = 'auto', $to = 'en', $options = []) { return $GLOBALS['wpslug_wpmind_failure'] ? new WP_Error('wpmind_provider_failure', 'provider unavailable') : 'semantic-translation'; }
 function wpmind_pinyin($text, $options = []) { return 'wenpai-suge'; }
 function current_user_can($capability, ...$args) { return true; }
 function add_query_arg($key, $value, $url) { return $url . (strpos($url, '?') === false ? '?' : '&') . rawurlencode($key) . '=' . rawurlencode((string) $value); }
@@ -241,6 +242,10 @@ check(in_array('wpmind', $translator->getSupportedServices(), true), 'reports WP
 check($translator->isServiceConfigured('wpmind', []), 'detects an available WPMind integration');
 $wpmind = $translator->translate('文派素格', ['translation_service' => 'wpmind', 'translation_source_lang' => 'zh', 'translation_target_lang' => 'en']);
 check($wpmind === 'semantic-translation', 'uses the current WPMind translation function contract');
+$GLOBALS['wpslug_wpmind_failure'] = true;
+$wpmind_fallback = $translator->translate('文派素格', ['translation_service' => 'wpmind', 'translation_source_lang' => 'zh', 'translation_target_lang' => 'en']);
+$GLOBALS['wpslug_wpmind_failure'] = false;
+check($wpmind_fallback === 'wen-pai-su-ge', 'falls back to local pinyin when WPMind returns WP_Error');
 $semantic = (new WPSlug_Converter())->convert('文派素格', ['conversion_mode' => 'semantic_pinyin']);
 check($semantic === 'wenpai-suge', 'uses the current WPMind semantic pinyin function contract');
 

@@ -29,7 +29,7 @@ jobs:
       - name: Install PHP quality dependencies
         env:
           COMPOSER_MAX_PARALLEL_HTTP: '1'
-        run: composer install --no-interaction --prefer-dist --no-progress
+        run: composer install --no-interaction --prefer-source --no-progress
 
       - name: Focused first-party PHPCS
         run: composer phpcs

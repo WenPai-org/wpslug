@@ -47,11 +47,10 @@ jobs:
         run: |
           set -euo pipefail
           ASSET_DIR=$(mktemp -d /tmp/wpslug-wp-env.XXXXXX)
-          curl -fL --retry 3 --retry-delay 2 --connect-timeout 15 \
-            https://github.com/WordPress/WordPress/archive/9a094f4669547cea86ca354d1fb4d9fd9961028c.zip \
-            -o "${ASSET_DIR}/wordpress.zip"
-          unzip -q "${ASSET_DIR}/wordpress.zip" -d "${ASSET_DIR}"
-          CORE_DIR="${ASSET_DIR}/WordPress-9a094f4669547cea86ca354d1fb4d9fd9961028c"
+          CORE_DIR="${ASSET_DIR}/wordpress-core"
+          git clone --quiet --depth=1 --branch 7.0.3 \
+            https://github.com/WordPress/WordPress.git "${CORE_DIR}"
+          test "$(git -C "${CORE_DIR}" rev-parse HEAD)" = "9a094f4669547cea86ca354d1fb4d9fd9961028c"
           grep -Fq "\$wp_version = '7.0.3';" "${CORE_DIR}/wp-includes/version.php"
           jq --arg core "${CORE_DIR}" --arg plugin "${PWD}" \
             '.core = $core | .plugins = [$plugin] | .config.WP_HOME = "http://localhost:8888" | .config.WP_SITEURL = "http://localhost:8888"' \

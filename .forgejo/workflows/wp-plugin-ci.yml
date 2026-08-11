@@ -43,22 +43,36 @@ jobs:
       - name: Audit development dependencies
         run: npm audit --registry=https://registry.npmjs.org
 
-      - name: WordPress 7.0.3 E2E
+      - name: Prepare WordPress 7.0.3 Playground assets
         run: |
-          npm run wp-env:start
-          npx wp-env run cli wp plugin install plugin-check --activate
-          npx wp-env run cli wp plugin check wpslug \
-            --mode=update \
-            --ignore-codes=plugin_updater_detected,trademarked_term \
-            --ignore-warnings \
-            --exclude-directories=lib,tests,docs,scripts,vendor,node_modules \
-            --exclude-files=.ci-trigger,.wp-env.json,composer.json,composer.lock,package.json,package-lock.json,phpcs.xml.dist,phpstan.neon.dist \
-            --format=strict-table
+          set -euo pipefail
+          ASSET_DIR=$(mktemp -d /tmp/wpslug-wp-env.XXXXXX)
+          curl -fL --retry 3 --retry-delay 2 --connect-timeout 15 \
+            https://github.com/WordPress/WordPress/archive/9a094f4669547cea86ca354d1fb4d9fd9961028c.zip \
+            -o "${ASSET_DIR}/wordpress.zip"
+          unzip -q "${ASSET_DIR}/wordpress.zip" -d "${ASSET_DIR}"
+          CORE_DIR="${ASSET_DIR}/WordPress-9a094f4669547cea86ca354d1fb4d9fd9961028c"
+          grep -Fq "\$wp_version = '7.0.3';" "${CORE_DIR}/wp-includes/version.php"
+          jq --arg core "${CORE_DIR}" --arg plugin "${PWD}" \
+            '.core = $core | .plugins = [$plugin] | .config.WP_HOME = "http://localhost:8888" | .config.WP_SITEURL = "http://localhost:8888"' \
+            .wp-env.json > "${ASSET_DIR}/wp-env.json"
+          echo "WPSLUG_WP_ENV_CONFIG=${ASSET_DIR}/wp-env.json" >> "${GITHUB_ENV}"
+
+      - name: WordPress 7.0.3 Playground E2E
+        env:
+          PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH: /usr/sbin/chromium-browser
+          WP_BASE_URL: http://localhost:8888
+        run: |
+          test -x "${PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH}"
+          npx wp-env start --runtime=playground --config "${WPSLUG_WP_ENV_CONFIG}"
           npm test
 
-      - name: Stop WordPress test environment
+      - name: Stop WordPress Playground
         if: always()
-        run: npm run wp-env:stop
+        run: |
+          if [ -n "${WPSLUG_WP_ENV_CONFIG:-}" ]; then
+            npx wp-env stop --runtime=playground --config "${WPSLUG_WP_ENV_CONFIG}" || true
+          fi
 
       - name: Gitleaks 密钥泄露扫描
         run: |

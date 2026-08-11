@@ -1,10 +1,12 @@
 const { test, expect } = require('@playwright/test');
 
 async function login(page) {
-  await page.goto('/wp-login.php');
-  await page.locator('#user_login').fill('admin');
-  await page.locator('#user_pass').fill('password');
-  await page.locator('#wp-submit').click();
+  await page.goto('/wp-admin/');
+  if (/wp-login\.php/.test(page.url())) {
+    await page.locator('#user_login').fill('admin');
+    await page.locator('#user_pass').fill('password');
+    await page.locator('#wp-submit').click();
+  }
   await expect(page).toHaveURL(/wp-admin/);
 }
 

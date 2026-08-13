@@ -12,7 +12,7 @@ function wpmind_is_available(): bool
     return false;
 }
 
-function wpmind_translate(string $text, string $from = auto, string $to = en, array $options = []): string
+function wpmind_translate(string $text, string $from = 'auto', string $to = 'en', array $options = []): string|WP_Error
 {
     return $text;
 }

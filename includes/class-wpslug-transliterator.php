@@ -93,7 +93,7 @@ class WPSlug_Transliterator {
     }
 
     private function cleanSlug($text) {
-        $text = strip_tags($text);
+        $text = wp_strip_all_tags($text);
         $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $text = preg_replace('/&.+?;/', '', $text);
         $text = preg_replace('/[^a-zA-Z0-9\s\-_]/', '', $text);

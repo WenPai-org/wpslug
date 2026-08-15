@@ -31,20 +31,21 @@ class WPSlug_Core {
             $this->admin = new WPSlug_Admin();
         }
 
-        $this->init_update_checker();
         $this->initHooks();
     }
 
     private function initHooks() {
-        add_filter('sanitize_title', array($this, 'processSanitizeTitle'), 9, 3);
-        add_filter('wp_insert_post_data', array($this, 'processPostData'), 10, 2);
+        // Conversion is intentionally limited to explicit post, term and media
+        // write paths. A global sanitize_title filter also runs for menu slugs,
+        // plugin internals and other unrelated identifiers, and could trigger a
+        // paid/cloud translation request outside a content save.
+        add_filter('wp_insert_post_data', array($this, 'processPostData'), 10, 4);
         add_filter('wp_insert_term_data', array($this, 'processTermData'), 10, 3);
         add_filter('wp_update_term_data', array($this, 'processTermDataUpdate'), 10, 4);
         add_filter('sanitize_file_name', array($this, 'processFileName'), 10, 2);
-        add_filter('wp_unique_post_slug', array($this, 'processUniquePostSlug'), 10, 6);
-        add_filter('pre_category_nicename', array($this, 'preCategoryNicename'), 10, 2);
-        
-        add_action('transition_post_status', array($this, 'handlePostStatusTransition'), 10, 3);
+        // wp_insert_post_data and the term data filters are the single write
+        // paths. Publish-transition/unique-slug hooks used to rewrite an
+        // already chosen slug a second time.
 
         if (is_admin()) {
             add_filter('manage_posts_columns', array($this, 'addSlugColumn'));
@@ -53,14 +54,6 @@ class WPSlug_Core {
             add_action('manage_pages_custom_column', array($this, 'displaySlugColumn'), 10, 2);
         }
     }
-    /**
-     * Disabled: migrated to WPSlug_Updater (Update URI)
-     */
-    private function init_update_checker()
-    {
-        return;
-    }
-
     public function processSanitizeTitle($title, $raw_title = '', $context = 'display') {
         if ($context !== 'save' || empty($title)) {
             return $title;
@@ -95,10 +88,13 @@ class WPSlug_Core {
         }
     }
 
-    public function processPostData($data, $postarr) {
+    public function processPostData($data, $postarr, $unsanitized_postarr = array(), $update = null) {
         if (empty($data['post_title'])) {
             return $data;
         }
+
+        $original_postarr = func_num_args() >= 3 ? $unsanitized_postarr : $postarr;
+        $is_update = func_num_args() >= 4 ? (bool) $update : !empty($postarr['ID']);
 
         try {
             $options = $this->settings->getOptions();
@@ -119,14 +115,37 @@ class WPSlug_Core {
                 return $data;
             }
 
-            if (!empty($data['post_name']) && !$this->shouldUpdateSlug($postarr)) {
+            // A slug explicitly supplied by a user, REST client or importer is
+            // authoritative. WordPress 6.0 passes the original caller payload
+            // separately; the normalized post array can already contain the
+            // title-derived slug even when the caller did not supply one.
+            if (
+                isset($original_postarr['post_name']) &&
+                (string) $original_postarr['post_name'] !== ''
+            ) {
                 return $data;
+            }
+
+            // Existing content keeps its stored slug, including an auto-draft
+            // with a slug chosen before publication.
+            if ($is_update && isset($data['post_name']) && (string) $data['post_name'] !== '') {
+                $existing_post = !empty($postarr['ID']) ? get_post($postarr['ID']) : null;
+                if (!$existing_post || (string) $existing_post->post_name !== '') {
+                    return $data;
+                }
             }
 
             $slug = $this->converter->convert($data['post_title'], $options);
             $slug = $this->optimizer->optimize($slug, $options);
 
-            if (!empty($slug) && $slug !== $data['post_name']) {
+            if ((string) $slug !== '' && $slug !== $data['post_name']) {
+                $slug = wp_unique_post_slug(
+                    $slug,
+                    !empty($postarr['ID']) ? (int) $postarr['ID'] : 0,
+                    isset($data['post_status']) ? $data['post_status'] : 'draft',
+                    $data['post_type'],
+                    isset($data['post_parent']) ? (int) $data['post_parent'] : 0
+                );
                 $data['post_name'] = $slug;
             }
 
@@ -174,6 +193,11 @@ class WPSlug_Core {
             }
 
             if (!$this->settings->isTaxonomyEnabled($taxonomy)) {
+                return $data;
+            }
+
+            $existing_term = get_term($term_id, $taxonomy);
+            if (!is_wp_error($existing_term) && !empty($existing_term->slug)) {
                 return $data;
             }
 
@@ -294,7 +318,9 @@ class WPSlug_Core {
                 return $slug;
             }
 
-            $tag_name = isset($_POST['tag-name']) ? sanitize_text_field($_POST['tag-name']) : $name;
+            // Legacy method is not registered as a hook; keep input handling safe if called directly.
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing
+            $tag_name = isset($_POST['tag-name']) ? sanitize_text_field(wp_unslash($_POST['tag-name'])) : $name;
 
             if ($tag_name) {
                 $converted_slug = $this->converter->convert($tag_name, $options);
@@ -390,21 +416,6 @@ class WPSlug_Core {
         return preg_match('/[^\x00-\x7F]/', $text);
     }
 
-    private function shouldUpdateSlug($postarr) {
-        if (isset($postarr['post_status']) && $postarr['post_status'] === 'auto-draft') {
-            return true;
-        }
-
-        if (isset($postarr['ID']) && $postarr['ID'] > 0) {
-            $existing_post = get_post($postarr['ID']);
-            if ($existing_post && $existing_post->post_status === 'auto-draft') {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public function activate() {
         try {
             $this->settings->createDefaultOptions();
@@ -434,7 +445,7 @@ class WPSlug_Core {
             if (isset($frame['class']) && strpos($frame['class'], 'ACF_Field_Group') !== false) {
                 return true;
             }
-            if (isset($frame['function']) && in_array($frame['function'], array(
+            if (in_array($frame['function'], array(
                 'acf_update_field',
                 'acf_import_field_group',
                 'acf_import_internal_post_type',

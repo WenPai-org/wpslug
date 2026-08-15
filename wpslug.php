@@ -4,10 +4,11 @@
 Plugin Name: WPSlug
 Plugin URI: https://wpcy.com/slug
 Description: Advanced slug management plugin with Chinese Pinyin support and SEO optimization.
-Version: 1.2.1
+Version: 1.2.2
 Author: WPSlug
 Author URI: https://wpcy.com/slug
-License: GPL2
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: wpslug
 Domain Path: /languages
 Update URI: https://updates.wenpai.net
@@ -19,7 +20,7 @@ if (!defined("ABSPATH")) {
     exit();
 }
 
-define("WPSLUG_VERSION", "1.2.1");
+define("WPSLUG_VERSION", "1.2.2");
 define("WPSLUG_PLUGIN_DIR", plugin_dir_path(__FILE__));
 define("WPSLUG_PLUGIN_URL", plugin_dir_url(__FILE__));
 define("WPSLUG_PLUGIN_BASENAME", plugin_basename(__FILE__));
@@ -45,6 +46,7 @@ class WPSlug
         register_uninstall_hook(__FILE__, ["WPSlug", "uninstall"]);
         
         add_action('init', [$this, 'initLanguages']);
+        add_action('wp_loaded', [$this, 'initLanguages'], 999);
     }
 
     public function loadPlugin()
@@ -61,19 +63,19 @@ class WPSlug
 
     private function checkRequirements()
     {
-        if (version_compare(PHP_VERSION, "7.0", "<")) {
+        if (version_compare(PHP_VERSION, "7.4", "<")) {
             add_action('admin_notices', function() {
                 echo '<div class="notice notice-error"><p>';
-                echo esc_html__('WP Slug requires PHP 7.0 or higher. Please upgrade your PHP version.', 'wpslug');
+                echo esc_html__('WPSlug requires PHP 7.4 or higher. Please upgrade your PHP version.', 'wpslug');
                 echo '</p></div>';
             });
             return false;
         }
 
-        if (version_compare(get_bloginfo("version"), "5.0", "<")) {
+        if (version_compare(get_bloginfo("version"), "6.0", "<")) {
             add_action('admin_notices', function() {
                 echo '<div class="notice notice-error"><p>';
-                echo esc_html__('WP Slug requires WordPress 5.0 or higher. Please upgrade your WordPress version.', 'wpslug');
+                echo esc_html__('WPSlug requires WordPress 6.0 or higher. Please upgrade your WordPress version.', 'wpslug');
                 echo '</p></div>';
             });
             return false;
@@ -111,6 +113,14 @@ class WPSlug
 
     public function loadTextdomain()
     {
+        $locale = function_exists("determine_locale") ? determine_locale() : get_locale();
+        $mo_file = WPSLUG_PLUGIN_DIR . "languages/wpslug-{$locale}.mo";
+
+        if (is_readable($mo_file)) {
+            load_textdomain("wpslug", $mo_file);
+            return;
+        }
+
         load_plugin_textdomain(
             "wpslug",
             false,
@@ -171,16 +181,55 @@ class WPSlug
     public static function uninstall()
     {
         try {
-            if (class_exists("WPSlug_Settings")) {
-                $settings = new WPSlug_Settings();
-                $settings->uninstall();
+            require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-validator.php";
+            require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-settings.php";
+
+            if (is_multisite()) {
+                $site_ids = get_sites(
+                    array(
+                        "fields" => "ids",
+                        "number" => 0,
+                    )
+                );
+
+                foreach ($site_ids as $site_id) {
+                    $switched = false;
+
+                    try {
+                        if ((int) $site_id !== get_current_blog_id()) {
+                            // Set the guard before switching because a third-party
+                            // switch_blog callback can throw after globals change.
+                            $switched = true;
+                            switch_to_blog((int) $site_id);
+                        }
+
+                        self::uninstallSiteData();
+                    } catch (Throwable $e) {
+                        error_log(
+                            'WP Slug site uninstall error: ' . $e->getMessage()
+                        );
+                    } finally {
+                        if ($switched) {
+                            restore_current_blog();
+                        }
+                    }
+                }
+
+                return;
             }
-            
-            delete_option('wpslug_activation_redirect');
-            
-        } catch (Exception $e) {
+
+            self::uninstallSiteData();
+        } catch (Throwable $e) {
             error_log('WP Slug uninstall error: ' . $e->getMessage());
         }
+    }
+
+    private static function uninstallSiteData()
+    {
+        $settings = new WPSlug_Settings();
+        $settings->uninstall();
+
+        delete_option('wpslug_activation_redirect');
     }
 
     public function getCore()
@@ -222,6 +271,8 @@ if (is_admin()) {
     add_action('admin_init', function() {
         if (get_option('wpslug_activation_redirect', false)) {
             delete_option('wpslug_activation_redirect');
+            // Read-only activation context flag supplied by WordPress core.
+            // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             if (!isset($_GET['activate-multi'])) {
                 wp_safe_redirect(admin_url('options-general.php?page=wpslug'));
                 exit;

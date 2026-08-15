@@ -70,10 +70,15 @@ class WPSlug_Translator {
             $params = array(
                 'key' => $api_key,
                 'q' => $text,
-                'source' => $source_lang,
                 'target' => $target_lang,
                 'format' => 'text'
             );
+
+            // Google detects the source language when the source parameter is
+            // omitted. The literal value "auto" is not a valid v2 source code.
+            if ('auto' !== $source_lang) {
+                $params['source'] = $source_lang;
+            }
 
             $response = wp_remote_post($url, array(
                 'timeout' => 15,
@@ -251,7 +256,7 @@ class WPSlug_Translator {
 
         $elapsed_time = round((microtime(true) - $start_time) * 1000);
 
-        // 7. 处理结果
+        // WPMind can return WP_Error when the provider is unavailable or rejects the request.
         if (is_wp_error($result)) {
             if ($debug_mode) {
                 error_log('[WPSlug] WPMind error: ' . $result->get_error_message() . ' (took ' . $elapsed_time . 'ms)');
@@ -291,7 +296,7 @@ class WPSlug_Translator {
     }
 
     private function cleanTranslatedText($text) {
-        $text = strip_tags($text);
+        $text = wp_strip_all_tags($text);
         $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $text = preg_replace('/&.+?;/', '', $text);
         $text = preg_replace('/[^a-zA-Z0-9\s\-_]/', '', $text);
@@ -333,7 +338,7 @@ class WPSlug_Translator {
     }
 
     public function getSupportedServices() {
-        return array('none', 'google', 'baidu');
+        return array('none', 'google', 'baidu', 'wpmind');
     }
 
     public function isServiceSupported($service) {
@@ -346,6 +351,8 @@ class WPSlug_Translator {
                 return !empty($options['google_api_key']);
             case 'baidu':
                 return !empty($options['baidu_app_id']) && !empty($options['baidu_secret_key']);
+            case 'wpmind':
+                return function_exists('wpmind_is_available') && wpmind_is_available();
             case 'none':
             default:
                 return true;

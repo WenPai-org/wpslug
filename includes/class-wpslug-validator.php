@@ -174,8 +174,8 @@ class WPSlug_Validator {
     
     public static function validateSystemRequirements() {
         $requirements = array(
-            'php_version' => version_compare(PHP_VERSION, '7.0', '>='),
-            'wordpress_version' => version_compare(get_bloginfo('version'), '5.0', '>='),
+            'php_version' => version_compare(PHP_VERSION, '7.4', '>='),
+            'wordpress_version' => version_compare(get_bloginfo('version'), '6.0', '>='),
             'mbstring_extension' => extension_loaded('mbstring'),
             'json_extension' => extension_loaded('json')
         );
@@ -183,11 +183,11 @@ class WPSlug_Validator {
         $errors = array();
         
         if (!$requirements['php_version']) {
-            $errors[] = __('PHP 7.0 or higher is required.', 'wpslug');
+            $errors[] = __('PHP 7.4 or higher is required.', 'wpslug');
         }
         
         if (!$requirements['wordpress_version']) {
-            $errors[] = __('WordPress 5.0 or higher is required.', 'wpslug');
+            $errors[] = __('WordPress 6.0 or higher is required.', 'wpslug');
         }
         
         if (!$requirements['mbstring_extension']) {

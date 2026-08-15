@@ -401,6 +401,9 @@ class WPSlug_Settings
     public function exportOptions()
     {
         $options = $this->getOptions();
+        foreach (["google_api_key", "baidu_secret_key"] as $secret_key) {
+            unset($options[$secret_key]);
+        }
         $export_data = [
             "version" => WPSLUG_VERSION,
             "timestamp" => time(),
@@ -423,7 +426,19 @@ class WPSlug_Settings
         }
 
         $options = $data["options"];
+        $current_options = $this->getOptions();
+        foreach (["google_api_key", "baidu_secret_key"] as $secret_key) {
+            unset($options[$secret_key]);
+        }
         $validated_options = $this->validateOptions($options);
+
+        // Import files are intentionally credential-free. Preserve secrets
+        // already stored on this site and ignore any injected secret fields.
+        foreach (["google_api_key", "baidu_secret_key"] as $secret_key) {
+            $validated_options[$secret_key] = isset($current_options[$secret_key])
+                ? $current_options[$secret_key]
+                : "";
+        }
 
         if (update_option($this->option_name, $validated_options)) {
             return true;
@@ -441,11 +456,6 @@ class WPSlug_Settings
         delete_option("wpslug_conversion_stats");
         delete_option("wpslug_error_log");
         delete_option("wpslug_cache");
-
-        global $wpdb;
-        $wpdb->query(
-            "DELETE FROM {$wpdb->options} WHERE option_name LIKE 'wpslug_%'"
-        );
     }
 
     public function getDefaults()
@@ -500,6 +510,7 @@ class WPSlug_Settings
 
     public function logError($message, $context = [])
     {
+        $context = $this->redactSensitiveContext($context);
         $log_entry = [
             "timestamp" => current_time("mysql"),
             "message" => $message,
@@ -524,6 +535,26 @@ class WPSlug_Settings
                     json_encode($context)
             );
         }
+    }
+
+    /**
+     * Prevent credentials from being persisted in the option-backed error log.
+     */
+    private function redactSensitiveContext($context)
+    {
+        if (!is_array($context)) {
+            return $context;
+        }
+
+        foreach ($context as $key => $value) {
+            if (preg_match('/(?:api.?key|secret|token|password)/i', (string) $key)) {
+                $context[$key] = '[redacted]';
+            } elseif (is_array($value)) {
+                $context[$key] = $this->redactSensitiveContext($value);
+            }
+        }
+
+        return $context;
     }
 
     public function isFeatureEnabled($feature)
@@ -651,10 +682,10 @@ class WPSlug_Settings
     public function validateSystemRequirements()
     {
         $requirements = [
-            "php_version" => version_compare(PHP_VERSION, "7.0", ">="),
+            "php_version" => version_compare(PHP_VERSION, "7.4", ">="),
             "wordpress_version" => version_compare(
                 get_bloginfo("version"),
-                "5.0",
+                "6.0",
                 ">="
             ),
             "mbstring_extension" => extension_loaded("mbstring"),
@@ -718,11 +749,11 @@ class WPSlug_Settings
 
             $requirements = $this->validateSystemRequirements();
             if (!$requirements["php_version"]) {
-                $errors[] = __("PHP 7.0 or higher is required.", "wpslug");
+                $errors[] = __("PHP 7.4 or higher is required.", "wpslug");
             }
             if (!$requirements["wordpress_version"]) {
                 $errors[] = __(
-                    "WordPress 5.0 or higher is required.",
+                    "WordPress 6.0 or higher is required.",
                     "wpslug"
                 );
             }

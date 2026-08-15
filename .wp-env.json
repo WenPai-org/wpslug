@@ -1,5 +1,5 @@
 {
-  "core": "https://wordpress.org/latest.zip",
+  "core": "https://wordpress.org/wordpress-7.0.3.zip",
   "plugins": [
     "."
   ],

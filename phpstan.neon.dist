@@ -1,0 +1,23 @@
+includes:
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon
+
+parameters:
+    level: 5
+    paths:
+        - wpslug.php
+        - includes/class-wpslug-core.php
+        - includes/class-wpslug-translator.php
+        - includes/class-wpslug-admin.php
+        - includes/class-wenpai-updater.php
+    scanFiles:
+        - includes/class-wpslug-settings.php
+        - includes/class-wpslug-converter.php
+        - includes/class-wpslug-optimizer.php
+        - includes/class-wpslug-pinyin.php
+        - includes/class-wpslug-transliterator.php
+        - includes/class-wpslug-validator.php
+    bootstrapFiles:
+        - tests/phpstan-bootstrap.php
+    parallel:
+        maximumNumberOfProcesses: 1
+    tmpDir: /tmp/wpslug-phpstan

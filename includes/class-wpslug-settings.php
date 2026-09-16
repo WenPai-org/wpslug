@@ -248,31 +248,26 @@ class WPSlug_Settings
 
     public function getConversionModes()
     {
-        $modes = [];
+        // Order matches product copy: local pinyin / semantic pinyin / translation / transliteration.
+        $modes = [
+            "pinyin" => __("Local pinyin", "wpslug"),
+        ];
 
-        // WPMind-first: semantic pinyin is the primary Chinese path when available.
-        if (function_exists('wpmind_is_available') && wpmind_is_available()) {
+        if (function_exists("wpmind_is_available") && wpmind_is_available()) {
             $modes["semantic_pinyin"] = __(
-                "Semantic Pinyin via WPMind (Recommended)",
+                "Semantic pinyin (XinSi AI)",
                 "wpslug"
             );
-        } elseif (class_exists('\\WPMind\\WPMind')) {
+        } elseif (class_exists("\\WPMind\\WPMind")) {
             $modes["semantic_pinyin"] = __(
-                "Semantic Pinyin (Requires WPMind)",
+                "Semantic pinyin (requires WenPai XinSi)",
                 "wpslug"
             );
         }
 
-        $modes["pinyin"] = __(
-            "Local pinyin (offline fallback)",
-            "wpslug"
-        );
+        $modes["translation"] = __("Multi-language translation", "wpslug");
         $modes["transliteration"] = __(
             "Foreign Language Transliteration",
-            "wpslug"
-        );
-        $modes["translation"] = __(
-            "SEO Slug via Translation / WPMind",
             "wpslug"
         );
 
@@ -304,19 +299,22 @@ class WPSlug_Settings
             "baidu" => __("Baidu Translate", "wpslug"),
         ];
         
-        // WPMind is the primary SEO-slug path; Google/Baidu stay as BYOK pipelines.
-        if (function_exists('wpmind_is_available') && wpmind_is_available()) {
+        // WenPai XinSi (WPMind) first; Google/Baidu stay as BYOK pipelines.
+        if (function_exists("wpmind_is_available") && wpmind_is_available()) {
             $services = array_merge(
                 [
                     "wpmind" => __(
-                        "WPMind AI SEO Slug (Recommended)",
+                        "WenPai XinSi (WPMind) (Recommended)",
                         "wpslug"
                     ),
                 ],
                 $services
             );
-        } elseif (class_exists('\\WPMind\\WPMind')) {
-            $services["wpmind"] = __("WPMind AI (Not Configured)", "wpslug");
+        } elseif (class_exists("\\WPMind\\WPMind")) {
+            $services["wpmind"] = __(
+                "WenPai XinSi (WPMind) (Not Configured)",
+                "wpslug"
+            );
         }
 
         return $services;
@@ -461,15 +459,12 @@ class WPSlug_Settings
     {
         return [
             "inherit" => __("Use global conversion mode", "wpslug"),
-            "seo_slug" => __(
-                "SEO slug via WPMind (English-friendly)",
-                "wpslug"
-            ),
             "semantic_pinyin" => __(
-                "Semantic pinyin via WPMind",
+                "Semantic pinyin (XinSi AI)",
                 "wpslug"
             ),
-            "pinyin" => __("Local pinyin (offline fallback)", "wpslug"),
+            "seo_slug" => __("Multi-language translation", "wpslug"),
+            "pinyin" => __("Local pinyin", "wpslug"),
         ];
     }
 

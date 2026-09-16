@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 const ABSPATH = __DIR__ . '/';
 const WPSLUG_PLUGIN_DIR = __DIR__ . '/../../';
-const WPSLUG_VERSION = '1.2.3';
+const WPSLUG_VERSION = '1.2.4';
 const DAY_IN_SECONDS = 86400;
 
 $GLOBALS['wpslug_options'] = [];
@@ -404,7 +404,8 @@ $settings_defaults = (new WPSlug_Settings())->getDefaults();
 check(!empty($settings_defaults['convert_on_publish_only']), 'defaults convert_on_publish_only to enabled');
 check(array_key_exists('post_type_modes', $settings_defaults), 'defaults include post_type_modes map');
 $modes = (new WPSlug_Settings())->getConversionModes();
-check(strpos($modes['pinyin'], 'offline fallback') !== false, 'labels local pinyin as the offline fallback');
+check($modes['pinyin'] === 'Local pinyin', 'labels local pinyin without fallback parenthetical');
+check(($modes['semantic_pinyin'] ?? '') === 'Semantic pinyin (XinSi AI)' || ($modes['semantic_pinyin'] ?? '') === 'Semantic pinyin (requires WenPai XinSi)', 'labels semantic pinyin as XinSi AI');
 
 $feature_options = (new WPSlug_Settings())->applyFeatureToOptions(
     ['conversion_mode' => 'pinyin', 'translation_service' => 'none'],

@@ -33,6 +33,8 @@ class WPSlug_Settings
             "enabled_post_types" => ["post", "page"],
             "enabled_taxonomies" => ["category", "post_tag"],
             "auto_convert" => true,
+            // Default on: skip draft/autosave model calls; convert on publish/future.
+            "convert_on_publish_only" => true,
             "preserve_english" => true,
             "preserve_numbers" => true,
             "disable_file_convert" => false,
@@ -112,6 +114,7 @@ class WPSlug_Settings
                 case "enable_conversion":
                 case "force_lowercase":
                 case "auto_convert":
+                case "convert_on_publish_only":
                 case "preserve_english":
                 case "preserve_numbers":
                 case "disable_file_convert":
@@ -237,23 +240,34 @@ class WPSlug_Settings
 
     public function getConversionModes()
     {
-        $modes = [
-            "pinyin" => __("Chinese Pinyin Conversion", "wpslug"),
-        ];
-        
-        // 如果 WPMind 可用，添加语义化拼音选项
+        $modes = [];
+
+        // WPMind-first: semantic pinyin is the primary Chinese path when available.
         if (function_exists('wpmind_is_available') && wpmind_is_available()) {
-            $modes["semantic_pinyin"] = __("Semantic Pinyin (WPMind AI)", "wpslug");
+            $modes["semantic_pinyin"] = __(
+                "Semantic Pinyin via WPMind (Recommended)",
+                "wpslug"
+            );
         } elseif (class_exists('\\WPMind\\WPMind')) {
-            $modes["semantic_pinyin"] = __("Semantic Pinyin (Requires WPMind)", "wpslug");
+            $modes["semantic_pinyin"] = __(
+                "Semantic Pinyin (Requires WPMind)",
+                "wpslug"
+            );
         }
-        
+
+        $modes["pinyin"] = __(
+            "Local Pinyin (offline fallback)",
+            "wpslug"
+        );
         $modes["transliteration"] = __(
             "Foreign Language Transliteration",
             "wpslug"
         );
-        $modes["translation"] = __("Multi-language Translation", "wpslug");
-        
+        $modes["translation"] = __(
+            "SEO Slug via Translation / WPMind",
+            "wpslug"
+        );
+
         return $modes;
     }
 
@@ -282,19 +296,75 @@ class WPSlug_Settings
             "baidu" => __("Baidu Translate", "wpslug"),
         ];
         
-        // 动态检测 WPMind 是否可用
+        // WPMind is the primary SEO-slug path; Google/Baidu stay as BYOK pipelines.
         if (function_exists('wpmind_is_available') && wpmind_is_available()) {
-            // WPMind 可用，添加到服务列表顶部（推荐）
             $services = array_merge(
-                ["wpmind" => __("WPMind AI (Recommended)", "wpslug")],
+                [
+                    "wpmind" => __(
+                        "WPMind AI SEO Slug (Recommended)",
+                        "wpslug"
+                    ),
+                ],
                 $services
             );
         } elseif (class_exists('\\WPMind\\WPMind')) {
-            // WPMind 已安装但未配置
             $services["wpmind"] = __("WPMind AI (Not Configured)", "wpslug");
         }
-        
+
         return $services;
+    }
+
+    /**
+     * Remember a WPMind quota/budget miss for the next admin page load.
+     * Billing lives in WPMind; WPSlug only surfaces the notice and falls back.
+     *
+     * @param WP_Error $error Error from wpmind_translate / wpmind_pinyin.
+     * @return void
+     */
+    public function recordWpmindQuotaNotice($error)
+    {
+        if (!is_wp_error($error)) {
+            return;
+        }
+
+        $code = method_exists($error, "get_error_code")
+            ? $error->get_error_code()
+            : "";
+        if (
+            !in_array(
+                $code,
+                ["wpmind_budget_exceeded", "wpmind_api_quota"],
+                true
+            )
+        ) {
+            return;
+        }
+
+        set_transient(
+            "wpslug_wpmind_quota_notice",
+            [
+                "code" => $code,
+                "message" => $error->get_error_message(),
+                "time" => time(),
+            ],
+            DAY_IN_SECONDS
+        );
+    }
+
+    /**
+     * Pull and clear a pending WPMind quota notice.
+     *
+     * @return array|null
+     */
+    public function pullWpmindQuotaNotice()
+    {
+        $notice = get_transient("wpslug_wpmind_quota_notice");
+        if ($notice === false || $notice === null) {
+            return null;
+        }
+
+        delete_transient("wpslug_wpmind_quota_notice");
+        return is_array($notice) ? $notice : null;
     }
 
     public function getLanguages()

@@ -247,7 +247,7 @@ class WPSlug_Translator {
         $start_time = microtime(true);
         
         $result = wpmind_translate($text, $source_lang, $target_lang, [
-            'context'     => 'wpslug_translation',
+            'context'     => 'wpslug_seo_slug',
             'format'      => 'slug',
             'cache_ttl'   => 86400,  // WPMind 内部缓存 1 天
             'max_tokens'  => 100,
@@ -258,6 +258,7 @@ class WPSlug_Translator {
 
         // WPMind can return WP_Error when the provider is unavailable or rejects the request.
         if (is_wp_error($result)) {
+            (new WPSlug_Settings())->recordWpmindQuotaNotice($result);
             if ($debug_mode) {
                 error_log('[WPSlug] WPMind error: ' . $result->get_error_message() . ' (took ' . $elapsed_time . 'ms)');
             }

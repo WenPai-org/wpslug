@@ -123,6 +123,32 @@ class WPSlug_Core {
             $from_auto_draft = $existing_post && isset($existing_post->post_status) && $existing_post->post_status === 'auto-draft';
             $explicit_set = isset($original_postarr['post_name']) && (string) $original_postarr['post_name'] !== '';
             $explicit_slug = $explicit_set ? (string) $original_postarr['post_name'] : '';
+            // wp_insert_post_data $data may omit post_status while the caller
+            // payload (postarr / unsanitized) still carries publish/future.
+            $post_status = '';
+            if (isset($data['post_status']) && (string) $data['post_status'] !== '') {
+                $post_status = (string) $data['post_status'];
+            } elseif (isset($postarr['post_status'])) {
+                $post_status = (string) $postarr['post_status'];
+            } elseif (isset($original_postarr['post_status'])) {
+                $post_status = (string) $original_postarr['post_status'];
+            }
+            $publish_like = in_array($post_status, array('publish', 'future'), true);
+            $convert_on_publish_only = !empty($options['convert_on_publish_only']);
+
+            // Draft/autosave path: do not call the model. Still drop placeholder
+            // Auto Draft pinyin so it cannot freeze into a later publish.
+            if ($convert_on_publish_only && !$publish_like) {
+                if ($is_update && $from_auto_draft) {
+                    $keep_explicit = $explicit_set
+                        && $explicit_slug !== (string) $existing_post->post_name
+                        && !$this->isPlaceholderSlug($explicit_slug);
+                    if (!$keep_explicit) {
+                        $data['post_name'] = '';
+                    }
+                }
+                return $data;
+            }
 
             // Leaving auto-draft: regenerate from the real title. Classic CPT
             // editors resubmit the leftover Auto Draft pinyin as post_name;
@@ -138,15 +164,19 @@ class WPSlug_Core {
                 }
             } else {
                 // A slug explicitly supplied by a user, REST client or importer
-                // is authoritative. WordPress 6.0 passes the original caller
-                // payload separately; the normalized post array can already
-                // contain the title-derived slug even when the caller did not
-                // supply one.
-                if ($explicit_set) {
+                // is authoritative. Placeholder leftovers (Auto Draft pinyin)
+                // are not author-chosen and must regenerate on publish.
+                if ($explicit_set && !$this->isPlaceholderSlug($explicit_slug)) {
                     return $data;
                 }
 
-                if ($is_update && isset($data['post_name']) && (string) $data['post_name'] !== '') {
+                if (
+                    !$explicit_set
+                    && $is_update
+                    && isset($data['post_name'])
+                    && (string) $data['post_name'] !== ''
+                    && !$this->isPlaceholderSlug($data['post_name'])
+                ) {
                     if (!$existing_post || (string) $existing_post->post_name !== '') {
                         return $data;
                     }

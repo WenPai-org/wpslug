@@ -69,9 +69,11 @@ Google / 百度是传统机翻管道（自备 key），与 WPMind 统一 LLM 能
 ### 4.1 近期（1.2.x）
 
 - 合入并发布 **1.2.3**：CPT auto-draft 占位 slug 冻结；更新 UI 链接 `wpcy.com/slug`；客户端丢掉坏 svg 键的逻辑可与资产侧 200 并存。
-- 文案对齐定位：有 WPMind 时突出「SEO slug / 语义拼音」；本地拼音写明「离线或失败时使用」。
-- 额度类 `WP_Error` 的用户可见提示（指向 WPMind 设置 / 充值）。
-- CI：mock 成功、`WP_Error`、未安装 WPMind；真实密钥继续 SKIP。
+- 文案对齐定位：有 WPMind 时突出「SEO slug / 语义拼音」；本地拼音写明「离线或失败时使用」。（本 PR 已改设置标签与 WPMind 区块）
+- 额度类 `WP_Error` 的用户可见提示（指向 WPMind 设置 / 充值）。（本 PR：`recordWpmindQuotaNotice` + admin notice）
+- 调用 context：`wpslug_seo_slug` / `wpslug_semantic_pinyin`。（本 PR）
+- 默认 `convert_on_publish_only`：草稿不打模型，离开 auto-draft 仍清占位 slug；批量转换提示为显式迁移。（本 PR）
+- CI：mock 成功、`WP_Error`、额度错误、未安装 WPMind；真实密钥继续 SKIP。
 
 ### 4.2 下一主版本（方向）
 

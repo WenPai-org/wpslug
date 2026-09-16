@@ -107,6 +107,28 @@ class WPSlug_Admin
             }
         }
         // phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+        $quota = $this->settings->pullWpmindQuotaNotice();
+        if (is_array($quota)) {
+            $wpmind_url = admin_url("options-general.php?page=wpmind");
+            echo '<div class="notice notice-warning is-dismissible"><p>';
+            echo esc_html__(
+                "WPMind quota or budget was exceeded while generating a slug. WPSlug fell back to local pinyin so the save was not blocked.",
+                "wpslug"
+            );
+            echo " ";
+            printf(
+                /* translators: %s: WPMind settings URL. */
+                esc_html__(
+                    "Top up credits or switch to your own API key in %s.",
+                    "wpslug"
+                ),
+                '<a href="' . esc_url($wpmind_url) . '">' .
+                    esc_html__("WPMind settings", "wpslug") .
+                    "</a>"
+            );
+            echo "</p></div>";
+        }
     }
 
     public function displayAdminPage()
@@ -359,7 +381,7 @@ class WPSlug_Admin
                     </select>
                     <p class="description">
                         <?php esc_html_e(
-                            "Select the conversion method. Pinyin for Chinese, Transliteration for Cyrillic/Arabic scripts, Translation for other languages.",
+                            "Prefer WPMind semantic pinyin or SEO slug when available. Local pinyin is the offline fallback when WPMind is missing, times out, or returns an error.",
                             "wpslug"
                         ); ?>
                     </p>
@@ -379,6 +401,31 @@ class WPSlug_Admin
                             "wpslug"
                         ); ?>
                     </label>
+                </td>
+            </tr>
+            <tr class="wpslug-dependent" data-depends="enable_conversion">
+                <th scope="row"><?php esc_html_e("Convert on Publish Only", "wpslug"); ?></th>
+                <td>
+                    <input type="hidden" name="wpslug_options[convert_on_publish_only]" value="0">
+                    <label>
+                        <input type="checkbox"
+                               name="wpslug_options[convert_on_publish_only]"
+                               value="1"
+                               <?php checked(
+                                   1,
+                                   !empty($options["convert_on_publish_only"])
+                               ); ?>>
+                        <?php esc_html_e(
+                            "Only convert post slugs when status is publish or future (skips draft autosaves)",
+                            "wpslug"
+                        ); ?>
+                    </label>
+                    <p class="description">
+                        <?php esc_html_e(
+                            "Reduces WPMind calls during autosave. Placeholder Auto Draft slugs are still cleared so they cannot freeze. Bulk Convert remains an explicit migration and may use WPMind quota.",
+                            "wpslug"
+                        ); ?>
+                    </p>
                 </td>
             </tr>
             <tr class="wpslug-dependent" data-depends="enable_conversion">
@@ -751,19 +798,19 @@ class WPSlug_Admin
             </div>
 
             <div class="wpslug-api-section" data-service="wpmind">
-                <h4><?php esc_html_e("WPMind AI Translation", "wpslug"); ?></h4>
+                <h4><?php esc_html_e("WPMind AI SEO Slug", "wpslug"); ?></h4>
                 <div class="wpslug-wpmind-status">
                     <?php if (function_exists('wpmind_is_available') && wpmind_is_available()): ?>
                         <p class="description" style="color: #2e7d32;">
                             <span class="dashicons dashicons-yes-alt"></span>
-                            <?php esc_html_e("WPMind is active and configured. No additional settings required.", "wpslug"); ?>
+                            <?php esc_html_e("WPMind is active. Credits and BYOK keys are managed in WPMind, not in WPSlug.", "wpslug"); ?>
                         </p>
                         <p class="description">
-                            <?php esc_html_e("WPMind uses AI to translate titles to SEO-friendly slugs. It provides more accurate and context-aware translations compared to traditional translation services.", "wpslug"); ?>
+                            <?php esc_html_e("WPMind is the primary path for SEO-friendly slugs and semantic pinyin. If quota is exceeded or the provider fails, WPSlug falls back to local pinyin so saving is not blocked.", "wpslug"); ?>
                         </p>
                         <p class="description">
                             <a href="<?php echo esc_url(admin_url('options-general.php?page=wpmind')); ?>">
-                                <?php esc_html_e("Configure WPMind Settings", "wpslug"); ?> →
+                                <?php esc_html_e("Open WPMind settings / credits", "wpslug"); ?> →
                             </a>
                         </p>
                     <?php else: ?>
@@ -772,7 +819,7 @@ class WPSlug_Admin
                             <?php esc_html_e("WPMind plugin is not active or not configured.", "wpslug"); ?>
                         </p>
                         <p class="description">
-                            <?php esc_html_e("Please install and activate the WPMind plugin to use AI-powered translation.", "wpslug"); ?>
+                            <?php esc_html_e("Install WPMind for AI SEO slugs and semantic pinyin. Until then, local pinyin remains available as the offline fallback.", "wpslug"); ?>
                             <a href="https://wpcy.com/mind/" target="_blank"><?php esc_html_e("Learn more", "wpslug"); ?></a>
                         </p>
                     <?php endif; ?>
@@ -1515,9 +1562,14 @@ class WPSlug_Admin
                 __("Successfully converted %d slug(s).", "wpslug"),
                 $count
             );
+            $tip = __(
+                "Bulk Convert is an explicit migration: it rewrites selected posts now and may consume WPMind quota when AI modes are active.",
+                "wpslug"
+            );
             printf(
-                '<div class="notice notice-success is-dismissible"><p>%s</p></div>',
-                esc_html($message)
+                '<div class="notice notice-success is-dismissible"><p>%s</p><p>%s</p></div>',
+                esc_html($message),
+                esc_html($tip)
             );
         }
     }

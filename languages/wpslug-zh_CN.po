@@ -1,10 +1,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: WPSlug\n"
+"Project-Id-Version: WPSlug 1.2.3\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wpslug\n"
 "POT-Creation-Date: 2026-02-28T15:19:21+08:00\n"
-"PO-Revision-Date: 2026-08-12 00:00+0800\n"
+"PO-Revision-Date: 2026-09-17 02:50+0800\n"
 "Last-Translator: WenPai Translation Team\n"
 "Language-Team: Chinese (Simplified)\n"
 "Language: zh_CN\n"
@@ -937,6 +937,119 @@ msgstr "意外错误！查询许可证数据时返回了格式错误的响应。
 
 msgid "API connection failed:"
 msgstr "API 连接失败："
+
+# 1.2.x fills — WPMind-first copy, publish-only, editor preview, post-type modes
+
+msgid "Convert on Publish Only"
+msgstr "仅发布时转换"
+
+msgid "Only convert post slugs when status is publish or future (skips draft autosaves)"
+msgstr "仅在状态为「已发布」或「定时」时转换文章别名（跳过草稿自动保存）"
+
+msgid "Reduces WPMind calls during autosave. Placeholder Auto Draft slugs are still cleared so they cannot freeze. Bulk Convert remains an explicit migration and may use WPMind quota."
+msgstr "减少自动保存时对 WPMind 的调用。占位「自动草稿」别名仍会被清除，避免冻结。批量转换仍是显式迁移，启用 AI 模式时可能消耗 WPMind 额度。"
+
+msgid "Prefer WPMind semantic pinyin or SEO slug when available. Local pinyin is the offline fallback when WPMind is missing, times out, or returns an error."
+msgstr "有 WPMind 时优先语义拼音或 SEO 别名；未安装、超时或出错时回退本地拼音。"
+
+msgid "Semantic Pinyin via WPMind (Recommended)"
+msgstr "语义化拼音（WPMind，推荐）"
+
+msgid "Local pinyin (offline fallback)"
+msgstr "本地拼音（离线兜底）"
+
+msgid "SEO Slug via Translation / WPMind"
+msgstr "SEO 别名（翻译 / WPMind）"
+
+msgid "WPMind AI SEO Slug (Recommended)"
+msgstr "WPMind AI SEO 别名（推荐）"
+
+msgid "WPMind AI SEO Slug"
+msgstr "WPMind AI SEO 别名"
+
+msgid "WPMind is active. Credits and BYOK keys are managed in WPMind, not in WPSlug."
+msgstr "WPMind 已启用。积分与自备密钥（BYOK）在 WPMind 中管理，不在文派素格。"
+
+msgid "WPMind is the primary path for SEO-friendly slugs and semantic pinyin. If quota is exceeded or the provider fails, WPSlug falls back to local pinyin so saving is not blocked."
+msgstr "SEO 友好别名与语义拼音以 WPMind 为主路径。额度不足或上游失败时，文派素格回退本地拼音，保存不会中断。"
+
+msgid "Open WPMind settings / credits"
+msgstr "打开 WPMind 设置 / 积分"
+
+msgid "Install WPMind for AI SEO slugs and semantic pinyin. Until then, local pinyin remains available as the offline fallback."
+msgstr "安装 WPMind 以使用 AI SEO 别名与语义拼音；在此之前本地拼音仍可作为离线兜底。"
+
+msgid "Default strategy per post type"
+msgstr "按文章类型的默认策略"
+
+msgid "Optional overrides. Example: blog posts → SEO slug via WPMind; product CPT → semantic pinyin. Leave as inherit to use the global conversion mode."
+msgstr "可选覆盖。例如：博客文章 → WPMind SEO 别名；产品 CPT → 语义拼音。选「跟随全局」则使用全局转换模式。"
+
+msgid "Post type"
+msgstr "文章类型"
+
+msgid "Default feature"
+msgstr "默认能力"
+
+msgid "Use global conversion mode"
+msgstr "跟随全局转换模式"
+
+msgid "SEO slug via WPMind (English-friendly)"
+msgstr "WPMind SEO 别名（偏英文）"
+
+msgid "Semantic pinyin via WPMind"
+msgstr "WPMind 语义拼音"
+
+msgid "WPMind quota or budget was exceeded while generating a slug. WPSlug fell back to local pinyin so the save was not blocked."
+msgstr "生成别名时 WPMind 额度或预算不足。文派素格已回退本地拼音，保存未中断。"
+
+msgid "Top up credits or switch to your own API key in %s."
+msgstr "请在 %s 充值积分，或改填自己的 API 密钥。"
+
+msgid "WPMind settings"
+msgstr "WPMind 设置"
+
+msgid "Bulk Convert is an explicit migration: it rewrites selected posts now and may consume WPMind quota when AI modes are active."
+msgstr "批量转换是显式迁移：会立即改写所选文章；启用 AI 模式时可能消耗 WPMind 额度。"
+
+msgid "用 AI 生成"
+msgstr "用 AI 生成"
+
+msgid "用语义拼音"
+msgstr "用语义拼音"
+
+msgid "应用到固定链接"
+msgstr "应用到固定链接"
+
+msgid "WPSlug 预览"
+msgstr "文派素格预览"
+
+msgid "先预览，确认后再写入。不会在自动保存时静默覆盖。"
+msgstr "先预览，确认后再写入。不会在自动保存时静默覆盖。"
+
+msgid "未启用 WPMind 时将回退本地拼音。"
+msgstr "未启用 WPMind 时将回退本地拼音。"
+
+msgid "生成中…"
+msgstr "生成中…"
+
+msgid "请先填写标题。"
+msgstr "请先填写标题。"
+
+msgid "预览"
+msgstr "预览"
+
+msgid "已写入固定链接，保存后生效。"
+msgstr "已写入固定链接，保存后生效。"
+
+msgid "生成失败，已可改用本地拼音或稍后重试。"
+msgstr "生成失败，已可改用本地拼音或稍后重试。"
+
+msgid "无权编辑此文章。"
+msgstr "无权编辑此文章。"
+
+msgid "无权生成 slug 预览。"
+msgstr "无权生成别名预览。"
 
 #~ msgid "WPSlug.com"
 #~ msgstr "文派素格"

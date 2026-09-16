@@ -264,7 +264,7 @@ class WPSlug_Settings
         }
 
         $modes["pinyin"] = __(
-            "Local Pinyin (offline fallback)",
+            "Local pinyin (offline fallback)",
             "wpslug"
         );
         $modes["transliteration"] = __(

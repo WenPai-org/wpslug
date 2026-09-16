@@ -1507,7 +1507,7 @@ class WPSlug_Admin
             "isBlock" => (bool) $block,
             "strings" => [
                 "panelTitle" => __("WPSlug", "wpslug"),
-                "seoButton" => __("用 AI 生成 SEO slug", "wpslug"),
+                "seoButton" => __("用 AI 生成", "wpslug"),
                 "pinyinButton" => __("用语义拼音", "wpslug"),
                 "applyButton" => __("应用到固定链接", "wpslug"),
                 "generating" => __("生成中…", "wpslug"),
@@ -1671,7 +1671,7 @@ class WPSlug_Admin
             </p>
             <p class="wpslug-editor-actions" style="margin: 0 0 8px;">
                 <button type="button" class="button button-secondary wpslug-editor-seo">
-                    <?php esc_html_e("用 AI 生成 SEO slug", "wpslug"); ?>
+                    <?php esc_html_e("用 AI 生成", "wpslug"); ?>
                 </button>
                 <button type="button" class="button button-secondary wpslug-editor-pinyin">
                     <?php esc_html_e("用语义拼音", "wpslug"); ?>

@@ -394,7 +394,7 @@ check(strpos($admin_source, 'convert_on_publish_only') !== false, 'exposes conve
 check(strpos($admin_source, 'Bulk Convert is an explicit migration') !== false, 'tips that bulk convert is an explicit migration');
 check(strpos($admin_source, 'WPMind quota or budget was exceeded') !== false, 'surfaces WPMind quota notices in admin');
 check(strpos($admin_source, 'wpslug_editor_preview') !== false, 'registers editor slug preview AJAX');
-check(strpos($admin_source, '用 AI 生成 SEO slug') !== false, 'exposes AI SEO slug preview button copy');
+check(strpos($admin_source, '用 AI 生成') !== false, 'exposes AI generate preview button copy');
 check(strpos($admin_source, '用语义拼音') !== false, 'exposes semantic pinyin preview button copy');
 check(strpos($admin_source, 'post_type_modes') !== false, 'exposes per-post-type default strategy UI');
 check(file_exists(WPSLUG_PLUGIN_DIR . 'assets/editor.js'), 'ships editor.js for slug preview controls');

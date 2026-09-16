@@ -949,8 +949,8 @@ msgstr "仅在状态为「已发布」或「定时」时转换文章别名（跳
 msgid "Reduces WPMind calls during autosave. Placeholder Auto Draft slugs are still cleared so they cannot freeze. Bulk Convert remains an explicit migration and may use WPMind quota."
 msgstr "减少自动保存时对 WPMind 的调用。占位「自动草稿」别名仍会被清除，避免冻结。批量转换仍是显式迁移，启用 AI 模式时可能消耗 WPMind 额度。"
 
-msgid "Choose local pinyin, semantic pinyin (XinSi AI), multi-language translation, or transliteration. When WenPai XinSi (WPMind) is unavailable, semantic pinyin falls back to local pinyin."
-msgstr "可选本地拼音、语义拼音（心思 AI）、多语言翻译或转写。未启用文派心思（WPMind）时，语义拼音会回退本地拼音。"
+msgid "Choose local pinyin, semantic pinyin (XinSi AI), multi-language translation, or transliteration."
+msgstr "可选本地拼音、语义拼音（心思 AI）、多语言翻译或转写。"
 
 msgid "Local pinyin"
 msgstr "本地拼音"
@@ -973,8 +973,8 @@ msgstr "文派心思（WPMind）（未配置）"
 msgid "WenPai XinSi (WPMind)"
 msgstr "文派心思（WPMind）"
 
-msgid "WenPai XinSi (WPMind) is active. Credits and BYOK keys are managed there, not in WPSlug."
-msgstr "文派心思（WPMind）已启用。积分与自备密钥（BYOK）在心思里管理，不在文派素格。"
+msgid "WenPai XinSi (WPMind) is active. Credits and BYOK keys are managed there."
+msgstr "文派心思（WPMind）已启用。积分与自备密钥（BYOK）在心思里管理。"
 
 msgid "Use it for semantic pinyin (XinSi AI) and multi-language translation. If quota is exceeded or the provider fails, WPSlug falls back to local pinyin so saving is not blocked."
 msgstr "用于语义拼音（心思 AI）与多语言翻译。额度不足或上游失败时，文派素格回退本地拼音，保存不会中断。"

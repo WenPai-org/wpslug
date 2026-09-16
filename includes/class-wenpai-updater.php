@@ -41,6 +41,13 @@ class WPSlug_Updater {
     const API_URL = 'https://updates.wenpai.net/api/v1';
 
     /**
+     * Public product page used for plugin links in the update UI.
+     *
+     * @var string
+     */
+    const PLUGIN_HOME_URL = 'https://wpcy.com/slug';
+
+    /**
      * 插件主文件 basename（如 wpslug/wpslug.php）。
      *
      * @var string
@@ -130,6 +137,10 @@ class WPSlug_Updater {
         }
 
         $data = $response['plugins'][ $this->plugin_file ];
+        $media = self::normalize_update_assets(
+            isset( $data['icons'] ) && is_array( $data['icons'] ) ? $data['icons'] : [],
+            isset( $data['url'] ) ? (string) $data['url'] : ''
+        );
 
         return (object) [
             'id'           => $data['id'] ?? '',
@@ -137,13 +148,37 @@ class WPSlug_Updater {
             'plugin'       => $this->plugin_file,
             'version'      => $data['version'] ?? '',
             'new_version'  => $data['version'] ?? '',
-            'url'          => $data['url'] ?? '',
+            'url'          => $media['url'],
             'package'      => $data['package'] ?? '',
-            'icons'        => $data['icons'] ?? [],
+            'icons'        => $media['icons'],
             'banners'      => $data['banners'] ?? [],
             'requires'     => $data['requires'] ?? '',
             'tested'       => $data['tested'] ?? '',
             'requires_php' => $data['requires_php'] ?? '',
+        ];
+    }
+
+    /**
+     * Drop broken remote SVG icons and fill an empty plugin URL.
+     *
+     * The cloud bridge currently advertises icon-256x256.svg (HTTP 404). WordPress
+     * prefers the svg key in the update table, so the plugin row icon breaks.
+     *
+     * @param array<string, string> $icons Icon URLs from the update API.
+     * @param string                $url   Plugin URL from the update API.
+     * @return array{icons: array<string, string>, url: string}
+     * @since 1.2.3
+     */
+    public static function normalize_update_assets( array $icons, string $url = '' ): array {
+        unset( $icons['svg'] );
+
+        if ( $url === '' || false === strpos( $url, 'wpcy.com/slug' ) ) {
+            $url = self::PLUGIN_HOME_URL;
+        }
+
+        return [
+            'icons' => $icons,
+            'url'   => $url,
         ];
     }
 
@@ -173,14 +208,18 @@ class WPSlug_Updater {
             $info->name          = $response['name'];
             $info->slug          = $response['slug'] ?? $this->slug;
             $info->version       = $response['version'] ?? '';
+            $media               = self::normalize_update_assets(
+                isset( $response['icons'] ) && is_array( $response['icons'] ) ? $response['icons'] : [],
+                isset( $response['homepage'] ) ? (string) $response['homepage'] : ''
+            );
             $info->author        = $response['author'] ?? '';
-            $info->homepage      = $response['homepage'] ?? '';
+            $info->homepage      = $media['url'];
             $info->download_link = $response['download_link'] ?? '';
             $info->requires      = $response['requires'] ?? '';
             $info->tested        = $response['tested'] ?? '';
             $info->requires_php  = $response['requires_php'] ?? '';
             $info->last_updated  = $response['last_updated'] ?? '';
-            $info->icons         = $response['icons'] ?? [];
+            $info->icons         = $media['icons'];
             $info->banners       = $response['banners'] ?? [];
             $info->sections      = array_map( [ $this, 'markdown_to_html' ], $response['sections'] ?? [] );
             $info->external      = true;
@@ -205,7 +244,8 @@ class WPSlug_Updater {
         $info->slug         = $this->slug;
         $info->version      = $this->version;
         $info->author       = $plugin_data['AuthorName'];
-        $info->homepage     = $plugin_data['PluginURI'];
+        $info->homepage     = ! empty( $plugin_data['PluginURI'] ) ? $plugin_data['PluginURI'] : self::PLUGIN_HOME_URL;
+        $info->icons        = self::normalize_update_assets( [], '' )['icons'];
         $info->requires     = $plugin_data['RequiresWP'];
         $info->requires_php = $plugin_data['RequiresPHP'];
         $info->sections     = [

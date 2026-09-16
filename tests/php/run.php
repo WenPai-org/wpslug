@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 const ABSPATH = __DIR__ . '/';
 const WPSLUG_PLUGIN_DIR = __DIR__ . '/../../';
-const WPSLUG_VERSION = '1.2.2';
+const WPSLUG_VERSION = '1.2.3';
 const DAY_IN_SECONDS = 86400;
 
 $GLOBALS['wpslug_options'] = [];
@@ -191,7 +191,55 @@ $auto_draft = $core->processPostData(
     ],
     true
 );
-check($auto_draft['post_name'] === 'auto-draft-custom', 'preserves a custom auto-draft slug on publication');
+check($auto_draft['post_name'] === 'zhun-bei-fa-bu', 'converts leftover auto-draft slug from the real title on publication');
+
+$placeholder = $core->processPostData(
+    [
+        'post_title' => '自动草稿',
+        'post_name' => '',
+        'post_type' => 'post',
+        'post_status' => 'auto-draft',
+    ],
+    [
+        'post_status' => 'auto-draft',
+        'post_type' => 'post',
+    ]
+);
+check($placeholder['post_name'] === '', 'does not convert Auto Draft placeholder title into pinyin');
+
+$GLOBALS['wpslug_options'] = array_merge(
+    (array) $GLOBALS['wpslug_options'],
+    ['enabled_post_types' => ['post', 'page', 'item']]
+);
+$GLOBALS['wpslug_posts'][22] = (object) [
+    'ID' => 22,
+    'post_status' => 'auto-draft',
+    'post_name' => 'zi-dong-cao-gao-22',
+    'post_type' => 'item',
+];
+$cpt_publish = $core->processPostData(
+    [
+        'post_title' => '互感器',
+        'post_name' => 'zi-dong-cao-gao-22',
+        'post_type' => 'item',
+        'post_status' => 'publish',
+    ],
+    [
+        'ID' => 22,
+        'post_status' => 'publish',
+        'post_type' => 'item',
+        'post_name' => 'zi-dong-cao-gao-22',
+    ],
+    [
+        'ID' => 22,
+        'post_title' => '互感器',
+        'post_type' => 'item',
+        'post_status' => 'publish',
+        'post_name' => 'zi-dong-cao-gao-22',
+    ],
+    true
+);
+check($cpt_publish['post_name'] === 'hu-gan-qi', 'regenerates a CPT slug from the real title instead of Auto Draft pinyin');
 
 $zero_slug = $core->processPostData(
     [
@@ -252,6 +300,8 @@ check($semantic === 'wenpai-suge', 'uses the current WPMind semantic pinyin func
 $admin_source = file_get_contents(WPSLUG_PLUGIN_DIR . 'includes/class-wpslug-admin.php');
 check(strpos($admin_source, 'Received input data') === false, 'does not write API credentials to debug logs');
 check(substr_count($admin_source, 'current_user_can("manage_options")') >= 3, 'protects settings page and AJAX endpoints with manage_options');
+check(strpos($admin_source, 'https://wpcy.com/c/wpslug/') === false, 'does not link support to the missing community URL');
+check(substr_count($admin_source, 'https://wpcy.com/slug') >= 2, 'points documentation and support at wpcy.com/slug');
 
 $settings = new WPSlug_Settings();
 $GLOBALS['wpslug_options']['google_api_key'] = 'google-secret';
@@ -278,6 +328,18 @@ check($redacted['options']['google_api_key'] === '[redacted]' && $redacted['opti
 
 $updater_source = file_get_contents(WPSLUG_PLUGIN_DIR . 'includes/class-wenpai-updater.php');
 check(strpos($updater_source, 'str_starts_with') === false, 'keeps updater compatible with declared PHP 7.4 minimum');
+require_once WPSLUG_PLUGIN_DIR . 'includes/class-wenpai-updater.php';
+$normalized_assets = WPSlug_Updater::normalize_update_assets(
+    [
+        '1x' => 'https://updates.wenpai.net/assets/wpslug/icon-128x128.png',
+        '2x' => 'https://updates.wenpai.net/assets/wpslug/icon-256x256.png',
+        'svg' => 'https://updates.wenpai.net/assets/wpslug/icon-256x256.svg',
+    ],
+    ''
+);
+check(!isset($normalized_assets['icons']['svg']), 'drops the 404 svg update icon');
+check($normalized_assets['icons']['1x'] === 'https://updates.wenpai.net/assets/wpslug/icon-128x128.png', 'keeps png update icons');
+check($normalized_assets['url'] === 'https://wpcy.com/slug', 'uses wpcy.com/slug when the update URL is empty');
 
 $main_source = file_get_contents(WPSLUG_PLUGIN_DIR . 'wpslug.php');
 check(strpos($main_source, 'version_compare(PHP_VERSION, "7.4"') !== false, 'runtime PHP requirement matches plugin metadata');

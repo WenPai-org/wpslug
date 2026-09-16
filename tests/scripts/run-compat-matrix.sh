@@ -88,9 +88,9 @@ assert_eq 'wen-pai-su-ge-2' "$(wp "$single" post get "$duplicate_id" --field=pos
 custom_id=$(wp "$single" post create --post_title='原始标题' --post_name='kept-custom-slug' --post_status=publish --porcelain)
 wp "$single" post update "$custom_id" --post_title='修改后的标题' >/dev/null
 assert_eq 'kept-custom-slug' "$(wp "$single" post get "$custom_id" --field=post_name)" 'single-site custom slug preservation'
-auto_draft_id=$(wp "$single" post create --post_title='自动草稿' --post_name='auto-draft-custom' --post_status=auto-draft --porcelain)
-wp "$single" post update "$auto_draft_id" --post_title='自动草稿发布' --post_status=publish >/dev/null
-assert_eq 'auto-draft-custom' "$(wp "$single" post get "$auto_draft_id" --field=post_name)" 'single-site auto-draft custom slug preservation'
+auto_draft_id=$(wp "$single" post create --post_title='自动草稿' --post_status=auto-draft --porcelain)
+wp "$single" post update "$auto_draft_id" --post_title='互感器' --post_status=publish >/dev/null
+assert_eq 'hu-gan-qi' "$(wp "$single" post get "$auto_draft_id" --field=post_name)" 'single-site auto-draft placeholder slug is replaced on publish'
 wp "$single" plugin deactivate wpslug
 if wp "$single" plugin is-active wpslug >/dev/null 2>&1; then echo 'FAIL: single-site deactivation'; exit 1; fi
 printf 'PASS: single-site deactivation\n'

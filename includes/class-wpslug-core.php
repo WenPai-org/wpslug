@@ -115,23 +115,41 @@ class WPSlug_Core {
                 return $data;
             }
 
-            // A slug explicitly supplied by a user, REST client or importer is
-            // authoritative. WordPress 6.0 passes the original caller payload
-            // separately; the normalized post array can already contain the
-            // title-derived slug even when the caller did not supply one.
-            if (
-                isset($original_postarr['post_name']) &&
-                (string) $original_postarr['post_name'] !== ''
-            ) {
+            if ($this->isPlaceholderTitle($data['post_title'])) {
                 return $data;
             }
 
-            // Existing content keeps its stored slug, including an auto-draft
-            // with a slug chosen before publication.
-            if ($is_update && isset($data['post_name']) && (string) $data['post_name'] !== '') {
-                $existing_post = !empty($postarr['ID']) ? get_post($postarr['ID']) : null;
-                if (!$existing_post || (string) $existing_post->post_name !== '') {
+            $existing_post = !empty($postarr['ID']) ? get_post($postarr['ID']) : null;
+            $from_auto_draft = $existing_post && isset($existing_post->post_status) && $existing_post->post_status === 'auto-draft';
+            $explicit_set = isset($original_postarr['post_name']) && (string) $original_postarr['post_name'] !== '';
+            $explicit_slug = $explicit_set ? (string) $original_postarr['post_name'] : '';
+
+            // Leaving auto-draft: regenerate from the real title. Classic CPT
+            // editors resubmit the leftover Auto Draft pinyin as post_name;
+            // that is not an author-chosen slug. Keep a slug only when the
+            // caller sent a different, non-placeholder value.
+            if ($is_update && $from_auto_draft) {
+                if (
+                    $explicit_set &&
+                    $explicit_slug !== (string) $existing_post->post_name &&
+                    !$this->isPlaceholderSlug($explicit_slug)
+                ) {
                     return $data;
+                }
+            } else {
+                // A slug explicitly supplied by a user, REST client or importer
+                // is authoritative. WordPress 6.0 passes the original caller
+                // payload separately; the normalized post array can already
+                // contain the title-derived slug even when the caller did not
+                // supply one.
+                if ($explicit_set) {
+                    return $data;
+                }
+
+                if ($is_update && isset($data['post_name']) && (string) $data['post_name'] !== '') {
+                    if (!$existing_post || (string) $existing_post->post_name !== '') {
+                        return $data;
+                    }
                 }
             }
 
@@ -414,6 +432,47 @@ class WPSlug_Core {
 
     private function needsConversion($text) {
         return preg_match('/[^\x00-\x7F]/', $text);
+    }
+
+    /**
+     * WordPress stores new posts as Auto Draft before the editor title exists.
+     *
+     * @param string $title Post title.
+     * @return bool
+     * @since 1.2.3
+     */
+    private function isPlaceholderTitle($title) {
+        $normalized = trim((string) $title);
+        if ($normalized === '') {
+            return true;
+        }
+
+        $placeholders = array(
+            'Auto Draft',
+            '自动草稿',
+            '自動草稿',
+        );
+        if (function_exists('__')) {
+            $placeholders[] = __('Auto Draft');
+        }
+
+        return in_array($normalized, $placeholders, true);
+    }
+
+    /**
+     * Slugs produced from the Auto Draft placeholder, plus WP's own auto-draft name.
+     *
+     * @param string $slug Post slug.
+     * @return bool
+     * @since 1.2.3
+     */
+    private function isPlaceholderSlug($slug) {
+        $normalized = (string) $slug;
+        if ($normalized === '') {
+            return true;
+        }
+
+        return (bool) preg_match('/^(?:auto-draft|zi-dong-cao-gao)(?:-\d+)?$/', $normalized);
     }
 
     public function activate() {

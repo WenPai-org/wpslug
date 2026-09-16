@@ -4,7 +4,7 @@ Tags: slug, pinyin, transliteration, translation, media
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,6 +23,11 @@ Media conversion applies only to newly uploaded filenames. Bulk conversion is an
 3. Configure it under Settings > Slug.
 
 == Changelog ==
+
+= 1.2.3 =
+* Stop freezing custom post type slugs as the pinyin of "Auto Draft" / 自动草稿. The real title is converted when the auto-draft is saved.
+* Use https://wpcy.com/slug for plugin links in the update UI and drop the missing SVG update icon (404).
+* Set plugin author to WPCY.COM.
 
 = 1.2.2 =
 * Support WordPress 6.0 with PHP 7.4 through WordPress 7.0.

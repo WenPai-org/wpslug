@@ -82,7 +82,8 @@ jobs:
           set -euo pipefail
           TAG="${GITHUB_REF#refs/tags/}"
 
-          PREV_TAG=$(git tag --sort=-version:refname | grep -E '^v' | grep -v "^${TAG}$" | head -1)
+          # grep may exit 1 when only the current tag exists; do not trip pipefail.
+          PREV_TAG=$(git tag --sort=-version:refname | grep -E '^v' | grep -v "^${TAG}$" | head -1 || true)
 
           if [ -n "$PREV_TAG" ]; then
             echo "Changelog: ${PREV_TAG}..${TAG}"
@@ -98,8 +99,12 @@ jobs:
             exit 0
           fi
 
+          # git log --pretty=format has no trailing newline on the last line.
+          # Under set -e, a bare `while read ... <<< "$COMMITS"` exits 1 and
+          # aborts the job before ZIP/Release (WPSlug 1.2.3 #279).
           FEAT="" FIX="" OTHER=""
-          while IFS= read -r line; do
+          while IFS= read -r line || [ -n "${line:-}" ]; do
+            [ -z "$line" ] && continue
             case "$line" in
               feat:*|feat\(*) FEAT="${FEAT}\n- ${line}" ;;
               fix:*|fix\(*)   FIX="${FIX}\n- ${line}" ;;
@@ -126,14 +131,15 @@ jobs:
           fi
 
           printf '%b' "$CHANGELOG" > /tmp/changelog.md
-          echo "Changelog generated ($(echo "$COMMITS" | wc -l) commits)"
+          echo "Changelog generated ($(printf '%s\n' "$COMMITS" | grep -c . || true) commits)"
 
       - name: PHP Lint
         shell: bash
         run: |
           set -euo pipefail
           ERRORS=0
-          while IFS= read -r file; do
+          while IFS= read -r file || [ -n "${file:-}" ]; do
+            [ -z "${file:-}" ] && continue
             if ! php -l "$file" > /dev/null 2>&1; then
               php -l "$file"
               ERRORS=$((ERRORS + 1))

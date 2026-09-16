@@ -964,8 +964,8 @@ msgstr "语义拼音（需要文派心思）"
 msgid "Multi-language translation"
 msgstr "多语言翻译"
 
-msgid "WenPai XinSi (WPMind) (Recommended)"
-msgstr "文派心思（WPMind）（推荐）"
+msgid "XinSi AI (Recommended)"
+msgstr "心思 AI（推荐）"
 
 msgid "WenPai XinSi (WPMind) (Not Configured)"
 msgstr "文派心思（WPMind）（未配置）"

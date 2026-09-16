@@ -304,7 +304,7 @@ class WPSlug_Settings
             $services = array_merge(
                 [
                     "wpmind" => __(
-                        "WenPai XinSi (WPMind) (Recommended)",
+                        "XinSi AI (Recommended)",
                         "wpslug"
                     ),
                 ],

@@ -4,7 +4,7 @@ Tags: slug, pinyin, transliteration, translation, media
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.2.5
+Stable tag: 1.2.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,6 +23,9 @@ Media conversion applies only to newly uploaded filenames. Bulk conversion is an
 3. Configure it under Settings > Slug.
 
 == Changelog ==
+
+= 1.2.6 =
+* Changed: translation service label to XinSi AI (Recommended) / 心思 AI（推荐）.
 
 = 1.2.5 =
 * Changed: trim conversion-mode and XinSi status copy.

@@ -1,6 +1,6 @@
 {
   "name": "wpslug",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "\u6587\u6d3e\u7d20\u683c \ud83c\udf64\uff08WPSlug.com\uff09\u66f4\u53cb\u597d\u7f8e\u89c2\u7684 WordPress \u6587\u7ae0\u3001\u9875\u9762\u3001\u5a92\u4f53\u522b\u540d slug \uff0c\u652f\u6301\u62fc\u97f3\u548c\u7ffb\u8bd1\u7b49\u81ea\u52a8\u751f\u6210\u3002",
   "scripts": {
     "test:php": "php tests/php/run.php",

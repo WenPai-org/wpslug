@@ -949,41 +949,50 @@ msgstr "仅在状态为「已发布」或「定时」时转换文章别名（跳
 msgid "Reduces WPMind calls during autosave. Placeholder Auto Draft slugs are still cleared so they cannot freeze. Bulk Convert remains an explicit migration and may use WPMind quota."
 msgstr "减少自动保存时对 WPMind 的调用。占位「自动草稿」别名仍会被清除，避免冻结。批量转换仍是显式迁移，启用 AI 模式时可能消耗 WPMind 额度。"
 
-msgid "Prefer WPMind semantic pinyin or SEO slug when available. Local pinyin is the offline fallback when WPMind is missing, times out, or returns an error."
-msgstr "有 WPMind 时优先语义拼音或 SEO 别名；未安装、超时或出错时回退本地拼音。"
+msgid "Choose local pinyin, semantic pinyin (XinSi AI), multi-language translation, or transliteration. When WenPai XinSi (WPMind) is unavailable, semantic pinyin falls back to local pinyin."
+msgstr "可选本地拼音、语义拼音（心思 AI）、多语言翻译或转写。未启用文派心思（WPMind）时，语义拼音会回退本地拼音。"
 
-msgid "Semantic Pinyin via WPMind (Recommended)"
-msgstr "语义化拼音（WPMind，推荐）"
+msgid "Local pinyin"
+msgstr "本地拼音"
 
-msgid "Local pinyin (offline fallback)"
-msgstr "本地拼音（离线兜底）"
+msgid "Semantic pinyin (XinSi AI)"
+msgstr "语义拼音（心思 AI）"
 
-msgid "SEO Slug via Translation / WPMind"
-msgstr "SEO 别名（翻译 / WPMind）"
+msgid "Semantic pinyin (requires WenPai XinSi)"
+msgstr "语义拼音（需要文派心思）"
 
-msgid "WPMind AI SEO Slug (Recommended)"
-msgstr "WPMind AI SEO 别名（推荐）"
+msgid "Multi-language translation"
+msgstr "多语言翻译"
 
-msgid "WPMind AI SEO Slug"
-msgstr "WPMind AI SEO 别名"
+msgid "WenPai XinSi (WPMind) (Recommended)"
+msgstr "文派心思（WPMind）（推荐）"
 
-msgid "WPMind is active. Credits and BYOK keys are managed in WPMind, not in WPSlug."
-msgstr "WPMind 已启用。积分与自备密钥（BYOK）在 WPMind 中管理，不在文派素格。"
+msgid "WenPai XinSi (WPMind) (Not Configured)"
+msgstr "文派心思（WPMind）（未配置）"
 
-msgid "WPMind is the primary path for SEO-friendly slugs and semantic pinyin. If quota is exceeded or the provider fails, WPSlug falls back to local pinyin so saving is not blocked."
-msgstr "SEO 友好别名与语义拼音以 WPMind 为主路径。额度不足或上游失败时，文派素格回退本地拼音，保存不会中断。"
+msgid "WenPai XinSi (WPMind)"
+msgstr "文派心思（WPMind）"
 
-msgid "Open WPMind settings / credits"
-msgstr "打开 WPMind 设置 / 积分"
+msgid "WenPai XinSi (WPMind) is active. Credits and BYOK keys are managed there, not in WPSlug."
+msgstr "文派心思（WPMind）已启用。积分与自备密钥（BYOK）在心思里管理，不在文派素格。"
 
-msgid "Install WPMind for AI SEO slugs and semantic pinyin. Until then, local pinyin remains available as the offline fallback."
-msgstr "安装 WPMind 以使用 AI SEO 别名与语义拼音；在此之前本地拼音仍可作为离线兜底。"
+msgid "Use it for semantic pinyin (XinSi AI) and multi-language translation. If quota is exceeded or the provider fails, WPSlug falls back to local pinyin so saving is not blocked."
+msgstr "用于语义拼音（心思 AI）与多语言翻译。额度不足或上游失败时，文派素格回退本地拼音，保存不会中断。"
+
+msgid "Open WenPai XinSi (WPMind) settings"
+msgstr "打开文派心思（WPMind）设置"
+
+msgid "WenPai XinSi (WPMind) is not active or not configured."
+msgstr "文派心思（WPMind）未启用或未配置。"
+
+msgid "Install WenPai XinSi (WPMind) for semantic pinyin (XinSi AI) and multi-language translation. Until then, local pinyin remains available."
+msgstr "安装文派心思（WPMind）以使用语义拼音（心思 AI）与多语言翻译；在此之前仍可使用本地拼音。"
 
 msgid "Default strategy per post type"
 msgstr "按文章类型的默认策略"
 
-msgid "Optional overrides. Example: blog posts → SEO slug via WPMind; product CPT → semantic pinyin. Leave as inherit to use the global conversion mode."
-msgstr "可选覆盖。例如：博客文章 → WPMind SEO 别名；产品 CPT → 语义拼音。选「跟随全局」则使用全局转换模式。"
+msgid "Optional overrides per post type. Example: posts → multi-language translation; products → semantic pinyin (XinSi AI). Choose “use global” to follow the conversion mode above."
+msgstr "可按文章类型覆盖。例如：文章 → 多语言翻译；产品 → 语义拼音（心思 AI）。选「跟随全局」则使用上方的转换模式。"
 
 msgid "Post type"
 msgstr "文章类型"
@@ -993,12 +1002,6 @@ msgstr "默认能力"
 
 msgid "Use global conversion mode"
 msgstr "跟随全局转换模式"
-
-msgid "SEO slug via WPMind (English-friendly)"
-msgstr "WPMind SEO 别名（偏英文）"
-
-msgid "Semantic pinyin via WPMind"
-msgstr "WPMind 语义拼音"
 
 msgid "WPMind quota or budget was exceeded while generating a slug. WPSlug fell back to local pinyin so the save was not blocked."
 msgstr "生成别名时 WPMind 额度或预算不足。文派素格已回退本地拼音，保存未中断。"

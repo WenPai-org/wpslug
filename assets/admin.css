@@ -539,3 +539,49 @@
         font-size: 16px;
     }
 }
+/* Per-post-type default strategy table */
+.wpslug-post-type-modes {
+    margin: 12px 0 20px;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.wpslug-post-type-modes-table {
+    width: 100%;
+    max-width: 560px;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.wpslug-post-type-modes-table th,
+.wpslug-post-type-modes-table td {
+    vertical-align: middle;
+    padding: 10px 12px;
+}
+
+.wpslug-post-type-modes-table th:first-child,
+.wpslug-post-type-modes-table td.wpslug-ptm-type {
+    width: 42%;
+}
+
+.wpslug-ptm-type strong {
+    display: block;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.wpslug-ptm-type code {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 1px 6px;
+    font-size: 12px;
+    line-height: 1.5;
+    background: #f0f0f1;
+    border-radius: 2px;
+}
+
+.wpslug-ptm-feature select {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}

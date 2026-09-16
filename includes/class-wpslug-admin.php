@@ -383,7 +383,7 @@ class WPSlug_Admin
                     </select>
                     <p class="description">
                         <?php esc_html_e(
-                            "Prefer WPMind semantic pinyin or SEO slug when available. Local pinyin is the offline fallback when WPMind is missing, times out, or returns an error.",
+                            "Choose local pinyin, semantic pinyin (XinSi AI), multi-language translation, or transliteration. When WenPai XinSi (WPMind) is unavailable, semantic pinyin falls back to local pinyin.",
                             "wpslug"
                         ); ?>
                     </p>
@@ -800,29 +800,55 @@ class WPSlug_Admin
             </div>
 
             <div class="wpslug-api-section" data-service="wpmind">
-                <h4><?php esc_html_e("WPMind AI SEO Slug", "wpslug"); ?></h4>
+                <h4><?php esc_html_e(
+                    "WenPai XinSi (WPMind)",
+                    "wpslug"
+                ); ?></h4>
                 <div class="wpslug-wpmind-status">
-                    <?php if (function_exists('wpmind_is_available') && wpmind_is_available()): ?>
+                    <?php if (
+                        function_exists("wpmind_is_available") &&
+                        wpmind_is_available()
+                    ): ?>
                         <p class="description" style="color: #2e7d32;">
                             <span class="dashicons dashicons-yes-alt"></span>
-                            <?php esc_html_e("WPMind is active. Credits and BYOK keys are managed in WPMind, not in WPSlug.", "wpslug"); ?>
+                            <?php esc_html_e(
+                                "WenPai XinSi (WPMind) is active. Credits and BYOK keys are managed there, not in WPSlug.",
+                                "wpslug"
+                            ); ?>
                         </p>
                         <p class="description">
-                            <?php esc_html_e("WPMind is the primary path for SEO-friendly slugs and semantic pinyin. If quota is exceeded or the provider fails, WPSlug falls back to local pinyin so saving is not blocked.", "wpslug"); ?>
+                            <?php esc_html_e(
+                                "Use it for semantic pinyin (XinSi AI) and multi-language translation. If quota is exceeded or the provider fails, WPSlug falls back to local pinyin so saving is not blocked.",
+                                "wpslug"
+                            ); ?>
                         </p>
                         <p class="description">
-                            <a href="<?php echo esc_url(admin_url('options-general.php?page=wpmind')); ?>">
-                                <?php esc_html_e("Open WPMind settings / credits", "wpslug"); ?> →
+                            <a href="<?php echo esc_url(
+                                admin_url("options-general.php?page=wpmind")
+                            ); ?>">
+                                <?php esc_html_e(
+                                    "Open WenPai XinSi (WPMind) settings",
+                                    "wpslug"
+                                ); ?> →
                             </a>
                         </p>
                     <?php else: ?>
                         <p class="description" style="color: #d32f2f;">
                             <span class="dashicons dashicons-warning"></span>
-                            <?php esc_html_e("WPMind plugin is not active or not configured.", "wpslug"); ?>
+                            <?php esc_html_e(
+                                "WenPai XinSi (WPMind) is not active or not configured.",
+                                "wpslug"
+                            ); ?>
                         </p>
                         <p class="description">
-                            <?php esc_html_e("Install WPMind for AI SEO slugs and semantic pinyin. Until then, local pinyin remains available as the offline fallback.", "wpslug"); ?>
-                            <a href="https://wpcy.com/mind/" target="_blank"><?php esc_html_e("Learn more", "wpslug"); ?></a>
+                            <?php esc_html_e(
+                                "Install WenPai XinSi (WPMind) for semantic pinyin (XinSi AI) and multi-language translation. Until then, local pinyin remains available.",
+                                "wpslug"
+                            ); ?>
+                            <a href="https://wpcy.com/mind/" target="_blank"><?php esc_html_e(
+                                "Learn more",
+                                "wpslug"
+                            ); ?></a>
                         </p>
                     <?php endif; ?>
                 </div>
@@ -1183,62 +1209,76 @@ class WPSlug_Admin
                     ); ?></h4>
                     <p class="description">
                         <?php esc_html_e(
-                            "Optional overrides. Example: blog posts → SEO slug via WPMind; product CPT → semantic pinyin. Leave as inherit to use the global conversion mode.",
+                            "Optional overrides per post type. Example: posts → multi-language translation; products → semantic pinyin (XinSi AI). Choose “use global” to follow the conversion mode above.",
                             "wpslug"
                         ); ?>
                     </p>
-                    <table class="widefat striped" style="max-width: 640px; margin: 8px 0 16px;">
-                        <thead>
-                            <tr>
-                                <th><?php esc_html_e("Post type", "wpslug"); ?></th>
-                                <th><?php esc_html_e("Default feature", "wpslug"); ?></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            $features = $this->settings->getPostTypeFeatures();
-                            $mode_map = isset($options["post_type_modes"]) &&
-                                is_array($options["post_type_modes"])
-                                ? $options["post_type_modes"]
-                                : [];
-                            foreach ($post_types as $post_type) {
-                                $current = isset($mode_map[$post_type->name])
-                                    ? $mode_map[$post_type->name]
-                                    : "inherit";
-                                ?>
+                    <div class="wpslug-post-type-modes">
+                        <table class="widefat striped wpslug-post-type-modes-table">
+                            <thead>
                                 <tr>
-                                    <td><?php echo esc_html(
-                                        $post_type->label
-                                    ); ?> <code><?php echo esc_html(
-    $post_type->name
-); ?></code></td>
-                                    <td>
-                                        <select name="wpslug_options[post_type_modes][<?php echo esc_attr(
-                                            $post_type->name
-                                        ); ?>]">
-                                            <?php foreach (
-                                                $features
-                                                as $feature_key => $feature_label
-                                            ): ?>
-                                                <option value="<?php echo esc_attr(
-                                                    $feature_key
-                                                ); ?>" <?php selected(
+                                    <th scope="col"><?php esc_html_e(
+                                        "Post type",
+                                        "wpslug"
+                                    ); ?></th>
+                                    <th scope="col"><?php esc_html_e(
+                                        "Default feature",
+                                        "wpslug"
+                                    ); ?></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $features = $this->settings->getPostTypeFeatures();
+                                $mode_map =
+                                    isset($options["post_type_modes"]) &&
+                                    is_array($options["post_type_modes"])
+                                        ? $options["post_type_modes"]
+                                        : [];
+                                foreach ($post_types as $post_type) {
+                                    $current = isset(
+                                        $mode_map[$post_type->name]
+                                    )
+                                        ? $mode_map[$post_type->name]
+                                        : "inherit";
+                                    ?>
+                                    <tr>
+                                        <td class="wpslug-ptm-type">
+                                            <strong><?php echo esc_html(
+                                                $post_type->label
+                                            ); ?></strong>
+                                            <code><?php echo esc_html(
+                                                $post_type->name
+                                            ); ?></code>
+                                        </td>
+                                        <td class="wpslug-ptm-feature">
+                                            <select name="wpslug_options[post_type_modes][<?php echo esc_attr(
+                                                $post_type->name
+                                            ); ?>]">
+                                                <?php foreach (
+                                                    $features
+                                                    as $feature_key => $feature_label
+                                                ): ?>
+                                                    <option value="<?php echo esc_attr(
+                                                        $feature_key
+                                                    ); ?>" <?php selected(
     $current,
     $feature_key
 ); ?>>
-                                                    <?php echo esc_html(
-                                                        $feature_label
-                                                    ); ?>
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <?php
-                            }
-                            ?>
-                        </tbody>
-                    </table>
+                                                        <?php echo esc_html(
+                                                            $feature_label
+                                                        ); ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <?php
+                                }
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
 
                     <h4><?php esc_html_e("Taxonomies", "wpslug"); ?></h4>
                     <div class="wpslug-checkbox-grid">

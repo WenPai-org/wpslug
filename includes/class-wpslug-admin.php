@@ -383,7 +383,7 @@ class WPSlug_Admin
                     </select>
                     <p class="description">
                         <?php esc_html_e(
-                            "Choose local pinyin, semantic pinyin (XinSi AI), multi-language translation, or transliteration. When WenPai XinSi (WPMind) is unavailable, semantic pinyin falls back to local pinyin.",
+                            "Choose local pinyin, semantic pinyin (XinSi AI), multi-language translation, or transliteration.",
                             "wpslug"
                         ); ?>
                     </p>
@@ -812,7 +812,7 @@ class WPSlug_Admin
                         <p class="description" style="color: #2e7d32;">
                             <span class="dashicons dashicons-yes-alt"></span>
                             <?php esc_html_e(
-                                "WenPai XinSi (WPMind) is active. Credits and BYOK keys are managed there, not in WPSlug.",
+                                "WenPai XinSi (WPMind) is active. Credits and BYOK keys are managed there.",
                                 "wpslug"
                             ); ?>
                         </p>

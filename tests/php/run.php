@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 const ABSPATH = __DIR__ . '/';
 const WPSLUG_PLUGIN_DIR = __DIR__ . '/../../';
-const WPSLUG_VERSION = '1.2.2';
+const WPSLUG_VERSION = '1.2.3';
 const DAY_IN_SECONDS = 86400;
 
 $GLOBALS['wpslug_options'] = [];
@@ -14,6 +14,10 @@ $GLOBALS['wpslug_posts'] = [];
 $GLOBALS['wpslug_terms'] = [];
 $GLOBALS['wpslug_remote_failure'] = false;
 $GLOBALS['wpslug_wpmind_failure'] = false;
+$GLOBALS['wpslug_wpmind_error_code'] = 'wpmind_provider_failure';
+$GLOBALS['wpslug_wpmind_last_options'] = null;
+$GLOBALS['wpslug_wpmind_pinyin_last_options'] = null;
+$GLOBALS['wpslug_transients'] = [];
 $GLOBALS['wpslug_post_updates'] = [];
 $GLOBALS['wpslug_unique_slug_collision'] = false;
 
@@ -36,6 +40,7 @@ function wp_debug_backtrace_summary() { return 'test'; }
 function __($text, $domain = null) { return $text; }
 function sanitize_text_field($value) { return is_scalar($value) ? trim((string) $value) : ''; }
 function sanitize_textarea_field($value) { return sanitize_text_field($value); }
+function sanitize_key($value) { return strtolower(preg_replace('/[^a-z0-9_\-]/i', '', (string) $value)); }
 function get_post_types($args = []) { return ['post', 'page', 'product']; }
 function get_taxonomies($args = []) { return ['category', 'post_tag', 'product_cat']; }
 function get_post($id) { return $GLOBALS['wpslug_posts'][$id] ?? null; }
@@ -51,18 +56,35 @@ function wp_remote_post($url, $args) { $GLOBALS['wpslug_remote_args'] = $args; i
 function wp_remote_retrieve_response_code($response) { return $response['response']['code']; }
 function wp_remote_retrieve_body($response) { return $response['body']; }
 function wp_rand($min, $max) { return $min; }
-function get_transient($key) { return false; }
-function set_transient($key, $value, $ttl) { return true; }
+function get_transient($key) { return array_key_exists($key, $GLOBALS['wpslug_transients']) ? $GLOBALS['wpslug_transients'][$key] : false; }
+function set_transient($key, $value, $ttl) { $GLOBALS['wpslug_transients'][$key] = $value; return true; }
+function delete_transient($key) { unset($GLOBALS['wpslug_transients'][$key]); return true; }
 function wp_json_encode($value) { return json_encode($value); }
 function wp_strip_all_tags($value) { return strip_tags($value); }
 function wpmind_is_available() { return true; }
-function wpmind_translate($text, $from = 'auto', $to = 'en', $options = []) { return $GLOBALS['wpslug_wpmind_failure'] ? new WP_Error('wpmind_provider_failure', 'provider unavailable') : 'semantic-translation'; }
-function wpmind_pinyin($text, $options = []) { return 'wenpai-suge'; }
+function wpmind_translate($text, $from = 'auto', $to = 'en', $options = []) {
+    $GLOBALS['wpslug_wpmind_last_options'] = $options;
+    if ($GLOBALS['wpslug_wpmind_failure']) {
+        return new WP_Error($GLOBALS['wpslug_wpmind_error_code'], 'provider unavailable');
+    }
+    return 'semantic-translation';
+}
+function wpmind_pinyin($text, $options = []) {
+    $GLOBALS['wpslug_wpmind_pinyin_last_options'] = $options;
+    if ($GLOBALS['wpslug_wpmind_failure']) {
+        return new WP_Error($GLOBALS['wpslug_wpmind_error_code'], 'provider unavailable');
+    }
+    return 'wenpai-suge';
+}
 function current_user_can($capability, ...$args) { return true; }
 function add_query_arg($key, $value, $url) { return $url . (strpos($url, '?') === false ? '?' : '&') . rawurlencode($key) . '=' . rawurlencode((string) $value); }
 function wp_update_post($data) { $GLOBALS['wpslug_post_updates'][] = $data; if (isset($GLOBALS['wpslug_posts'][$data['ID']])) { $GLOBALS['wpslug_posts'][$data['ID']]->post_name = $data['post_name']; } return $data['ID']; }
 function absint($value) { return abs((int) $value); }
 function wp_unslash($value) { return $value; }
+function admin_url($path = '') { return 'https://example.test/wp-admin/' . ltrim((string) $path, '/'); }
+function esc_html($text) { return htmlspecialchars((string) $text, ENT_QUOTES, 'UTF-8'); }
+function esc_html__($text, $domain = null) { return esc_html(__($text, $domain)); }
+function esc_url($url) { return (string) $url; }
 
 class WPSlug_Test_WPDB {
     public $posts = 'wp_posts';
@@ -72,8 +94,10 @@ class WPSlug_Test_WPDB {
 $GLOBALS['wpdb'] = new WPSlug_Test_WPDB();
 
 class WP_Error {
+    private $code;
     private $message;
-    public function __construct($code = '', $message = '') { $this->message = $message; }
+    public function __construct($code = '', $message = '') { $this->code = $code; $this->message = $message; }
+    public function get_error_code() { return $this->code; }
     public function get_error_message() { return $this->message; }
 }
 
@@ -119,8 +143,49 @@ $persisted = $core->processPostData(
 check($persisted['post_name'] === 'customer-kept-slug', 'never rewrites a persisted custom slug when the title changes');
 
 $base['post_name'] = '';
-$out = $core->processPostData($base, ['post_status' => 'auto-draft']);
-check($out['post_name'] === 'wen-pai-su-ge', 'generates pinyin for a new post without a slug');
+$base['post_status'] = 'publish';
+$out = $core->processPostData($base, ['post_status' => 'publish']);
+check($out['post_name'] === 'wen-pai-su-ge', 'generates pinyin for a new published post without a slug');
+
+$draft_skip = $core->processPostData(
+    [
+        'post_title' => '文派素格',
+        'post_name' => '',
+        'post_type' => 'post',
+        'post_status' => 'draft',
+    ],
+    ['post_status' => 'draft', 'post_type' => 'post']
+);
+check($draft_skip['post_name'] === '', 'skips conversion on draft when convert_on_publish_only is enabled');
+
+$GLOBALS['wpslug_posts'][44] = (object) [
+    'ID' => 44,
+    'post_status' => 'auto-draft',
+    'post_name' => 'zi-dong-cao-gao',
+    'post_type' => 'post',
+];
+$draft_clear = $core->processPostData(
+    [
+        'post_title' => '文派素格',
+        'post_name' => 'zi-dong-cao-gao',
+        'post_type' => 'post',
+        'post_status' => 'draft',
+    ],
+    [
+        'ID' => 44,
+        'post_status' => 'draft',
+        'post_name' => 'zi-dong-cao-gao',
+    ],
+    [
+        'ID' => 44,
+        'post_title' => '文派素格',
+        'post_type' => 'post',
+        'post_status' => 'draft',
+        'post_name' => 'zi-dong-cao-gao',
+    ],
+    true
+);
+check($draft_clear['post_name'] === '', 'clears Auto Draft pinyin when leaving auto-draft as draft without converting');
 
 $wp60_insert = $core->processPostData(
     [
@@ -191,7 +256,55 @@ $auto_draft = $core->processPostData(
     ],
     true
 );
-check($auto_draft['post_name'] === 'auto-draft-custom', 'preserves a custom auto-draft slug on publication');
+check($auto_draft['post_name'] === 'zhun-bei-fa-bu', 'converts leftover auto-draft slug from the real title on publication');
+
+$placeholder = $core->processPostData(
+    [
+        'post_title' => '自动草稿',
+        'post_name' => '',
+        'post_type' => 'post',
+        'post_status' => 'auto-draft',
+    ],
+    [
+        'post_status' => 'auto-draft',
+        'post_type' => 'post',
+    ]
+);
+check($placeholder['post_name'] === '', 'does not convert Auto Draft placeholder title into pinyin');
+
+$GLOBALS['wpslug_options'] = array_merge(
+    (array) $GLOBALS['wpslug_options'],
+    ['enabled_post_types' => ['post', 'page', 'item']]
+);
+$GLOBALS['wpslug_posts'][22] = (object) [
+    'ID' => 22,
+    'post_status' => 'auto-draft',
+    'post_name' => 'zi-dong-cao-gao-22',
+    'post_type' => 'item',
+];
+$cpt_publish = $core->processPostData(
+    [
+        'post_title' => '互感器',
+        'post_name' => 'zi-dong-cao-gao-22',
+        'post_type' => 'item',
+        'post_status' => 'publish',
+    ],
+    [
+        'ID' => 22,
+        'post_status' => 'publish',
+        'post_type' => 'item',
+        'post_name' => 'zi-dong-cao-gao-22',
+    ],
+    [
+        'ID' => 22,
+        'post_title' => '互感器',
+        'post_type' => 'item',
+        'post_status' => 'publish',
+        'post_name' => 'zi-dong-cao-gao-22',
+    ],
+    true
+);
+check($cpt_publish['post_name'] === 'hu-gan-qi', 'regenerates a CPT slug from the real title instead of Auto Draft pinyin');
 
 $zero_slug = $core->processPostData(
     [
@@ -242,16 +355,93 @@ check(in_array('wpmind', $translator->getSupportedServices(), true), 'reports WP
 check($translator->isServiceConfigured('wpmind', []), 'detects an available WPMind integration');
 $wpmind = $translator->translate('文派素格', ['translation_service' => 'wpmind', 'translation_source_lang' => 'zh', 'translation_target_lang' => 'en']);
 check($wpmind === 'semantic-translation', 'uses the current WPMind translation function contract');
+check(
+    is_array($GLOBALS['wpslug_wpmind_last_options']) && ($GLOBALS['wpslug_wpmind_last_options']['context'] ?? '') === 'wpslug_seo_slug',
+    'passes stable wpslug_seo_slug context to WPMind translate'
+);
+$GLOBALS['wpslug_transients'] = [];
 $GLOBALS['wpslug_wpmind_failure'] = true;
 $wpmind_fallback = $translator->translate('文派素格', ['translation_service' => 'wpmind', 'translation_source_lang' => 'zh', 'translation_target_lang' => 'en']);
 $GLOBALS['wpslug_wpmind_failure'] = false;
 check($wpmind_fallback === 'wen-pai-su-ge', 'falls back to local pinyin when WPMind returns WP_Error');
+
+$GLOBALS['wpslug_transients'] = [];
+$GLOBALS['wpslug_wpmind_failure'] = true;
+$GLOBALS['wpslug_wpmind_error_code'] = 'wpmind_budget_exceeded';
+$quota_fallback = $translator->translate('文派素格', ['translation_service' => 'wpmind', 'translation_source_lang' => 'zh', 'translation_target_lang' => 'en']);
+$GLOBALS['wpslug_wpmind_failure'] = false;
+$GLOBALS['wpslug_wpmind_error_code'] = 'wpmind_provider_failure';
+check($quota_fallback === 'wen-pai-su-ge', 'falls back to local pinyin when WPMind budget is exceeded');
+$quota_notice = (new WPSlug_Settings())->pullWpmindQuotaNotice();
+check(
+    is_array($quota_notice) && ($quota_notice['code'] ?? '') === 'wpmind_budget_exceeded',
+    'records a WPMind quota notice for the admin UI'
+);
+
 $semantic = (new WPSlug_Converter())->convert('文派素格', ['conversion_mode' => 'semantic_pinyin']);
 check($semantic === 'wenpai-suge', 'uses the current WPMind semantic pinyin function contract');
+check(
+    is_array($GLOBALS['wpslug_wpmind_pinyin_last_options']) && ($GLOBALS['wpslug_wpmind_pinyin_last_options']['context'] ?? '') === 'wpslug_semantic_pinyin',
+    'passes stable wpslug_semantic_pinyin context to WPMind pinyin'
+);
 
 $admin_source = file_get_contents(WPSLUG_PLUGIN_DIR . 'includes/class-wpslug-admin.php');
 check(strpos($admin_source, 'Received input data') === false, 'does not write API credentials to debug logs');
 check(substr_count($admin_source, 'current_user_can("manage_options")') >= 3, 'protects settings page and AJAX endpoints with manage_options');
+check(strpos($admin_source, 'https://wpcy.com/c/wpslug/') === false, 'does not link support to the missing community URL');
+check(substr_count($admin_source, 'https://wpcy.com/slug') >= 2, 'points documentation and support at wpcy.com/slug');
+check(strpos($admin_source, 'convert_on_publish_only') !== false, 'exposes convert-on-publish-only in the admin UI');
+check(strpos($admin_source, 'Bulk Convert is an explicit migration') !== false, 'tips that bulk convert is an explicit migration');
+check(strpos($admin_source, 'WPMind quota or budget was exceeded') !== false, 'surfaces WPMind quota notices in admin');
+check(strpos($admin_source, 'wpslug_editor_preview') !== false, 'registers editor slug preview AJAX');
+check(strpos($admin_source, '用 AI 生成') !== false, 'exposes AI generate preview button copy');
+check(strpos($admin_source, '用语义拼音') !== false, 'exposes semantic pinyin preview button copy');
+check(strpos($admin_source, 'post_type_modes') !== false, 'exposes per-post-type default strategy UI');
+check(file_exists(WPSLUG_PLUGIN_DIR . 'assets/editor.js'), 'ships editor.js for slug preview controls');
+check(file_exists(WPSLUG_PLUGIN_DIR . 'assets/editor.css'), 'ships editor.css for slug preview controls');
+
+$settings_defaults = (new WPSlug_Settings())->getDefaults();
+check(!empty($settings_defaults['convert_on_publish_only']), 'defaults convert_on_publish_only to enabled');
+check(array_key_exists('post_type_modes', $settings_defaults), 'defaults include post_type_modes map');
+$modes = (new WPSlug_Settings())->getConversionModes();
+check(strpos($modes['pinyin'], 'offline fallback') !== false, 'labels local pinyin as the offline fallback');
+
+$feature_options = (new WPSlug_Settings())->applyFeatureToOptions(
+    ['conversion_mode' => 'pinyin', 'translation_service' => 'none'],
+    'seo_slug'
+);
+check(
+    $feature_options['conversion_mode'] === 'translation' && $feature_options['translation_service'] === 'wpmind',
+    'maps seo_slug feature to WPMind translation options'
+);
+$GLOBALS['wpslug_options'] = array_merge((new WPSlug_Settings())->getDefaults(), [
+    'enable_conversion' => true,
+    'auto_convert' => true,
+    'convert_on_publish_only' => true,
+    'conversion_mode' => 'pinyin',
+    'enabled_post_types' => ['post', 'product'],
+    'post_type_modes' => ['product' => 'semantic_pinyin'],
+]);
+$product_options = (new WPSlug_Settings())->resolveOptionsForPostType('product');
+check($product_options['conversion_mode'] === 'semantic_pinyin', 'resolves product CPT to semantic pinyin by post-type map');
+$post_options = (new WPSlug_Settings())->resolveOptionsForPostType('post');
+check($post_options['conversion_mode'] === 'pinyin', 'inherits global mode when post-type map has no override');
+
+$GLOBALS['wpslug_wpmind_pinyin_last_options'] = null;
+$product_slug = $core->processPostData(
+    [
+        'post_title' => '文派素格',
+        'post_name' => '',
+        'post_type' => 'product',
+        'post_status' => 'publish',
+    ],
+    ['post_status' => 'publish', 'post_type' => 'product']
+);
+check($product_slug['post_name'] === 'wenpai-suge', 'uses post-type semantic pinyin when publishing a product');
+check(
+    is_array($GLOBALS['wpslug_wpmind_pinyin_last_options']),
+    'product publish path called WPMind semantic pinyin'
+);
 
 $settings = new WPSlug_Settings();
 $GLOBALS['wpslug_options']['google_api_key'] = 'google-secret';
@@ -278,6 +468,18 @@ check($redacted['options']['google_api_key'] === '[redacted]' && $redacted['opti
 
 $updater_source = file_get_contents(WPSLUG_PLUGIN_DIR . 'includes/class-wenpai-updater.php');
 check(strpos($updater_source, 'str_starts_with') === false, 'keeps updater compatible with declared PHP 7.4 minimum');
+require_once WPSLUG_PLUGIN_DIR . 'includes/class-wenpai-updater.php';
+$normalized_assets = WPSlug_Updater::normalize_update_assets(
+    [
+        '1x' => 'https://updates.wenpai.net/assets/wpslug/icon-128x128.png',
+        '2x' => 'https://updates.wenpai.net/assets/wpslug/icon-256x256.png',
+        'svg' => 'https://updates.wenpai.net/assets/wpslug/icon-256x256.svg',
+    ],
+    ''
+);
+check(!isset($normalized_assets['icons']['svg']), 'drops the 404 svg update icon');
+check($normalized_assets['icons']['1x'] === 'https://updates.wenpai.net/assets/wpslug/icon-128x128.png', 'keeps png update icons');
+check($normalized_assets['url'] === 'https://wpcy.com/slug', 'uses wpcy.com/slug when the update URL is empty');
 
 $main_source = file_get_contents(WPSLUG_PLUGIN_DIR . 'wpslug.php');
 check(strpos($main_source, 'version_compare(PHP_VERSION, "7.4"') !== false, 'runtime PHP requirement matches plugin metadata');

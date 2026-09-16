@@ -31,3 +31,7 @@ Plugin Check 需要已安装并启用 Plugin Check 2.x 的 WordPress/WP-CLI 测�
 
 <!-- CI test 1777893437 -->
  
+
+## 产品方向（后续版本）
+
+见 [`docs/dev/direction-and-wpmind-billing.md`](docs/dev/direction-and-wpmind-billing.md)：WPMind 为主路径（SEO slug / 语义拼音），本地拼音为兜底；积分与 BYOK 在 WPMind 计量。

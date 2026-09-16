@@ -22,7 +22,9 @@ class WPSlug_Admin
         add_action("admin_notices", [$this, "showAdminNotices"]);
         add_action("wp_ajax_wpslug_preview", [$this, "ajaxPreview"]);
         add_action("wp_ajax_wpslug_test_api", [$this, "ajaxTestApi"]);
+        add_action("wp_ajax_wpslug_editor_preview", [$this, "ajaxEditorPreview"]);
         add_action("post_submitbox_start", [$this, "addPostMetaBox"]);
+        add_action("enqueue_block_editor_assets", [$this, "enqueueBlockEditorAssets"]);
         add_filter("bulk_actions-edit-post", [$this, "addBulkAction"]);
         add_filter("bulk_actions-edit-page", [$this, "addBulkAction"]);
         add_filter(
@@ -107,6 +109,28 @@ class WPSlug_Admin
             }
         }
         // phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+        $quota = $this->settings->pullWpmindQuotaNotice();
+        if (is_array($quota)) {
+            $wpmind_url = admin_url("options-general.php?page=wpmind");
+            echo '<div class="notice notice-warning is-dismissible"><p>';
+            echo esc_html__(
+                "WPMind quota or budget was exceeded while generating a slug. WPSlug fell back to local pinyin so the save was not blocked.",
+                "wpslug"
+            );
+            echo " ";
+            printf(
+                /* translators: %s: WPMind settings URL. */
+                esc_html__(
+                    "Top up credits or switch to your own API key in %s.",
+                    "wpslug"
+                ),
+                '<a href="' . esc_url($wpmind_url) . '">' .
+                    esc_html__("WPMind settings", "wpslug") .
+                    "</a>"
+            );
+            echo "</p></div>";
+        }
     }
 
     public function displayAdminPage()
@@ -139,7 +163,7 @@ class WPSlug_Admin
         <a href="https://wpcy.com/slug/" target="_blank" class="button button-secondary" style="margin-left: 10px;">
             <?php esc_html_e( 'Documentation', 'wpslug' ); ?>
         </a>
-        <a href="https://wpcy.com/c/wpslug/" target="_blank" class="button button-secondary">
+        <a href="https://wpcy.com/slug" target="_blank" class="button button-secondary">
             <?php esc_html_e( 'Support', 'wpslug' ); ?>
         </a>
     </h1>
@@ -359,7 +383,7 @@ class WPSlug_Admin
                     </select>
                     <p class="description">
                         <?php esc_html_e(
-                            "Select the conversion method. Pinyin for Chinese, Transliteration for Cyrillic/Arabic scripts, Translation for other languages.",
+                            "Prefer WPMind semantic pinyin or SEO slug when available. Local pinyin is the offline fallback when WPMind is missing, times out, or returns an error.",
                             "wpslug"
                         ); ?>
                     </p>
@@ -379,6 +403,31 @@ class WPSlug_Admin
                             "wpslug"
                         ); ?>
                     </label>
+                </td>
+            </tr>
+            <tr class="wpslug-dependent" data-depends="enable_conversion">
+                <th scope="row"><?php esc_html_e("Convert on Publish Only", "wpslug"); ?></th>
+                <td>
+                    <input type="hidden" name="wpslug_options[convert_on_publish_only]" value="0">
+                    <label>
+                        <input type="checkbox"
+                               name="wpslug_options[convert_on_publish_only]"
+                               value="1"
+                               <?php checked(
+                                   1,
+                                   !empty($options["convert_on_publish_only"])
+                               ); ?>>
+                        <?php esc_html_e(
+                            "Only convert post slugs when status is publish or future (skips draft autosaves)",
+                            "wpslug"
+                        ); ?>
+                    </label>
+                    <p class="description">
+                        <?php esc_html_e(
+                            "Reduces WPMind calls during autosave. Placeholder Auto Draft slugs are still cleared so they cannot freeze. Bulk Convert remains an explicit migration and may use WPMind quota.",
+                            "wpslug"
+                        ); ?>
+                    </p>
                 </td>
             </tr>
             <tr class="wpslug-dependent" data-depends="enable_conversion">
@@ -751,19 +800,19 @@ class WPSlug_Admin
             </div>
 
             <div class="wpslug-api-section" data-service="wpmind">
-                <h4><?php esc_html_e("WPMind AI Translation", "wpslug"); ?></h4>
+                <h4><?php esc_html_e("WPMind AI SEO Slug", "wpslug"); ?></h4>
                 <div class="wpslug-wpmind-status">
                     <?php if (function_exists('wpmind_is_available') && wpmind_is_available()): ?>
                         <p class="description" style="color: #2e7d32;">
                             <span class="dashicons dashicons-yes-alt"></span>
-                            <?php esc_html_e("WPMind is active and configured. No additional settings required.", "wpslug"); ?>
+                            <?php esc_html_e("WPMind is active. Credits and BYOK keys are managed in WPMind, not in WPSlug.", "wpslug"); ?>
                         </p>
                         <p class="description">
-                            <?php esc_html_e("WPMind uses AI to translate titles to SEO-friendly slugs. It provides more accurate and context-aware translations compared to traditional translation services.", "wpslug"); ?>
+                            <?php esc_html_e("WPMind is the primary path for SEO-friendly slugs and semantic pinyin. If quota is exceeded or the provider fails, WPSlug falls back to local pinyin so saving is not blocked.", "wpslug"); ?>
                         </p>
                         <p class="description">
                             <a href="<?php echo esc_url(admin_url('options-general.php?page=wpmind')); ?>">
-                                <?php esc_html_e("Configure WPMind Settings", "wpslug"); ?> →
+                                <?php esc_html_e("Open WPMind settings / credits", "wpslug"); ?> →
                             </a>
                         </p>
                     <?php else: ?>
@@ -772,7 +821,7 @@ class WPSlug_Admin
                             <?php esc_html_e("WPMind plugin is not active or not configured.", "wpslug"); ?>
                         </p>
                         <p class="description">
-                            <?php esc_html_e("Please install and activate the WPMind plugin to use AI-powered translation.", "wpslug"); ?>
+                            <?php esc_html_e("Install WPMind for AI SEO slugs and semantic pinyin. Until then, local pinyin remains available as the offline fallback.", "wpslug"); ?>
                             <a href="https://wpcy.com/mind/" target="_blank"><?php esc_html_e("Learn more", "wpslug"); ?></a>
                         </p>
                     <?php endif; ?>
@@ -1128,6 +1177,69 @@ class WPSlug_Admin
                         ); ?>
                     </p>
 
+                    <h4><?php esc_html_e(
+                        "Default strategy per post type",
+                        "wpslug"
+                    ); ?></h4>
+                    <p class="description">
+                        <?php esc_html_e(
+                            "Optional overrides. Example: blog posts → SEO slug via WPMind; product CPT → semantic pinyin. Leave as inherit to use the global conversion mode.",
+                            "wpslug"
+                        ); ?>
+                    </p>
+                    <table class="widefat striped" style="max-width: 640px; margin: 8px 0 16px;">
+                        <thead>
+                            <tr>
+                                <th><?php esc_html_e("Post type", "wpslug"); ?></th>
+                                <th><?php esc_html_e("Default feature", "wpslug"); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            $features = $this->settings->getPostTypeFeatures();
+                            $mode_map = isset($options["post_type_modes"]) &&
+                                is_array($options["post_type_modes"])
+                                ? $options["post_type_modes"]
+                                : [];
+                            foreach ($post_types as $post_type) {
+                                $current = isset($mode_map[$post_type->name])
+                                    ? $mode_map[$post_type->name]
+                                    : "inherit";
+                                ?>
+                                <tr>
+                                    <td><?php echo esc_html(
+                                        $post_type->label
+                                    ); ?> <code><?php echo esc_html(
+    $post_type->name
+); ?></code></td>
+                                    <td>
+                                        <select name="wpslug_options[post_type_modes][<?php echo esc_attr(
+                                            $post_type->name
+                                        ); ?>]">
+                                            <?php foreach (
+                                                $features
+                                                as $feature_key => $feature_label
+                                            ): ?>
+                                                <option value="<?php echo esc_attr(
+                                                    $feature_key
+                                                ); ?>" <?php selected(
+    $current,
+    $feature_key
+); ?>>
+                                                    <?php echo esc_html(
+                                                        $feature_label
+                                                    ); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <?php
+                            }
+                            ?>
+                        </tbody>
+                    </table>
+
                     <h4><?php esc_html_e("Taxonomies", "wpslug"); ?></h4>
                     <div class="wpslug-checkbox-grid">
                         <?php
@@ -1255,10 +1367,39 @@ class WPSlug_Admin
 
     public function enqueueScripts($hook)
     {
-        if ("settings_page_wpslug" !== $hook) {
+        if ("settings_page_wpslug" === $hook) {
+            $this->enqueueSettingsAssets();
             return;
         }
 
+        if (in_array($hook, ["post.php", "post-new.php"], true)) {
+            $screen = function_exists("get_current_screen")
+                ? get_current_screen()
+                : null;
+            $post_type = $screen && !empty($screen->post_type)
+                ? $screen->post_type
+                : "post";
+            // Block editor loads via enqueue_block_editor_assets instead.
+            if (
+                function_exists("use_block_editor_for_post_type") &&
+                use_block_editor_for_post_type($post_type)
+            ) {
+                return;
+            }
+            $this->enqueueEditorAssets(false);
+        }
+    }
+
+    /**
+     * Block editor assets (Gutenberg sidebar panel).
+     */
+    public function enqueueBlockEditorAssets()
+    {
+        $this->enqueueEditorAssets(true);
+    }
+
+    private function enqueueSettingsAssets()
+    {
         wp_enqueue_script(
             "wpslug-admin",
             WPSLUG_PLUGIN_URL . "assets/admin.js",
@@ -1302,6 +1443,84 @@ class WPSlug_Admin
                 "no_text" => __("Please enter some text to preview.", "wpslug"),
                 "conversion_error" => __(
                     "Conversion failed. Please check your settings.",
+                    "wpslug"
+                ),
+            ],
+        ]);
+    }
+
+    /**
+     * @param bool $block Whether loading inside the block editor.
+     */
+    private function enqueueEditorAssets($block)
+    {
+        $screen = function_exists("get_current_screen")
+            ? get_current_screen()
+            : null;
+        $post_type = $screen && !empty($screen->post_type)
+            ? $screen->post_type
+            : "post";
+
+        if (!$this->settings->isPostTypeEnabled($post_type)) {
+            return;
+        }
+
+        $options = $this->settings->getOptions();
+        if (empty($options["enable_conversion"])) {
+            return;
+        }
+
+        $deps = ["jquery"];
+        if ($block) {
+            $deps = [
+                "wp-plugins",
+                "wp-edit-post",
+                "wp-element",
+                "wp-components",
+                "wp-data",
+                "wp-i18n",
+            ];
+        }
+
+        wp_enqueue_style(
+            "wpslug-editor",
+            WPSLUG_PLUGIN_URL . "assets/editor.css",
+            [],
+            WPSLUG_VERSION
+        );
+        wp_enqueue_script(
+            "wpslug-editor",
+            WPSLUG_PLUGIN_URL . "assets/editor.js",
+            $deps,
+            WPSLUG_VERSION,
+            true
+        );
+
+        $wpmind_ready =
+            function_exists("wpmind_is_available") && wpmind_is_available();
+
+        wp_localize_script("wpslug-editor", "wpslugEditor", [
+            "ajaxUrl" => admin_url("admin-ajax.php"),
+            "nonce" => wp_create_nonce("wpslug_editor_nonce"),
+            "postType" => $post_type,
+            "wpmindReady" => $wpmind_ready,
+            "isBlock" => (bool) $block,
+            "strings" => [
+                "panelTitle" => __("WPSlug", "wpslug"),
+                "seoButton" => __("用 AI 生成", "wpslug"),
+                "pinyinButton" => __("用语义拼音", "wpslug"),
+                "applyButton" => __("应用到固定链接", "wpslug"),
+                "generating" => __("生成中…", "wpslug"),
+                "emptyTitle" => __("请先填写标题。", "wpslug"),
+                "previewLabel" => __("预览", "wpslug"),
+                "applied" => __("已写入固定链接，保存后生效。", "wpslug"),
+                "error" => __("生成失败，已可改用本地拼音或稍后重试。", "wpslug"),
+                "wpmindMissing" => __(
+                    "未启用 WPMind 时将回退本地拼音。",
+                    "wpslug"
+                ),
+                "hint" => __(
+                    "先预览，确认后再写入。不会在自动保存时静默覆盖。",
                     "wpslug"
                 ),
             ],
@@ -1431,15 +1650,131 @@ class WPSlug_Admin
             return;
         }
 
-        echo '<div class="misc-pub-section wpslug-disable-section">';
-        echo "<label>";
-        echo '<input type="checkbox" name="wpslug_disable_conversion" value="1" style="margin-right: 5px;">';
-        echo esc_html__(
-            "Disable automatic slug conversion for this post",
-            "wpslug"
-        );
-        echo "</label>";
-        echo "</div>";
+        $wpmind_ready =
+            function_exists("wpmind_is_available") && wpmind_is_available();
+        ?>
+        <div id="wpslug-editor-tools" class="misc-pub-section wpslug-editor-tools" data-post-id="<?php echo esc_attr(
+            (string) $post->ID
+        ); ?>">
+            <strong><?php esc_html_e("WPSlug 预览", "wpslug"); ?></strong>
+            <p class="description" style="margin: 6px 0 8px;">
+                <?php esc_html_e(
+                    "先预览，确认后再写入。不会在自动保存时静默覆盖。",
+                    "wpslug"
+                ); ?>
+                <?php if (!$wpmind_ready): ?>
+                    <?php esc_html_e(
+                        "未启用 WPMind 时将回退本地拼音。",
+                        "wpslug"
+                    ); ?>
+                <?php endif; ?>
+            </p>
+            <p class="wpslug-editor-actions" style="margin: 0 0 8px;">
+                <button type="button" class="button button-secondary wpslug-editor-seo">
+                    <?php esc_html_e("用 AI 生成", "wpslug"); ?>
+                </button>
+                <button type="button" class="button button-secondary wpslug-editor-pinyin">
+                    <?php esc_html_e("用语义拼音", "wpslug"); ?>
+                </button>
+            </p>
+            <p class="wpslug-editor-preview" hidden>
+                <span class="wpslug-editor-preview-label"><?php esc_html_e(
+                    "预览",
+                    "wpslug"
+                ); ?>:</span>
+                <code class="wpslug-editor-preview-value"></code>
+                <button type="button" class="button button-primary button-small wpslug-editor-apply">
+                    <?php esc_html_e("应用到固定链接", "wpslug"); ?>
+                </button>
+            </p>
+            <p class="wpslug-editor-status description" aria-live="polite"></p>
+            <label class="wpslug-disable-section" style="display:block;margin-top:8px;">
+                <input type="checkbox" name="wpslug_disable_conversion" value="1" style="margin-right: 5px;">
+                <?php esc_html_e(
+                    "Disable automatic slug conversion for this post",
+                    "wpslug"
+                ); ?>
+            </label>
+        </div>
+        <?php
+    }
+
+    /**
+     * Editor-side preview: generate a candidate slug without writing the post.
+     */
+    public function ajaxEditorPreview()
+    {
+        check_ajax_referer("wpslug_editor_nonce", "nonce");
+
+        $post_id = isset($_POST["post_id"]) ? absint($_POST["post_id"]) : 0;
+        $text = isset($_POST["text"])
+            ? sanitize_text_field(wp_unslash($_POST["text"]))
+            : "";
+        $feature = isset($_POST["feature"])
+            ? sanitize_key(wp_unslash($_POST["feature"]))
+            : "seo_slug";
+        $post_type = isset($_POST["post_type"])
+            ? sanitize_key(wp_unslash($_POST["post_type"]))
+            : "post";
+
+        if ($post_id > 0) {
+            if (!current_user_can("edit_post", $post_id)) {
+                wp_send_json_error(
+                    ["message" => __("无权编辑此文章。", "wpslug")],
+                    403
+                );
+            }
+            $post = get_post($post_id);
+            if ($post) {
+                $post_type = $post->post_type;
+            }
+        } elseif (!current_user_can("edit_posts")) {
+            wp_send_json_error(
+                ["message" => __("无权生成 slug 预览。", "wpslug")],
+                403
+            );
+        }
+
+        if ($text === "") {
+            wp_send_json_error([
+                "message" => __("请先填写标题。", "wpslug"),
+            ]);
+        }
+
+        if (!in_array($feature, ["seo_slug", "semantic_pinyin", "pinyin"], true)) {
+            $feature = "seo_slug";
+        }
+
+        $options = $this->settings->resolveOptionsForPostType($post_type);
+        $options = $this->settings->applyFeatureToOptions($options, $feature);
+
+        try {
+            $converted = $this->converter->convert($text, $options);
+            $optimized = $this->optimizer->optimize($converted, $options);
+            if ($optimized === "") {
+                wp_send_json_error([
+                    "message" => __(
+                        "生成失败，已可改用本地拼音或稍后重试。",
+                        "wpslug"
+                    ),
+                ]);
+            }
+
+            wp_send_json_success([
+                "slug" => $optimized,
+                "feature" => $feature,
+                "mode" => isset($options["conversion_mode"])
+                    ? $options["conversion_mode"]
+                    : "",
+            ]);
+        } catch (Exception $e) {
+            wp_send_json_error([
+                "message" => __(
+                    "生成失败，已可改用本地拼音或稍后重试。",
+                    "wpslug"
+                ),
+            ]);
+        }
     }
 
     public function addBulkAction($bulk_actions)
@@ -1478,8 +1813,14 @@ class WPSlug_Admin
                 continue;
             }
 
-            $new_slug = $this->converter->convert($post->post_title, $options);
-            $new_slug = $this->optimizer->optimize($new_slug, $options);
+            $type_options = $this->settings->resolveOptionsForPostType(
+                $post->post_type
+            );
+            $new_slug = $this->converter->convert(
+                $post->post_title,
+                $type_options
+            );
+            $new_slug = $this->optimizer->optimize($new_slug, $type_options);
 
             if (!empty($new_slug) && $new_slug !== $post->post_name) {
                 $unique_slug = $this->optimizer->generateUniqueSlug(
@@ -1515,9 +1856,14 @@ class WPSlug_Admin
                 __("Successfully converted %d slug(s).", "wpslug"),
                 $count
             );
+            $tip = __(
+                "Bulk Convert is an explicit migration: it rewrites selected posts now and may consume WPMind quota when AI modes are active.",
+                "wpslug"
+            );
             printf(
-                '<div class="notice notice-success is-dismissible"><p>%s</p></div>',
-                esc_html($message)
+                '<div class="notice notice-success is-dismissible"><p>%s</p><p>%s</p></div>',
+                esc_html($message),
+                esc_html($tip)
             );
         }
     }

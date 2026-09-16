@@ -111,6 +111,36 @@ class WPSlug_Validator {
         
         return empty($validated) ? array('post', 'page') : $validated;
     }
+
+    /**
+     * Map of post_type => feature (inherit|seo_slug|semantic_pinyin|pinyin).
+     *
+     * @param mixed $map Raw option value.
+     * @return array
+     */
+    public static function validatePostTypeModes($map) {
+        if (!is_array($map)) {
+            return array();
+        }
+
+        $allowed = array('inherit', 'seo_slug', 'semantic_pinyin', 'pinyin');
+        $all_post_types = get_post_types(array('public' => true));
+        $validated = array();
+
+        foreach ($map as $post_type => $feature) {
+            $post_type = sanitize_key((string) $post_type);
+            $feature = sanitize_key((string) $feature);
+            if ($post_type === '' || !in_array($post_type, $all_post_types, true)) {
+                continue;
+            }
+            if (!in_array($feature, $allowed, true) || $feature === 'inherit') {
+                continue;
+            }
+            $validated[$post_type] = $feature;
+        }
+
+        return $validated;
+    }
     
     public static function validateTaxonomies($taxonomies) {
         if (!is_array($taxonomies)) {

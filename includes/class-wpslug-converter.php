@@ -113,6 +113,7 @@ class WPSlug_Converter {
 
             // 5. 处理结果
             if (is_wp_error($result)) {
+                $this->settings->recordWpmindQuotaNotice($result);
                 if ($debug_mode) {
                     error_log('[WPSlug] WPMind pinyin error: ' . $result->get_error_message());
                 }

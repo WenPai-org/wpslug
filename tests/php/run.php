@@ -40,6 +40,7 @@ function wp_debug_backtrace_summary() { return 'test'; }
 function __($text, $domain = null) { return $text; }
 function sanitize_text_field($value) { return is_scalar($value) ? trim((string) $value) : ''; }
 function sanitize_textarea_field($value) { return sanitize_text_field($value); }
+function sanitize_key($value) { return strtolower(preg_replace('/[^a-z0-9_\-]/i', '', (string) $value)); }
 function get_post_types($args = []) { return ['post', 'page', 'product']; }
 function get_taxonomies($args = []) { return ['category', 'post_tag', 'product_cat']; }
 function get_post($id) { return $GLOBALS['wpslug_posts'][$id] ?? null; }
@@ -392,11 +393,55 @@ check(substr_count($admin_source, 'https://wpcy.com/slug') >= 2, 'points documen
 check(strpos($admin_source, 'convert_on_publish_only') !== false, 'exposes convert-on-publish-only in the admin UI');
 check(strpos($admin_source, 'Bulk Convert is an explicit migration') !== false, 'tips that bulk convert is an explicit migration');
 check(strpos($admin_source, 'WPMind quota or budget was exceeded') !== false, 'surfaces WPMind quota notices in admin');
+check(strpos($admin_source, 'wpslug_editor_preview') !== false, 'registers editor slug preview AJAX');
+check(strpos($admin_source, '用 AI 生成 SEO slug') !== false, 'exposes AI SEO slug preview button copy');
+check(strpos($admin_source, '用语义拼音') !== false, 'exposes semantic pinyin preview button copy');
+check(strpos($admin_source, 'post_type_modes') !== false, 'exposes per-post-type default strategy UI');
+check(file_exists(WPSLUG_PLUGIN_DIR . 'assets/editor.js'), 'ships editor.js for slug preview controls');
+check(file_exists(WPSLUG_PLUGIN_DIR . 'assets/editor.css'), 'ships editor.css for slug preview controls');
 
 $settings_defaults = (new WPSlug_Settings())->getDefaults();
 check(!empty($settings_defaults['convert_on_publish_only']), 'defaults convert_on_publish_only to enabled');
+check(array_key_exists('post_type_modes', $settings_defaults), 'defaults include post_type_modes map');
 $modes = (new WPSlug_Settings())->getConversionModes();
 check(strpos($modes['pinyin'], 'offline fallback') !== false, 'labels local pinyin as the offline fallback');
+
+$feature_options = (new WPSlug_Settings())->applyFeatureToOptions(
+    ['conversion_mode' => 'pinyin', 'translation_service' => 'none'],
+    'seo_slug'
+);
+check(
+    $feature_options['conversion_mode'] === 'translation' && $feature_options['translation_service'] === 'wpmind',
+    'maps seo_slug feature to WPMind translation options'
+);
+$GLOBALS['wpslug_options'] = array_merge((new WPSlug_Settings())->getDefaults(), [
+    'enable_conversion' => true,
+    'auto_convert' => true,
+    'convert_on_publish_only' => true,
+    'conversion_mode' => 'pinyin',
+    'enabled_post_types' => ['post', 'product'],
+    'post_type_modes' => ['product' => 'semantic_pinyin'],
+]);
+$product_options = (new WPSlug_Settings())->resolveOptionsForPostType('product');
+check($product_options['conversion_mode'] === 'semantic_pinyin', 'resolves product CPT to semantic pinyin by post-type map');
+$post_options = (new WPSlug_Settings())->resolveOptionsForPostType('post');
+check($post_options['conversion_mode'] === 'pinyin', 'inherits global mode when post-type map has no override');
+
+$GLOBALS['wpslug_wpmind_pinyin_last_options'] = null;
+$product_slug = $core->processPostData(
+    [
+        'post_title' => '文派素格',
+        'post_name' => '',
+        'post_type' => 'product',
+        'post_status' => 'publish',
+    ],
+    ['post_status' => 'publish', 'post_type' => 'product']
+);
+check($product_slug['post_name'] === 'wenpai-suge', 'uses post-type semantic pinyin when publishing a product');
+check(
+    is_array($GLOBALS['wpslug_wpmind_pinyin_last_options']),
+    'product publish path called WPMind semantic pinyin'
+);
 
 $settings = new WPSlug_Settings();
 $GLOBALS['wpslug_options']['google_api_key'] = 'google-secret';

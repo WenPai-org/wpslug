@@ -73,6 +73,8 @@ Google / 百度是传统机翻管道（自备 key），与 WPMind 统一 LLM 能
 - 额度类 `WP_Error` 的用户可见提示（指向 WPMind 设置 / 充值）。（本 PR：`recordWpmindQuotaNotice` + admin notice）
 - 调用 context：`wpslug_seo_slug` / `wpslug_semantic_pinyin`。（本 PR）
 - 默认 `convert_on_publish_only`：草稿不打模型，离开 auto-draft 仍清占位 slug；批量转换提示为显式迁移。（本 PR）
+- 编辑屏预览：经典发布盒 + 区块文档面板「用 AI 生成 SEO slug / 用语义拼音」，确认后再写入固定链接。（本 PR）
+- 按文章类型默认策略：`post_type_modes`（`seo_slug` / `semantic_pinyin` / `pinyin` / inherit），默认空=跟全局。（本 PR）
 - CI：mock 成功、`WP_Error`、额度错误、未安装 WPMind；真实密钥继续 SKIP。
 
 ### 4.2 下一主版本（方向）

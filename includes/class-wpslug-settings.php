@@ -31,6 +31,8 @@ class WPSlug_Settings
             "translation_source_lang" => "auto",
             "translation_target_lang" => "en",
             "enabled_post_types" => ["post", "page"],
+            // Empty = inherit global conversion_mode. Example: post=>seo_slug, product=>semantic_pinyin.
+            "post_type_modes" => [],
             "enabled_taxonomies" => ["category", "post_tag"],
             "auto_convert" => true,
             // Default on: skip draft/autosave model calls; convert on publish/future.
@@ -201,6 +203,12 @@ class WPSlug_Settings
 
                 case "enabled_post_types":
                     $validated[$key] = WPSlug_Validator::validatePostTypes(
+                        $value
+                    );
+                    break;
+
+                case "post_type_modes":
+                    $validated[$key] = WPSlug_Validator::validatePostTypeModes(
                         $value
                     );
                     break;
@@ -442,6 +450,77 @@ class WPSlug_Settings
         }
 
         return $filtered_taxonomies;
+    }
+
+    /**
+     * Feature labels for per-post-type defaults.
+     *
+     * @return array<string,string>
+     */
+    public function getPostTypeFeatures()
+    {
+        return [
+            "inherit" => __("Use global conversion mode", "wpslug"),
+            "seo_slug" => __(
+                "SEO slug via WPMind (English-friendly)",
+                "wpslug"
+            ),
+            "semantic_pinyin" => __(
+                "Semantic pinyin via WPMind",
+                "wpslug"
+            ),
+            "pinyin" => __("Local pinyin (offline fallback)", "wpslug"),
+        ];
+    }
+
+    /**
+     * Apply a feature alias onto a copy of options.
+     *
+     * @param array  $options Base options.
+     * @param string $feature Feature key.
+     * @return array
+     */
+    public function applyFeatureToOptions($options, $feature)
+    {
+        $options = is_array($options) ? $options : [];
+        $feature = sanitize_key((string) $feature);
+
+        switch ($feature) {
+            case "seo_slug":
+                $options["conversion_mode"] = "translation";
+                $options["translation_service"] = "wpmind";
+                break;
+            case "semantic_pinyin":
+                $options["conversion_mode"] = "semantic_pinyin";
+                break;
+            case "pinyin":
+                $options["conversion_mode"] = "pinyin";
+                break;
+        }
+
+        return $options;
+    }
+
+    /**
+     * Resolve effective options for a post type (global + optional override).
+     *
+     * @param string $post_type Post type.
+     * @return array
+     */
+    public function resolveOptionsForPostType($post_type)
+    {
+        $options = $this->getOptions();
+        $map = isset($options["post_type_modes"]) &&
+            is_array($options["post_type_modes"])
+            ? $options["post_type_modes"]
+            : [];
+        $feature = isset($map[$post_type]) ? $map[$post_type] : "inherit";
+
+        if ($feature === "" || $feature === "inherit") {
+            return $options;
+        }
+
+        return $this->applyFeatureToOptions($options, $feature);
     }
 
     public function isPostTypeEnabled($post_type)

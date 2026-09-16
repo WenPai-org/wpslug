@@ -97,17 +97,17 @@ class WPSlug_Core {
         $is_update = func_num_args() >= 4 ? (bool) $update : !empty($postarr['ID']);
 
         try {
-            $options = $this->settings->getOptions();
-
-            if (!$options['enable_conversion'] || !$options['auto_convert']) {
-                return $data;
-            }
-
-            $post_type = $data['post_type'];
+            $post_type = isset($data['post_type']) ? $data['post_type'] : 'post';
             if (in_array($post_type, self::$excluded_post_types, true)) {
                 return $data;
             }
             if (!$this->settings->isPostTypeEnabled($post_type)) {
+                return $data;
+            }
+
+            $options = $this->settings->resolveOptionsForPostType($post_type);
+
+            if (!$options['enable_conversion'] || !$options['auto_convert']) {
                 return $data;
             }
 

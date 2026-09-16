@@ -25,9 +25,13 @@ Media conversion applies only to newly uploaded filenames. Bulk conversion is an
 == Changelog ==
 
 = 1.2.3 =
-* Stop freezing custom post type slugs as the pinyin of "Auto Draft" / 自动草稿. The real title is converted when the auto-draft is saved.
-* Use https://wpcy.com/slug for plugin links in the update UI and drop the missing SVG update icon (404).
-* Set plugin author to WPCY.COM.
+* Fixed: stop freezing custom post type slugs as the pinyin of "Auto Draft" / 自动草稿; regenerate from the real title when leaving auto-draft.
+* Added: convert-on-publish-only (default on) to skip draft autosave model calls while still clearing placeholder Auto Draft slugs.
+* Added: editor slug preview controls (「用 AI 生成」/「用语义拼音」) that write the permalink only after confirm.
+* Added: per-post-type default strategy (`post_type_modes`: SEO slug / semantic pinyin / local pinyin / inherit).
+* Changed: WPMind-first copy and stable contexts (`wpslug_seo_slug`, `wpslug_semantic_pinyin`); quota/budget errors show an admin notice and fall back to local pinyin.
+* Changed: plugin links to https://wpcy.com/slug; drop the missing SVG update icon; author WPCY.COM.
+* Added: zh_CN translations for the 1.2.x strings above.
 
 = 1.2.2 =
 * Support WordPress 6.0 with PHP 7.4 through WordPress 7.0.

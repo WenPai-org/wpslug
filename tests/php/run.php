@@ -389,7 +389,8 @@ $admin_source = file_get_contents(WPSLUG_PLUGIN_DIR . 'includes/class-wpslug-adm
 check(strpos($admin_source, 'Received input data') === false, 'does not write API credentials to debug logs');
 check(substr_count($admin_source, 'current_user_can("manage_options")') >= 3, 'protects settings page and AJAX endpoints with manage_options');
 check(strpos($admin_source, 'https://wpcy.com/c/wpslug/') === false, 'does not link support to the missing community URL');
-check(substr_count($admin_source, 'https://wpcy.com/slug') >= 2, 'points documentation and support at wpcy.com/slug');
+$admin_ui = $admin_source . file_get_contents(WPSLUG_PLUGIN_DIR . 'templates/admin/page.php');
+check(substr_count($admin_ui, 'https://wpcy.com/slug') >= 2, 'points documentation and support at wpcy.com/slug');
 check(strpos($admin_source, 'convert_on_publish_only') !== false, 'exposes convert-on-publish-only in the admin UI');
 check(strpos($admin_source, 'Bulk Convert is an explicit migration') !== false, 'tips that bulk convert is an explicit migration');
 check(strpos($admin_source, 'WPMind quota or budget was exceeded') !== false, 'surfaces WPMind quota notices in admin');

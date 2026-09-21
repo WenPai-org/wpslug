@@ -2,7 +2,7 @@
 
 为 WordPress 文章、页面、分类法和上传文件生成可读 slug，支持中文拼音、跨语言转写、Google/Baidu 翻译和可选 WPMind 集成。
 
-后台 1.3（`feat/admin-ui-1.3`）：一级菜单 + 概览/设置/工具，vendor `lib/wenpai-admin-ui` 0.2.2。option key 与转换引擎未改。Gutenberg 侧栏不换壳。
+后台 1.3（`feat/admin-ui-1.3`）：一级菜单 + 概览/设置/工具，vendor `lib/wenpai-admin-ui` 0.2.3。高级设置用 `.field` / `.tbl` / `.chk-grid`，不用 `form-table`。option key 与转换引擎未改。Gutenberg 侧栏不换壳。
 
 ## 运行要求
 

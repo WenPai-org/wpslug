@@ -131,7 +131,7 @@ jQuery(document).ready(function ($) {
 
         if ($(".pinyin-first-notice").length === 0) {
           $seoOptimizationCheckbox
-            .closest("td")
+            .closest(".field-ctl")
             .append(
               '<div class="pinyin-first-notice">SEO optimization is automatically disabled in first letter mode for maximum brevity.</div>',
             );
@@ -718,11 +718,11 @@ jQuery(document).ready(function ($) {
       );
 
       if (mediaDisabled) {
-        $mediaOptions.prop("disabled", true).closest("tr").addClass("disabled");
+        $mediaOptions.prop("disabled", true).closest(".field").addClass("disabled");
       } else {
         $mediaOptions
           .prop("disabled", false)
-          .closest("tr")
+          .closest(".field")
           .removeClass("disabled");
       }
     }

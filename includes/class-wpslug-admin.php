@@ -53,6 +53,10 @@ class WPSlug_Admin
             wp_die(esc_html__("You do not have sufficient permissions to access this page.", "wpslug"));
         }
         check_admin_referer("wpslug_reset");
+        if (empty($_POST["wpslug_reset_confirm"])) {
+            wp_safe_redirect(admin_url("admin.php?page=wpslug&tab=tools&wpslug_notice=reset-confirm"));
+            exit;
+        }
         delete_option("wpslug_options");
         wp_safe_redirect(
             admin_url(

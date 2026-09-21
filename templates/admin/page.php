@@ -16,6 +16,10 @@ if (isset($_GET["settings-updated"]) && "true" === $_GET["settings-updated"]) {
     $notice = __("已保存。", "wpslug");
     $level = "ok";
 }
+if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"]) {
+    $notice = __("重置前请先勾选确认。", "wpslug");
+    $level = "bad";
+}
 // phpcs:enable
 ?>
 <div class="wenpai-app">
@@ -245,7 +249,7 @@ if (isset($_GET["settings-updated"]) && "true" === $_GET["settings-updated"]) {
           <?php wp_nonce_field("wpslug_reset"); ?>
           <input type="hidden" name="action" value="wpslug_reset">
           <div class="wenpai-gate">
-            <label><input type="checkbox"> <?php esc_html_e("我已经核对过，并且有数据库备份。这会清掉本插件 option，不清文章别名。", "wpslug"); ?></label>
+            <label><input type="checkbox" name="wpslug_reset_confirm" value="1"> <?php esc_html_e("我已经核对过，并且有数据库备份。这会清掉本插件 option，不清文章别名。", "wpslug"); ?></label>
           </div>
           <div class="card-foot start">
             <span class="meta"><?php esc_html_e("未勾选不能点。", "wpslug"); ?></span>

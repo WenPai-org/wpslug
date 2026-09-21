@@ -43,6 +43,33 @@ class WPSlug_Admin
         add_action("load-options-permalink.php", [$this, "addPermalinkNotice"]);
 
         add_action("admin_head", [$this, "hideDefaultNotices"]);
+        add_filter("admin_body_class", [$this, "bodyClass"]);
+        add_action("admin_post_wpslug_reset", [$this, "handleReset"]);
+    }
+
+    public function handleReset()
+    {
+        if (!current_user_can("manage_options")) {
+            wp_die(esc_html__("You do not have sufficient permissions to access this page.", "wpslug"));
+        }
+        check_admin_referer("wpslug_reset");
+        delete_option("wpslug_options");
+        wp_safe_redirect(
+            admin_url(
+                "admin.php?page=wpslug&tab=tools&settings-updated=true"
+            )
+        );
+        exit;
+    }
+
+    public function bodyClass($classes)
+    {
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended
+        if (isset($_GET["page"]) && "wpslug" === sanitize_key(wp_unslash($_GET["page"]))) {
+            $classes .= " wpslug-admin";
+        }
+        // phpcs:enable
+        return $classes;
     }
 
     public function hideDefaultNotices()
@@ -56,12 +83,14 @@ class WPSlug_Admin
 
     public function addAdminMenu()
     {
-        add_options_page(
-            __("WPSlug Settings", "wpslug"),
-            __("Slug", "wpslug"),
+        add_menu_page(
+            __("WPSlug", "wpslug"),
+            __("WPSlug", "wpslug"),
             "manage_options",
             "wpslug",
-            [$this, "displayAdminPage"]
+            [$this, "displayAdminPage"],
+            "dashicons-admin-links",
+            82
         );
     }
 
@@ -79,7 +108,7 @@ class WPSlug_Admin
 
     public function preventDefaultNotice($location, $status)
     {
-        if (strpos($location, "options-general.php?page=wpslug") !== false) {
+        if (strpos($location, "page=wpslug") !== false) {
             if (strpos($location, "settings-updated=true") !== false) {
                 return $location;
             }
@@ -145,190 +174,24 @@ class WPSlug_Admin
         }
 
         $options = $this->settings->getOptions();
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only tab selector.
-        $current_tab = isset($_GET["tab"])
-            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only tab selector.
-            ? sanitize_key(wp_unslash($_GET["tab"]))
-            : "general";
-        ?>
-        <div class="wrap">
-
-        <h1><?php echo esc_html( get_admin_page_title() ); ?>
-        <span style="font-size: 13px; padding-left: 10px;">
-            <?php
-            /* translators: %s: plugin version. */
-            printf( esc_html__( 'Version: %s', 'wpslug' ), esc_html( WPSLUG_VERSION ) );
-            ?>
-        </span>
-        <a href="https://wpcy.com/slug/" target="_blank" class="button button-secondary" style="margin-left: 10px;">
-            <?php esc_html_e( 'Documentation', 'wpslug' ); ?>
-        </a>
-        <a href="https://wpcy.com/slug" target="_blank" class="button button-secondary">
-            <?php esc_html_e( 'Support', 'wpslug' ); ?>
-        </a>
-    </h1>
-
-
-            <form method="post" action="options.php" id="wpslug-settings-form">
-                <?php settings_fields("wpslug_settings"); ?>
-                <input type="hidden" name="wpslug_current_tab" id="wpslug_current_tab" value="<?php echo esc_attr(
-                    $current_tab
-                ); ?>">
-
-                <div class="wpslug-card">
-                    <h2><?php esc_html_e("Slug Settings", "wpslug"); ?></h2>
-                    <div class="wpslug-tabs">
-                        <button type="button" class="wpslug-tab <?php echo $current_tab ===
-                        "general"
-                            ? "active"
-                            : ""; ?>" data-tab="general">
-                            <?php esc_html_e("General", "wpslug"); ?>
-                        </button>
-                        <button type="button" class="wpslug-tab <?php echo $current_tab ===
-                        "pinyin"
-                            ? "active"
-                            : ""; ?>" data-tab="pinyin" style="<?php echo $options[
-    "conversion_mode"
-] !== "pinyin"
-    ? "display:none;"
-    : ""; ?>">
-                            <?php esc_html_e("Pinyin", "wpslug"); ?>
-                        </button>
-                        <button type="button" class="wpslug-tab <?php echo $current_tab ===
-                        "transliteration"
-                            ? "active"
-                            : ""; ?>" data-tab="transliteration" style="<?php echo $options[
-    "conversion_mode"
-] !== "transliteration"
-    ? "display:none;"
-    : ""; ?>">
-                            <?php esc_html_e("Transliteration", "wpslug"); ?>
-                        </button>
-                        <button type="button" class="wpslug-tab <?php echo $current_tab ===
-                        "translation"
-                            ? "active"
-                            : ""; ?>" data-tab="translation" style="<?php echo $options[
-    "conversion_mode"
-] !== "translation"
-    ? "display:none;"
-    : ""; ?>">
-                            <?php esc_html_e("Translation", "wpslug"); ?>
-                        </button>
-                        <button type="button" class="wpslug-tab <?php echo $current_tab ===
-                        "seo"
-                            ? "active"
-                            : ""; ?>" data-tab="seo">
-                            <?php esc_html_e("SEO Optimization", "wpslug"); ?>
-                        </button>
-                        <button type="button" class="wpslug-tab <?php echo $current_tab ===
-                        "media"
-                            ? "active"
-                            : ""; ?>" data-tab="media">
-                            <?php esc_html_e("Media Files", "wpslug"); ?>
-                        </button>
-                        <button type="button" class="wpslug-tab <?php echo $current_tab ===
-                        "advanced"
-                            ? "active"
-                            : ""; ?>" data-tab="advanced">
-                            <?php esc_html_e("Advanced", "wpslug"); ?>
-                        </button>
-                    </div>
-
-                    <div class="wpslug-tab-content">
-                        <div class="wpslug-section <?php echo $current_tab ===
-                        "general"
-                            ? "active"
-                            : ""; ?>" data-section="general">
-                            <?php $this->renderGeneralSettings($options); ?>
-                        </div>
-
-                        <div class="wpslug-section <?php echo $current_tab ===
-                        "pinyin"
-                            ? "active"
-                            : ""; ?>" data-section="pinyin">
-                            <?php $this->renderPinyinSettings($options); ?>
-                        </div>
-
-                        <div class="wpslug-section <?php echo $current_tab ===
-                        "transliteration"
-                            ? "active"
-                            : ""; ?>" data-section="transliteration">
-                            <?php $this->renderTransliterationSettings(
-                                $options
-                            ); ?>
-                        </div>
-
-                        <div class="wpslug-section <?php echo $current_tab ===
-                        "translation"
-                            ? "active"
-                            : ""; ?>" data-section="translation">
-                            <?php $this->renderTranslationSettings($options); ?>
-                        </div>
-
-                        <div class="wpslug-section <?php echo $current_tab ===
-                        "seo"
-                            ? "active"
-                            : ""; ?>" data-section="seo">
-                            <?php $this->renderSEOSettings($options); ?>
-                        </div>
-
-                        <div class="wpslug-section <?php echo $current_tab ===
-                        "media"
-                            ? "active"
-                            : ""; ?>" data-section="media">
-                            <?php $this->renderMediaSettings($options); ?>
-                        </div>
-
-                        <div class="wpslug-section <?php echo $current_tab ===
-                        "advanced"
-                            ? "active"
-                            : ""; ?>" data-section="advanced">
-                            <?php $this->renderAdvancedSettings($options); ?>
-                        </div>
-                    </div>
-
-                    <div class="wpslug-submit-section">
-                        <?php submit_button(
-                            __("Save Changes", "wpslug"),
-                            "primary",
-                            "submit",
-                            false
-                        ); ?>
-                        <button type="button" id="wpslug-reset-settings" class="button button-secondary">
-                            <?php esc_html_e("Reset to Defaults", "wpslug"); ?>
-                        </button>
-                        <?php if (defined("WP_DEBUG") && WP_DEBUG): ?>
-                        <button type="button" id="wpslug-debug-checkboxes" class="button button-secondary">
-                            <?php esc_html_e("Debug Checkboxes", "wpslug"); ?>
-                        </button>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </form>
-
-            <div class="wpslug-card">
-                <h2><?php esc_html_e("Preview", "wpslug"); ?></h2>
-                <div id="wpslug-status" class="wpslug-notice" style="display:none;"></div>
-                <p><?php esc_html_e(
-                    "Test your conversion settings with live preview.",
-                    "wpslug"
-                ); ?></p>
-                <div class="wpslug-preview-section">
-                    <div class="wpslug-preview-input">
-                        <input type="text" id="wpslug-preview-input" placeholder="<?php esc_html_e(
-                            "Enter text to preview conversion...",
-                            "wpslug"
-                        ); ?>" />
-                        <button type="button" id="wpslug-preview-button" class="button button-primary">
-                            <?php esc_html_e("Preview", "wpslug"); ?>
-                        </button>
-                    </div>
-                    <div id="wpslug-preview-result"></div>
-                </div>
-            </div>
-
-        </div>
-        <?php
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended
+        $tab = isset($_GET["tab"]) ? sanitize_key(wp_unslash($_GET["tab"])) : "overview";
+        $mode = isset($_GET["mode"]) ? sanitize_key(wp_unslash($_GET["mode"])) : "simple";
+        // phpcs:enable
+        if (!in_array($tab, ["overview", "settings", "tools"], true)) {
+            $tab = "overview";
+        }
+        if ($mode !== "advanced") {
+            $mode = "simple";
+        }
+        if (function_exists("wenpai_admin_ui_boot")) {
+            wenpai_admin_ui_boot();
+        }
+        $url = static function ($t, $extra = []) {
+            $args = array_merge(["page" => "wpslug", "tab" => $t], $extra);
+            return admin_url("admin.php?" . http_build_query($args));
+        };
+        include WPSLUG_PLUGIN_DIR . "templates/admin/page.php";
     }
 
     private function renderGeneralSettings($options)
@@ -1370,7 +1233,7 @@ class WPSlug_Admin
                     "wpslug"
                 ); ?>
                 <a href="<?php echo esc_url(admin_url(
-                    "options-general.php?page=wpslug"
+                    "admin.php?page=wpslug&tab=settings"
                 )); ?>" class="button button-small" style="margin-left: 10px;">
                     <?php esc_html_e("Configure WP Slug", "wpslug"); ?>
                 </a>
@@ -1407,7 +1270,7 @@ class WPSlug_Admin
 
     public function enqueueScripts($hook)
     {
-        if ("settings_page_wpslug" === $hook) {
+        if ("toplevel_page_wpslug" === $hook || "settings_page_wpslug" === $hook) {
             $this->enqueueSettingsAssets();
             return;
         }
@@ -1440,17 +1303,23 @@ class WPSlug_Admin
 
     private function enqueueSettingsAssets()
     {
+        if (function_exists("wenpai_admin_ui_boot")) {
+            wenpai_admin_ui_boot();
+        }
+        if (class_exists("Wenpai_Admin_Loader", false)) {
+            Wenpai_Admin_Loader::enqueue(["full" => true]);
+        }
         wp_enqueue_script(
             "wpslug-admin",
             WPSLUG_PLUGIN_URL . "assets/admin.js",
-            ["jquery"],
+            ["jquery", "wenpai-admin-ui"],
             WPSLUG_VERSION,
             true
         );
         wp_enqueue_style(
             "wpslug-admin",
             WPSLUG_PLUGIN_URL . "assets/admin.css",
-            [],
+            ["wenpai-admin-ui"],
             WPSLUG_VERSION
         );
 

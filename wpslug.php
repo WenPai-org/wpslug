@@ -95,6 +95,7 @@ class WPSlug
         require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-converter.php";
         require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-core.php";
         require_once WPSLUG_PLUGIN_DIR . "includes/class-wenpai-updater.php";
+        require_once WPSLUG_PLUGIN_DIR . "lib/wenpai-admin-ui/php/load.php";
 
         if (is_admin()) {
             require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-admin.php";

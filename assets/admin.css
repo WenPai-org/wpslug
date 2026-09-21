@@ -1,3 +1,9 @@
+body.wpslug-admin .wenpai-app .form-table { border: 0; margin: 0; }
+body.wpslug-admin .wenpai-app .form-table th { width: 280px; padding: 14px 0; font-weight: 400; color: #1e1e1e; }
+body.wpslug-admin .wenpai-app .form-table td { padding: 14px 0; }
+body.wpslug-admin .wenpai-app .wpslug-section-header h3 { font-size: 16px; font-weight: 400; margin: 0 0 4px; }
+body.wpslug-admin .wenpai-app .wpslug-checkbox-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 16px; }
+
 .wpslug-card {
     background: #fff;
     border: 1px solid #ccd0d4;

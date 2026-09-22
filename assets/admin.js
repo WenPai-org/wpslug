@@ -177,7 +177,11 @@ jQuery(document).ready(function ($) {
       }
 
       $button.prop("disabled", true).text(wpslug_ajax.strings.converting);
-      $result.html('<div class="wpslug-loading-spinner">Converting...</div>');
+      $result.html(
+        '<div class="wpslug-loading-spinner">' +
+          escapeHtml(wpslug_ajax.strings.converting) +
+          "</div>",
+      );
 
       var extra = $("#wpslug-settings-form").serialize();
       $.ajax({
@@ -201,12 +205,20 @@ jQuery(document).ready(function ($) {
               "error",
               response.data.message || wpslug_ajax.strings.conversion_error,
             );
-            $result.html('<div class="wpslug-error">Preview failed</div>');
+            $result.html(
+              '<div class="wpslug-error">' +
+                escapeHtml(wpslug_ajax.strings.conversion_error) +
+                "</div>",
+            );
           }
         },
         error: function () {
           showNotice("error", wpslug_ajax.strings.conversion_error);
-          $result.html('<div class="wpslug-error">Connection error</div>');
+          $result.html(
+            '<div class="wpslug-error">' +
+              escapeHtml(wpslug_ajax.strings.conversion_error) +
+              "</div>",
+          );
         },
         complete: function () {
           $button.prop("disabled", false).text(wpslug_ajax.strings.preview);
@@ -215,46 +227,11 @@ jQuery(document).ready(function ($) {
     }
 
     function buildPreviewResult(data) {
-      var html = '<div class="result-item">';
-      html += '<span class="result-label">Original:</span> ';
-      html +=
-        '<span class="result-value">' + escapeHtml(data.original) + "</span>";
-      html += "</div>";
-
-      if (data.converted && data.converted !== data.original) {
-        html += '<div class="result-item">';
-        html += '<span class="result-label">Converted:</span> ';
-        html +=
-          '<span class="result-value">' +
-          escapeHtml(data.converted) +
-          "</span>";
-        html += "</div>";
+      var slug = data.final || data.optimized || data.converted || "";
+      if (!slug) {
+        return '<span class="meta">' + escapeHtml(wpslug_ajax.strings.conversion_error) + "</span>";
       }
-
-      if (data.optimized && data.optimized !== data.converted) {
-        html += '<div class="result-item">';
-        html += '<span class="result-label">Optimized:</span> ';
-        html +=
-          '<span class="result-value">' +
-          escapeHtml(data.optimized) +
-          "</span>";
-        html += "</div>";
-      }
-
-      html += '<div class="result-item">';
-      html += '<span class="result-label">Final Slug:</span> ';
-      html +=
-        '<span class="result-final">' + escapeHtml(data.final) + "</span>";
-      html += "</div>";
-
-      html += '<div class="result-meta">';
-      html += "Mode: " + escapeHtml(data.mode);
-      if (data.detected_language) {
-        html += " | Detected: " + escapeHtml(data.detected_language);
-      }
-      html += "</div>";
-
-      return html;
+      return '<span class="result-final">' + escapeHtml(slug) + "</span>";
     }
 
     $("#wpslug-preview-button").on("click", performPreview);

@@ -122,16 +122,6 @@ class WPSlug_Admin
     {
         // phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only admin status parameters.
         if (isset($_GET["page"]) && "wpslug" === sanitize_key(wp_unslash($_GET["page"]))) {
-            if (
-                isset($_GET["settings-updated"]) &&
-                $_GET["settings-updated"] == "true"
-            ) {
-                $message = __("Settings saved successfully!", "wpslug");
-                echo '<div class="notice notice-success is-dismissible"><p>' .
-                    esc_html($message) .
-                    "</p></div>";
-            }
-
             if (isset($_GET["wpslug-error"])) {
                 $error_message = sanitize_text_field(wp_unslash($_GET["wpslug-error"]));
                 echo '<div class="notice notice-error is-dismissible"><p>' .
@@ -176,13 +166,11 @@ class WPSlug_Admin
               <p class="card-sub"><?php esc_html_e("按这页上还没保存的选择来转。不写进文章。", "wpslug"); ?></p>
             </div>
           </div>
-          <div class="field">
-            <div class="field-label"><?php esc_html_e("原文", "wpslug"); ?></div>
-            <div class="field-ctl"><input type="search" id="wpslug-preview-input" placeholder="<?php esc_attr_e("输入标题看别名", "wpslug"); ?>"></div>
-          </div>
-          <div class="field">
+          <div class="wpslug-preview">
+            <label for="wpslug-preview-input"><?php esc_html_e("原文", "wpslug"); ?></label>
+            <input type="search" id="wpslug-preview-input" placeholder="<?php esc_attr_e("输入标题看别名", "wpslug"); ?>">
             <div class="field-label"><?php esc_html_e("别名", "wpslug"); ?></div>
-            <div class="field-ctl"><span class="preview-out" id="wpslug-preview-result"></span></div>
+            <div class="preview-out" id="wpslug-preview-result"></div>
           </div>
           <div class="card-foot start">
             <span class="meta"><?php esc_html_e("不写进文章。", "wpslug"); ?></span>
@@ -1009,8 +997,8 @@ class WPSlug_Admin
             "nonce" => wp_create_nonce("wpslug_nonce"),
             "current_tab" => $saved_tab ?: "general",
             "strings" => [
-                "preview" => __("Preview", "wpslug"),
-                "converting" => __("Converting...", "wpslug"),
+                "preview" => __("预览", "wpslug"),
+                "converting" => __("转换中…", "wpslug"),
                 "testing" => __("Testing...", "wpslug"),
                 "test_api" => __("Test API", "wpslug"),
                 "reset_confirm" => __(
@@ -1025,11 +1013,8 @@ class WPSlug_Admin
                     "API connection failed. Please check your credentials.",
                     "wpslug"
                 ),
-                "no_text" => __("Please enter some text to preview.", "wpslug"),
-                "conversion_error" => __(
-                    "Conversion failed. Please check your settings.",
-                    "wpslug"
-                ),
+                "no_text" => __("先输入要转换的标题。", "wpslug"),
+                "conversion_error" => __("没有转出来。请看上面的模式和高级设置。", "wpslug"),
             ],
         ]);
     }

@@ -556,3 +556,31 @@ body.wenpai-ui-page .wpslug-help-steps li {
 body.wenpai-ui-page .wpslug-help-steps li .btn {
     justify-self: start;
 }
+
+body.wenpai-ui-page .wpslug-preview {
+    display: grid;
+    gap: 8px;
+    padding: 4px 0 8px;
+}
+body.wenpai-ui-page .wpslug-preview input {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+body.wenpai-ui-page #wpslug-preview-result {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    min-height: 24px;
+    font-family: inherit;
+    font-size: 16px;
+    line-height: 24px;
+}
+body.wenpai-ui-page #wpslug-preview-result .result-final {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}

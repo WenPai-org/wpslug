@@ -61,7 +61,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
     <div class="wenpai-stack">
       <?php if (!$enabled) : ?>
       <div class="next">
-        <span class="tile"></span>
+        <span class="tile"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("flash") : ""; ?></span>
         <div>
           <strong><?php esc_html_e("转换还没开", "wpslug"); ?></strong>
           <div class="meta"><?php esc_html_e("去设置里选拼音、心思或翻译。", "wpslug"); ?></div>
@@ -74,7 +74,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
       <section class="card">
         <h2 class="section-title"><?php esc_html_e("运行状态", "wpslug"); ?></h2>
         <div class="simple-row is-static">
-          <div class="tile <?php echo $enabled ? "ok" : "warn"; ?>"></div>
+          <div class="tile <?php echo $enabled ? "ok" : "warn"; ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("flash") : ""; ?></div>
           <div>
             <div class="t"><?php esc_html_e("转换", "wpslug"); ?></div>
             <div class="d"><?php echo $enabled ? esc_html($modes[$conv] ?? $conv) : esc_html__("未启用。", "wpslug"); ?></div>
@@ -82,7 +82,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
           <div class="r"><span class="pill <?php echo $enabled ? "ok" : "warn"; ?>"><?php echo $enabled ? esc_html__("开", "wpslug") : esc_html__("关", "wpslug"); ?></span></div>
         </div>
         <div class="simple-row is-static">
-          <div class="tile <?php echo $mind ? "ok" : ""; ?>"></div>
+          <div class="tile <?php echo $mind ? "ok" : ""; ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("sparkle") : ""; ?></div>
           <div>
             <div class="t"><?php esc_html_e("文派心思", "wpslug"); ?></div>
             <div class="d"><?php echo $mind ? esc_html__("已接通。额度在心思，这里不做充值。", "wpslug") : esc_html__("未安装时本地拼音兜底，保存不中断。", "wpslug"); ?></div>
@@ -90,7 +90,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
           <div class="r"><span class="pill <?php echo $mind ? "ok" : ""; ?>"><?php echo $mind ? esc_html__("已装", "wpslug") : esc_html__("未装", "wpslug"); ?></span></div>
         </div>
         <div class="simple-row is-static">
-          <div class="tile ok"></div>
+          <div class="tile ok"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("info") : ""; ?></div>
           <div>
             <div class="t"><?php esc_html_e("文章类型范围", "wpslug"); ?></div>
             <div class="d"><?php echo esc_html(implode("、", $types)); ?></div>

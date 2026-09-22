@@ -11,3 +11,9 @@
 - 截图：`playground-overview.png`、`playground-settings.png`、`playground-advanced.png`、`playground-error.png`
 - 高级字段的说明仍是英文。看见，未改。页脚写 WPSlug 1.2.6。看见，未改。
 - 未合 main。
+
+## 补点
+
+- 空：Playground 把 `enable_conversion` 设为关。概览出现「转换还没开」和「去设置」。状态行是「未启用。」和「关」。
+- 截图：`playground-empty.png`
+- 原先状态行写着「option key 不动」，那是给 agent 看的。已从页面去掉，提交 `82daa1c`。

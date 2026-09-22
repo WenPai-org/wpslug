@@ -77,7 +77,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
           <div class="tile <?php echo $enabled ? "ok" : "warn"; ?>"></div>
           <div>
             <div class="t"><?php esc_html_e("转换", "wpslug"); ?></div>
-            <div class="d"><?php echo $enabled ? esc_html($modes[$conv] ?? $conv) : esc_html__("未启用。option key 不动。", "wpslug"); ?></div>
+            <div class="d"><?php echo $enabled ? esc_html($modes[$conv] ?? $conv) : esc_html__("未启用。", "wpslug"); ?></div>
           </div>
           <div class="r"><span class="pill <?php echo $enabled ? "ok" : "warn"; ?>"><?php echo $enabled ? esc_html__("开", "wpslug") : esc_html__("关", "wpslug"); ?></span></div>
         </div>

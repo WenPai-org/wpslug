@@ -448,3 +448,62 @@ a.scope:hover { color: var(--wenpai-accent); }
   .wenpai-page-head { flex-wrap: wrap; align-items: flex-start; }
   .chk-grid { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 600px) {
+  /* narrow: keep header actions, mode, scope, and confirm text inside the window */
+  .wenpai-app,
+  .wenpai-wrap,
+  .wenpai-main,
+  .wenpai-head,
+  .card,
+  .field,
+  .field-ctl,
+  .wenpai-stack {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .wenpai-app input[type="text"],
+  .wenpai-app input[type="password"],
+  .wenpai-app input[type="number"],
+  .wenpai-app input[type="url"],
+  .wenpai-app input[type="search"],
+  .wenpai-app input[type="email"],
+  .wenpai-app select,
+  .wenpai-app textarea {
+    max-width: 100%;
+    min-width: 0;
+  }
+  .wenpai-brand { margin-right: 0; min-width: 0; }
+  .wenpai-head-right {
+    order: 2;
+    flex: 1 1 100%;
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-end;
+  }
+  .wenpai-page-head { flex-wrap: wrap; align-items: flex-start; }
+  .wenpai-page-head > * { min-width: 0; max-width: 100%; }
+  .mode { flex: 1 1 100%; }
+  .simple-row { flex-wrap: wrap; align-items: flex-start; row-gap: 8px; }
+  .simple-row .d { max-width: none; }
+  .simple-row .r {
+    margin-left: 52px;
+    flex: 1 1 calc(100% - 52px);
+    min-width: 0;
+    justify-content: flex-start;
+  }
+  .simple-row .scope,
+  .simple-row .pill {
+    white-space: normal;
+    height: auto;
+    min-height: 24px;
+    max-width: 100%;
+  }
+  .wenpai-gate label {
+    display: block;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .wenpai-gate input { margin-right: 8px; }
+  .hint, .wenpai-lede, .section-desc { overflow-wrap: anywhere; }
+}

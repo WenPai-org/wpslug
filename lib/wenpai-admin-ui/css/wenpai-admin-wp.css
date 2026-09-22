@@ -605,3 +605,89 @@ body.wenpai-ui-page .wenpai-app .wenpai-code code {
   border: 0;
   box-shadow: none;
 }
+
+@media (max-width: 600px) {
+  /* narrow: wp-admin layer. 600px matches the admin-bar switch. */
+  body.wenpai-ui-page #wpcontent,
+  body.wenpai-ui-page #wpbody,
+  body.wenpai-ui-page #wpbody-content,
+  body.wenpai-ui-page .wenpai-app,
+  body.wenpai-ui-page .wenpai-app .wenpai-wrap,
+  body.wenpai-ui-page .wenpai-app .wenpai-main,
+  body.wenpai-ui-page .wenpai-app .wenpai-head,
+  body.wenpai-ui-page .wenpai-app .card,
+  body.wenpai-ui-page .wenpai-app .field,
+  body.wenpai-ui-page .wenpai-app .field-ctl,
+  body.wenpai-ui-page .wenpai-app .wenpai-stack {
+    min-width: 0;
+    max-width: 100%;
+  }
+  body.wenpai-ui-page .wenpai-app input[type="text"],
+  body.wenpai-ui-page .wenpai-app input[type="password"],
+  body.wenpai-ui-page .wenpai-app input[type="number"],
+  body.wenpai-ui-page .wenpai-app input[type="url"],
+  body.wenpai-ui-page .wenpai-app input[type="search"],
+  body.wenpai-ui-page .wenpai-app input[type="email"],
+  body.wenpai-ui-page .wenpai-app select,
+  body.wenpai-ui-page .wenpai-app textarea {
+    max-width: 100%;
+    min-width: 0;
+  }
+  body.wenpai-ui-page .wenpai-brand {
+    margin-right: 0;
+    min-width: 0;
+  }
+  body.wenpai-ui-page .wenpai-head-right {
+    order: 2;
+    flex: 1 1 100%;
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-end;
+  }
+  body.wenpai-ui-page .wenpai-app .wenpai-page-head {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  body.wenpai-ui-page .wenpai-app .wenpai-page-head > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+  body.wenpai-ui-page .wenpai-app .mode {
+    flex: 1 1 100%;
+    margin-left: 0;
+  }
+  body.wenpai-ui-page .wenpai-app .simple-row {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    row-gap: 8px;
+  }
+  body.wenpai-ui-page .wenpai-app .simple-row .d {
+    max-width: none;
+  }
+  body.wenpai-ui-page .wenpai-app .simple-row .r {
+    margin-left: 52px;
+    flex: 1 1 calc(100% - 52px);
+    min-width: 0;
+    justify-content: flex-start;
+  }
+  body.wenpai-ui-page .wenpai-app .simple-row .scope,
+  body.wenpai-ui-page .wenpai-app .simple-row .pill {
+    white-space: normal;
+    height: auto;
+    min-height: 24px;
+    max-width: 100%;
+  }
+  body.wenpai-ui-page .wenpai-app .wenpai-gate label {
+    display: block;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  body.wenpai-ui-page .wenpai-app .wenpai-gate input {
+    margin-right: 8px;
+  }
+  body.wenpai-ui-page .wenpai-app .hint,
+  body.wenpai-ui-page .wenpai-app .wenpai-lede,
+  body.wenpai-ui-page .wenpai-app .section-desc {
+    overflow-wrap: anywhere;
+  }
+}

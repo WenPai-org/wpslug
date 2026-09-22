@@ -140,7 +140,6 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
         </section>
         <section class="card">
           <h2 class="section-title"><?php esc_html_e("转换模式", "wpslug"); ?></h2>
-          <p class="section-desc"><?php esc_html_e("现行 key：conversion_mode。", "wpslug"); ?></p>
           <div class="choice-cards cols-2">
             <?php foreach ($modes as $mode_id => $label) :
                 $on = $conv === $mode_id;

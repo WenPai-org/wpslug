@@ -28,10 +28,10 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
       <a class="wenpai-brand" href="<?php echo esc_url($url("overview")); ?>">
         <span class="wenpai-mark"><?php
         if (class_exists("Wenpai_Admin_Icons", false)) {
-            echo Wenpai_Admin_Icons::svg("home"); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+            echo Wenpai_Admin_Icons::svg("external"); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         }
         ?></span>
-        <span class="wenpai-name"><?php esc_html_e("WPSlug", "wpslug"); ?></span>
+        <span class="wenpai-name">文派素格</span>
       </a>
       <nav class="wenpai-tabs" aria-label="WPSlug">
         <a class="wenpai-tab<?php echo "overview" === $tab ? " is-active" : ""; ?>" href="<?php echo esc_url($url("overview")); ?>"><?php esc_html_e("概览", "wpslug"); ?></a>

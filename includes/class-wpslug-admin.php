@@ -88,8 +88,8 @@ class WPSlug_Admin
     public function addAdminMenu()
     {
         add_menu_page(
-            __("WPSlug", "wpslug"),
-            __("WPSlug", "wpslug"),
+            "文派素格",
+            "素格",
             "manage_options",
             "wpslug",
             [$this, "displayAdminPage"],

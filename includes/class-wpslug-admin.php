@@ -164,6 +164,34 @@ class WPSlug_Admin
         }
     }
 
+
+    private function renderPreviewCard()
+    {
+        ?>
+        <section class="card">
+          <div class="card-head">
+            <span class="tile accent"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("eye") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+            <div>
+              <h2 class="card-title"><?php esc_html_e("预览", "wpslug"); ?></h2>
+              <p class="card-sub"><?php esc_html_e("按这页上还没保存的选择来转。不写进文章。", "wpslug"); ?></p>
+            </div>
+          </div>
+          <div class="field">
+            <div class="field-label"><?php esc_html_e("原文", "wpslug"); ?></div>
+            <div class="field-ctl"><input type="search" id="wpslug-preview-input" placeholder="<?php esc_attr_e("输入标题看别名", "wpslug"); ?>"></div>
+          </div>
+          <div class="field">
+            <div class="field-label"><?php esc_html_e("别名", "wpslug"); ?></div>
+            <div class="field-ctl"><span class="preview-out" id="wpslug-preview-result"></span></div>
+          </div>
+          <div class="card-foot start">
+            <span class="meta"><?php esc_html_e("不写进文章。", "wpslug"); ?></span>
+            <button type="button" class="btn btn-secondary" id="wpslug-preview-button"><?php esc_html_e("预览", "wpslug"); ?></button>
+          </div>
+        </section>
+        <?php
+    }
+
     public function displayAdminPage()
     {
         if (!current_user_can("manage_options")) {
@@ -180,11 +208,24 @@ class WPSlug_Admin
         $tab = isset($_GET["tab"]) ? sanitize_key(wp_unslash($_GET["tab"])) : "overview";
         $mode = isset($_GET["mode"]) ? sanitize_key(wp_unslash($_GET["mode"])) : "simple";
         // phpcs:enable
-        if (!in_array($tab, ["overview", "settings", "tools"], true)) {
+        if (!in_array($tab, ["overview", "settings", "tools", "help"], true)) {
             $tab = "overview";
         }
         if ($mode !== "advanced") {
             $mode = "simple";
+        }
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin view parameter.
+        $section = isset($_GET["section"]) ? sanitize_key(wp_unslash($_GET["section"])) : "pinyin";
+        $adv_sections = [
+            "pinyin" => ["label" => __("拼音", "wpslug"), "icon" => "flash", "sub" => __("格式、分隔和保留。", "wpslug")],
+            "translit" => ["label" => __("音译", "wpslug"), "icon" => "map", "sub" => __("外文怎么转成拉丁字母。", "wpslug")],
+            "translate" => ["label" => __("翻译", "wpslug"), "icon" => "sparkle", "sub" => __("翻译服务、语言和密钥。", "wpslug")],
+            "seo" => ["label" => __("SEO", "wpslug"), "icon" => "equalizer", "sub" => __("停用词和长度。", "wpslug")],
+            "media" => ["label" => __("媒体", "wpslug"), "icon" => "image", "sub" => __("上传时的文件名。", "wpslug")],
+            "types" => ["label" => __("类型", "wpslug"), "icon" => "server", "sub" => __("文章类型和分类法。", "wpslug")],
+        ];
+        if (!isset($adv_sections[$section])) {
+            $section = "pinyin";
         }
         if (function_exists("wenpai_admin_ui_boot")) {
             wenpai_admin_ui_boot();
@@ -317,11 +358,6 @@ class WPSlug_Admin
     private function renderPinyinSettings($options)
     {
         ?>
-        <h2 class="section-title"><?php esc_html_e("Chinese Pinyin Settings", "wpslug"); ?></h2>
-        <p class="section-desc"><?php esc_html_e(
-            "Configure Chinese characters to Pinyin romanization.",
-            "wpslug"
-        ); ?></p>
         <div class="field">
             <div class="field-label"><?php esc_html_e("Pinyin Format", "wpslug"); ?></div>
             <div class="field-ctl">
@@ -394,11 +430,6 @@ class WPSlug_Admin
     private function renderTransliterationSettings($options)
     {
         ?>
-        <h2 class="section-title"><?php esc_html_e("Transliteration Settings", "wpslug"); ?></h2>
-        <p class="section-desc"><?php esc_html_e(
-            "Convert foreign scripts (Cyrillic, Arabic, Greek) to Latin alphabet.",
-            "wpslug"
-        ); ?></p>
         <div class="field">
             <div class="field-label"><?php esc_html_e("Transliteration Method", "wpslug"); ?></div>
             <div class="field-ctl">
@@ -421,11 +452,6 @@ class WPSlug_Admin
     private function renderTranslationSettings($options)
     {
         ?>
-        <h2 class="section-title"><?php esc_html_e("Translation Settings", "wpslug"); ?></h2>
-        <p class="section-desc"><?php esc_html_e(
-            "Use online translation services to convert text to English slugs.",
-            "wpslug"
-        ); ?></p>
         <div class="field">
             <div class="field-label"><?php esc_html_e("Translation Service", "wpslug"); ?></div>
             <div class="field-ctl">
@@ -569,11 +595,6 @@ class WPSlug_Admin
     private function renderSEOSettings($options)
     {
         ?>
-        <h2 class="section-title"><?php esc_html_e("SEO Optimization", "wpslug"); ?></h2>
-        <p class="section-desc"><?php esc_html_e(
-            "Optimize slugs for better search engine performance and user experience.",
-            "wpslug"
-        ); ?></p>
         <div class="field">
             <div class="field-label"><?php esc_html_e("Enable SEO Optimization", "wpslug"); ?></div>
             <div class="field-ctl">
@@ -684,11 +705,6 @@ class WPSlug_Admin
     private function renderMediaSettings($options)
     {
         ?>
-        <h2 class="section-title"><?php esc_html_e("Media Files", "wpslug"); ?></h2>
-        <p class="section-desc"><?php esc_html_e(
-            "Configure how media file names are handled during upload.",
-            "wpslug"
-        ); ?></p>
         <div class="field">
             <div class="field-label"><?php esc_html_e("Media File Conversion", "wpslug"); ?></div>
             <div class="field-ctl">
@@ -773,14 +789,9 @@ class WPSlug_Admin
             ? $options["post_type_modes"]
             : [];
         ?>
-        <h2 class="section-title"><?php esc_html_e("Advanced Settings", "wpslug"); ?></h2>
-        <p class="section-desc"><?php esc_html_e(
-            "Advanced options and content type configuration for power users.",
-            "wpslug"
-        ); ?></p>
-        <h3 class="section-title"><?php esc_html_e("Content Types", "wpslug"); ?></h3>
         <h3 class="section-title"><?php esc_html_e("Post Types", "wpslug"); ?></h3>
         <div class="chk-grid">
+            <input type="hidden" name="wpslug_options[enabled_post_types][]" value="">
             <?php foreach ($post_types as $post_type) : ?>
                 <label>
                     <input type="checkbox"
@@ -831,6 +842,7 @@ class WPSlug_Admin
         </table>
         <h3 class="section-title"><?php esc_html_e("Taxonomies", "wpslug"); ?></h3>
         <div class="chk-grid">
+            <input type="hidden" name="wpslug_options[enabled_taxonomies][]" value="">
             <?php foreach (get_taxonomies(["public" => true], "objects") as $taxonomy) : ?>
                 <label>
                     <input type="checkbox"
@@ -906,11 +918,13 @@ class WPSlug_Admin
 
     public function validateOptions($input)
     {
-        $validated = $this->settings->validateOptions($input);
+        $current_options = $this->settings->getOptions();
+        $posted = is_array($input) ? $input : [];
+        // Keys absent from this form keep their saved value.
+        $validated = $this->settings->validateOptions(array_merge($current_options, $posted));
 
         if (!empty($validated)) {
-            $current_options = $this->settings->getOptions();
-            $merged_options = array_merge($current_options, $validated);
+            $merged_options = $validated;
 
             if (
                 // Settings API verifies the options nonce before this sanitize callback.
@@ -1108,6 +1122,17 @@ class WPSlug_Admin
 
         $text = isset($_POST["text"]) ? sanitize_text_field(wp_unslash($_POST["text"])) : "";
         $options = $this->settings->getOptions();
+        // Preview may include the unsaved settings form. Validate, do not save.
+        // Nonce checked above with check_ajax_referer().
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing
+        if (isset($_POST["wpslug_options"]) && is_array($_POST["wpslug_options"])) {
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            $posted = wp_unslash($_POST["wpslug_options"]);
+            $draft = $this->settings->validateOptions(array_merge($options, $posted));
+            if (is_array($draft) && $draft !== []) {
+                $options = $draft;
+            }
+        }
 
         if (empty($text)) {
             wp_send_json_error([

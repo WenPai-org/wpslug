@@ -522,3 +522,48 @@ body.wpslug-admin .field.disabled {
     max-width: 100%;
     box-sizing: border-box;
 }
+
+/* 简单页三个模式：宽屏同一行三栏，窄屏一列。 */
+body.wenpai-ui-page .choice-cards.wpslug-modes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 782px) {
+    body.wenpai-ui-page .choice-cards.wpslug-modes {
+        grid-template-columns: 1fr;
+    }
+}
+body.wenpai-ui-page .wpslug-subtabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 16px;
+}
+body.wenpai-ui-page .wpslug-subtabs a {
+    display: inline-flex;
+    align-items: center;
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--wenpai-line, #e5e5e5);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--wenpai-ink-2, #50575e);
+    text-decoration: none;
+}
+body.wenpai-ui-page .wpslug-subtabs a.on,
+body.wenpai-ui-page .btn-ghost.is-active {
+    background: var(--wenpai-accent-soft);
+    color: var(--wenpai-accent);
+    border-color: transparent;
+}
+body.wenpai-ui-page .wpslug-help-steps {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+body.wenpai-ui-page .wpslug-help-steps li {
+    display: grid;
+    gap: 4px;
+}

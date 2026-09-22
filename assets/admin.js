@@ -179,14 +179,17 @@ jQuery(document).ready(function ($) {
       $button.prop("disabled", true).text(wpslug_ajax.strings.converting);
       $result.html('<div class="wpslug-loading-spinner">Converting...</div>');
 
+      var extra = $("#wpslug-settings-form").serialize();
       $.ajax({
         url: wpslug_ajax.ajax_url,
         type: "POST",
-        data: {
-          action: "wpslug_preview",
-          text: text,
-          nonce: wpslug_ajax.nonce,
-        },
+        data:
+          (extra ? extra + "&" : "") +
+          $.param({
+            action: "wpslug_preview",
+            text: text,
+            nonce: wpslug_ajax.nonce,
+          }),
         success: function (response) {
           if (response.success) {
             var data = response.data;

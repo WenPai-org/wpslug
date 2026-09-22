@@ -25,6 +25,19 @@ define("WPSLUG_PLUGIN_DIR", plugin_dir_path(__FILE__));
 define("WPSLUG_PLUGIN_URL", plugin_dir_url(__FILE__));
 define("WPSLUG_PLUGIN_BASENAME", plugin_basename(__FILE__));
 
+function wpslug_brand_name() {
+    $name = apply_filters("wpslug_brand_name", "文派素格");
+    $name = is_string($name) ? trim($name) : "";
+    return $name !== "" ? $name : "文派素格";
+}
+
+function wpslug_plugin_name() {
+    $name = apply_filters("wpslug_plugin_name", "WPSlug");
+    $name = is_string($name) ? trim($name) : "";
+    return $name !== "" ? $name : "WPSlug";
+}
+
+
 class WPSlug
 {
     private static $instance = null;

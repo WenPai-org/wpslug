@@ -31,7 +31,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
             echo Wenpai_Admin_Icons::svg("external"); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         }
         ?></span>
-        <span class="wenpai-name">文派素格</span>
+        <span class="wenpai-name"><?php echo esc_html(wpslug_brand_name()); ?></span>
       </a>
       <nav class="wenpai-tabs" aria-label="文派素格">
         <a class="wenpai-tab<?php echo "overview" === $tab ? " is-active" : ""; ?>" href="<?php echo esc_url($url("overview")); ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("home") : ""; ?><?php esc_html_e("概览", "wpslug"); ?></a>
@@ -261,7 +261,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
 <?php endif; ?>
 
     <footer class="foot">
-      <span>WPSlug <?php echo esc_html(WPSLUG_VERSION); ?></span>
+      <span><?php echo esc_html(wpslug_plugin_name()); ?> <?php echo esc_html(WPSLUG_VERSION); ?></span>
       <span class="r"><a href="https://wpcy.com/slug"><?php esc_html_e("文档", "wpslug"); ?></a></span>
     </footer>
   </main>

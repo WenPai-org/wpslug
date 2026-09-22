@@ -87,14 +87,12 @@ class WPSlug_Admin
 
     public function addAdminMenu()
     {
-        add_menu_page(
-            "文派素格",
-            "文派素格",
+        add_options_page(
+            __("WPSlug Settings", "wpslug"),
+            __("Slug", "wpslug"),
             "manage_options",
             "wpslug",
-            [$this, "displayAdminPage"],
-            "dashicons-admin-links",
-            82
+            [$this, "displayAdminPage"]
         );
     }
 

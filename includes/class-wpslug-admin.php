@@ -89,7 +89,7 @@ class WPSlug_Admin
     {
         add_menu_page(
             "文派素格",
-            "素格",
+            "文派素格",
             "manage_options",
             "wpslug",
             [$this, "displayAdminPage"],

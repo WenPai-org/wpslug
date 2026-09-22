@@ -534,7 +534,7 @@ body.wenpai-ui-page .choice-cards.wpslug-modes {
 }
 body.wenpai-ui-page .wpslug-sections {
     display: flex;
-    margin: 0 0 16px;
+    margin: 0;
 }
 body.wenpai-ui-page .btn-ghost.is-active {
     background: var(--wenpai-accent-soft);
@@ -557,32 +557,42 @@ body.wenpai-ui-page .wpslug-help-steps li .btn {
     justify-self: start;
 }
 
-body.wenpai-ui-page .wpslug-preview-fields .field {
+body.wenpai-ui-page .wenpai-app .wenpai-stack > #wpslug-settings-form {
+    display: block;
+    margin: 0;
+}
+body.wenpai-ui-page .wenpai-app .wpslug-preview-fields .field {
     grid-template-columns: 1fr;
     gap: 8px;
+    border-top: 0;
+    padding-top: 0;
+    padding-bottom: 12px;
 }
-body.wenpai-ui-page .wpslug-preview-fields input {
+body.wenpai-ui-page .wenpai-app .wpslug-preview-fields input[type="search"],
+body.wenpai-ui-page .wenpai-app .wpslug-preview-fields .preview-out {
     width: 100%;
     max-width: 100%;
     min-width: 0;
 }
-body.wenpai-ui-page .simple-row > .tile:empty {
-    visibility: hidden;
+body.wenpai-ui-page .wenpai-app .wpslug-preview .meta {
+    margin-top: 8px;
 }
-body.wenpai-ui-page #wpslug-preview-result {
+body.wenpai-ui-page .wpslug-api-sections {
+    margin-top: 0;
+}
+body.wenpai-ui-page .wpslug-api-section {
     background: transparent;
     border: 0;
     border-radius: 0;
     padding: 0;
-    min-height: 24px;
-    font-family: inherit;
-    font-size: 16px;
-    line-height: 24px;
+    margin: 0;
+}
+body.wenpai-ui-page .simple-row > .tile:empty {
+    visibility: hidden;
 }
 body.wenpai-ui-page #wpslug-preview-result .result-final {
     background: transparent;
     color: inherit;
     padding: 0;
     font-weight: 600;
-    overflow-wrap: anywhere;
 }

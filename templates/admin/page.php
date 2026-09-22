@@ -30,7 +30,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
       <a class="wenpai-brand" href="<?php echo esc_url($url("overview")); ?>">
         <span class="wenpai-mark"><?php
         if (class_exists("Wenpai_Admin_Icons", false)) {
-            echo Wenpai_Admin_Icons::svg("external"); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+            echo Wenpai_Admin_Icons::svg("home"); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         }
         ?></span>
         <span class="wenpai-name"><?php echo esc_html(wpslug_brand_name()); ?></span>
@@ -101,7 +101,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
         </div>
         <div class="card-foot start">
           <span class="meta"><?php esc_html_e("转换模式在设置 · 简单。", "wpslug"); ?></span>
-          <a class="btn btn-secondary" href="<?php echo esc_url($url("settings")); ?>"><?php esc_html_e("设置", "wpslug"); ?></a>
+          <a class="btn btn-secondary" href="<?php echo esc_url($url("settings")); ?>"><?php esc_html_e("去设置", "wpslug"); ?></a>
         </div>
       </section>
     </div>
@@ -119,6 +119,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
         </span>
       </div>
     </div>
+    <div class="wenpai-stack">
     <?php if ("advanced" === $mode) : ?>
     <div class="mode wpslug-sections">
       <span class="seg">
@@ -131,7 +132,6 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
     <form method="post" action="options.php" id="wpslug-settings-form">
       <?php settings_fields("wpslug_settings"); ?>
       <input type="hidden" name="wpslug_current_tab" value="<?php echo esc_attr($tab); ?>">
-      <div class="wenpai-stack">
         <?php if ("simple" === $mode) : ?>
         <section class="card">
           <div class="simple-row">
@@ -242,9 +242,9 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
         </section>
         <?php endforeach; ?>
         <?php endif; ?>
-      </div>
     </form>
     <?php $this->renderPreviewCard(); ?>
+    </div>
 
 <?php elseif ("tools" === $tab) : ?>
     <div class="wenpai-page-head">
@@ -267,7 +267,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
           <?php wp_nonce_field("wpslug_reset"); ?>
           <input type="hidden" name="action" value="wpslug_reset">
           <div class="wenpai-gate">
-            <label><input type="checkbox" name="wpslug_reset_confirm" value="1"> <?php esc_html_e("我已经核对过，并且有数据库备份。这会清掉本插件 option，不清文章别名。", "wpslug"); ?></label>
+            <label><input type="checkbox" name="wpslug_reset_confirm" value="1"> <?php esc_html_e("我已经核对过，并且有数据库备份。这会清掉本插件的设置，不清文章别名。", "wpslug"); ?></label>
           </div>
           <div class="card-foot start">
             <span class="meta"><?php esc_html_e("未勾选不能点。", "wpslug"); ?></span>
@@ -304,7 +304,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
           </li>
           <li>
             <strong><?php esc_html_e("先预览再保存", "wpslug"); ?></strong>
-            <span><?php esc_html_e("设置页下面有预览。它按你正在改、还没保存的选择来转，不写进文章。", "wpslug"); ?></span>
+            <span><?php esc_html_e("设置页下面有预览。输入标题就显示别名，按还没保存的选择来转，不写进文章。", "wpslug"); ?></span>
           </li>
         </ol>
       </section>
@@ -316,30 +316,32 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
             <p class="card-sub"><?php esc_html_e("一次只打开一组。", "wpslug"); ?></p>
           </div>
         </div>
-        <div class="field">
-          <div class="field-label"><?php esc_html_e("拼音", "wpslug"); ?></div>
-          <div class="field-ctl"><?php esc_html_e("全拼或首字母、词间分隔、是否保留英文和数字。", "wpslug"); ?></div>
-        </div>
-        <div class="field">
-          <div class="field-label"><?php esc_html_e("音译", "wpslug"); ?></div>
-          <div class="field-ctl"><?php esc_html_e("西里尔、阿拉伯、希腊等字母转成拉丁字母的方式。", "wpslug"); ?></div>
-        </div>
-        <div class="field">
-          <div class="field-label"><?php esc_html_e("翻译", "wpslug"); ?></div>
-          <div class="field-ctl"><?php esc_html_e("翻译服务、源语言和目标语言。自备密钥留在这一组。", "wpslug"); ?></div>
-        </div>
-        <div class="field">
-          <div class="field-label"><?php esc_html_e("SEO", "wpslug"); ?></div>
-          <div class="field-ctl"><?php esc_html_e("停用词、标点和别名里保留多少个词。", "wpslug"); ?></div>
-        </div>
-        <div class="field">
-          <div class="field-label"><?php esc_html_e("媒体", "wpslug"); ?></div>
-          <div class="field-ctl"><?php esc_html_e("上传文件的文件名要不要转换，以及要不要保留扩展名。", "wpslug"); ?></div>
-        </div>
-        <div class="field">
-          <div class="field-label"><?php esc_html_e("类型", "wpslug"); ?></div>
-          <div class="field-ctl"><?php esc_html_e("哪些文章类型和分类法参与转换。", "wpslug"); ?></div>
-        </div>
+        <ul class="wpslug-help-steps">
+          <li>
+            <strong><?php esc_html_e("拼音", "wpslug"); ?></strong>
+            <span><?php esc_html_e("全拼或首字母、词间分隔、是否保留英文和数字。", "wpslug"); ?></span>
+          </li>
+          <li>
+            <strong><?php esc_html_e("音译", "wpslug"); ?></strong>
+            <span><?php esc_html_e("西里尔、阿拉伯、希腊等字母转成拉丁字母的方式。", "wpslug"); ?></span>
+          </li>
+          <li>
+            <strong><?php esc_html_e("翻译", "wpslug"); ?></strong>
+            <span><?php esc_html_e("翻译服务、源语言和目标语言。自备密钥留在这一组。", "wpslug"); ?></span>
+          </li>
+          <li>
+            <strong><?php esc_html_e("SEO", "wpslug"); ?></strong>
+            <span><?php esc_html_e("停用词、标点和别名里保留多少个词。", "wpslug"); ?></span>
+          </li>
+          <li>
+            <strong><?php esc_html_e("媒体", "wpslug"); ?></strong>
+            <span><?php esc_html_e("上传文件的文件名要不要转换，以及要不要保留扩展名。", "wpslug"); ?></span>
+          </li>
+          <li>
+            <strong><?php esc_html_e("类型", "wpslug"); ?></strong>
+            <span><?php esc_html_e("哪些文章类型和分类法参与转换。", "wpslug"); ?></span>
+          </li>
+        </ul>
         <div class="card-foot start">
           <span class="meta"><?php esc_html_e("简单页只管开关和模式。", "wpslug"); ?></span>
           <a class="btn btn-secondary" href="<?php echo esc_url($url("settings", ["mode" => "advanced"])); ?>"><?php esc_html_e("打开高级", "wpslug"); ?></a>

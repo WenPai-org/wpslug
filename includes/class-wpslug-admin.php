@@ -158,7 +158,7 @@ class WPSlug_Admin
     private function renderPreviewCard()
     {
         ?>
-        <section class="card">
+        <section class="card wpslug-preview">
           <div class="card-head">
             <span class="tile accent"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("eye") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
             <div>
@@ -169,17 +169,14 @@ class WPSlug_Admin
           <div class="wpslug-preview-fields">
             <div class="field">
               <label class="field-label" for="wpslug-preview-input"><?php esc_html_e("原文", "wpslug"); ?></label>
-              <div class="field-ctl"><input type="search" id="wpslug-preview-input" placeholder="<?php esc_attr_e("输入标题看别名", "wpslug"); ?>"></div>
+              <div class="field-ctl"><input type="search" id="wpslug-preview-input" placeholder="<?php esc_attr_e("输入标题看别名", "wpslug"); ?>" autocomplete="off"></div>
             </div>
             <div class="field">
-              <div class="field-label"><?php esc_html_e("别名", "wpslug"); ?></div>
-              <div class="field-ctl"><div class="preview-out" id="wpslug-preview-result"></div></div>
+              <div class="field-label" id="wpslug-preview-result-label"><?php esc_html_e("别名", "wpslug"); ?></div>
+              <div class="field-ctl"><div class="preview-out" id="wpslug-preview-result" role="status" aria-live="polite" aria-labelledby="wpslug-preview-result-label"></div></div>
             </div>
           </div>
-          <div class="card-foot start">
-            <span class="meta"><?php esc_html_e("不写进文章。", "wpslug"); ?></span>
-            <button type="button" class="btn btn-secondary" id="wpslug-preview-button"><?php esc_html_e("预览", "wpslug"); ?></button>
-          </div>
+          <p class="meta"><?php esc_html_e("不写进文章。输入后直接显示。", "wpslug"); ?></p>
         </section>
         <?php
     }

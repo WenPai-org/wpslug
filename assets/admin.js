@@ -166,22 +166,22 @@ jQuery(document).ready(function ($) {
   }
 
   function initPreviewFunctionality() {
+    var timer = null;
+    var seq = 0;
+
     function performPreview() {
       var text = $("#wpslug-preview-input").val().trim();
-      var $button = $("#wpslug-preview-button");
       var $result = $("#wpslug-preview-result");
+      var ticket = ++seq;
 
       if (!text) {
-        showNotice("error", wpslug_ajax.strings.no_text);
+        $result.empty();
         return;
       }
 
-      $button.prop("disabled", true).text(wpslug_ajax.strings.converting);
-      $result.html(
-        '<div class="wpslug-loading-spinner">' +
-          escapeHtml(wpslug_ajax.strings.converting) +
-          "</div>",
-      );
+      if (!$result.text()) {
+        $result.text(wpslug_ajax.strings.converting);
+      }
 
       var extra = $("#wpslug-settings-form").serialize();
       $.ajax({
@@ -195,51 +195,44 @@ jQuery(document).ready(function ($) {
             nonce: wpslug_ajax.nonce,
           }),
         success: function (response) {
+          if (ticket !== seq) {
+            return;
+          }
           if (response.success) {
-            var data = response.data;
-            var html = buildPreviewResult(data);
-            $result.html(html);
-            hideNotice();
+            $result.text(previewSlug(response.data));
           } else {
-            showNotice(
-              "error",
-              response.data.message || wpslug_ajax.strings.conversion_error,
-            );
-            $result.html(
-              '<div class="wpslug-error">' +
-                escapeHtml(wpslug_ajax.strings.conversion_error) +
-                "</div>",
-            );
+            $result.text(wpslug_ajax.strings.conversion_error);
           }
         },
         error: function () {
-          showNotice("error", wpslug_ajax.strings.conversion_error);
-          $result.html(
-            '<div class="wpslug-error">' +
-              escapeHtml(wpslug_ajax.strings.conversion_error) +
-              "</div>",
-          );
-        },
-        complete: function () {
-          $button.prop("disabled", false).text(wpslug_ajax.strings.preview);
+          if (ticket !== seq) {
+            return;
+          }
+          $result.text(wpslug_ajax.strings.conversion_error);
         },
       });
     }
 
-    function buildPreviewResult(data) {
-      var slug = data.final || data.optimized || data.converted || "";
-      if (!slug) {
-        return '<span class="meta">' + escapeHtml(wpslug_ajax.strings.conversion_error) + "</span>";
+    function previewSlug(data) {
+      if (!data) {
+        return wpslug_ajax.strings.conversion_error;
       }
-      return '<span class="result-final">' + escapeHtml(slug) + "</span>";
+      return data.final || data.optimized || data.converted || wpslug_ajax.strings.conversion_error;
     }
 
-    $("#wpslug-preview-button").on("click", performPreview);
-    $("#wpslug-preview-input").on("keypress", function (e) {
-      if (e.which === 13) {
-        performPreview();
+    function schedulePreview() {
+      clearTimeout(timer);
+      var text = $("#wpslug-preview-input").val().trim();
+      if (!text) {
+        seq += 1;
+        $("#wpslug-preview-result").empty();
+        return;
       }
-    });
+      timer = setTimeout(performPreview, 250);
+    }
+
+    $("#wpslug-preview-input").on("input", schedulePreview);
+    $("#wpslug-settings-form").on("change", "input, select, textarea", schedulePreview);
   }
 
   function initApiTesting() {
@@ -617,7 +610,7 @@ jQuery(document).ready(function ($) {
           case 13:
             if ($("#wpslug-preview-input").is(":focus")) {
               e.preventDefault();
-              $("#wpslug-preview-button").click();
+              $("#wpslug-preview-input").trigger("input");
             }
             break;
           case 83:
@@ -660,18 +653,6 @@ jQuery(document).ready(function ($) {
   }
 
   function initSEOFeatures() {
-    var $previewInput = $("#wpslug-preview-input");
-    var $previewResult = $("#wpslug-preview-result");
-
-    $previewInput.on("input", function () {
-      var text = $(this).val().trim();
-      if (text.length > 0) {
-        $(this).removeClass("invalid").addClass("valid");
-      } else {
-        $(this).removeClass("valid invalid");
-      }
-    });
-
     $('input[name="wpslug_options[seo_max_words]"]').on("input", function () {
       var value = parseInt($(this).val());
       var $warning = $(this).siblings(".seo-warning");

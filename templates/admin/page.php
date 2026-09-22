@@ -120,11 +120,13 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
       </div>
     </div>
     <?php if ("advanced" === $mode) : ?>
-    <nav class="wpslug-subtabs" aria-label="<?php esc_attr_e("高级分组", "wpslug"); ?>">
-      <?php foreach ($adv_sections as $section_id => $meta) : ?>
-      <a class="<?php echo $section === $section_id ? "on" : ""; ?>" href="<?php echo esc_url($url("settings", ["mode" => "advanced", "section" => $section_id])); ?>"><?php echo esc_html($meta["label"]); ?></a>
-      <?php endforeach; ?>
-    </nav>
+    <div class="mode wpslug-sections">
+      <span class="seg">
+        <?php foreach ($adv_sections as $section_id => $meta) : ?>
+        <a class="<?php echo $section === $section_id ? "on" : ""; ?>" href="<?php echo esc_url($url("settings", ["mode" => "advanced", "section" => $section_id])); ?>"><?php echo esc_html($meta["label"]); ?></a>
+        <?php endforeach; ?>
+      </span>
+    </div>
     <?php endif; ?>
     <form method="post" action="options.php" id="wpslug-settings-form">
       <?php settings_fields("wpslug_settings"); ?>

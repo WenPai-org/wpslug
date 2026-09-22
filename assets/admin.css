@@ -599,6 +599,11 @@ body.wenpai-ui-page .wenpai-app .wpslug-simple > .card-foot {
     margin-top: 0;
     padding-top: 12px;
 }
+body.wenpai-ui-page .wenpai-app .wpslug-simple > .notice + .simple-row {
+    margin-top: 8px;
+    padding-top: 0;
+    border-top: 0;
+}
 body.wenpai-ui-page #wpslug-preview-result .result-final {
     background: transparent;
     color: inherit;

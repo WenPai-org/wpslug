@@ -567,3 +567,6 @@ body.wenpai-ui-page .wpslug-help-steps li {
     display: grid;
     gap: 4px;
 }
+body.wenpai-ui-page .wpslug-help-steps li .btn {
+    justify-self: start;
+}

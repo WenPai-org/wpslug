@@ -31,7 +31,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
             echo Wenpai_Admin_Icons::svg("home"); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         }
         ?></span>
-        <span class="wenpai-name">WPSlug</span>
+        <span class="wenpai-name"><?php esc_html_e("WPSlug", "wpslug"); ?></span>
       </a>
       <nav class="wenpai-tabs" aria-label="WPSlug">
         <a class="wenpai-tab<?php echo "overview" === $tab ? " is-active" : ""; ?>" href="<?php echo esc_url($url("overview")); ?>"><?php esc_html_e("概览", "wpslug"); ?></a>

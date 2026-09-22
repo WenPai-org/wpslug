@@ -17,3 +17,10 @@
 - 空：Playground 把 `enable_conversion` 设为关。概览出现「转换还没开」和「去设置」。状态行是「未启用。」和「关」。
 - 截图：`playground-empty.png`
 - 原先状态行写着「option key 不动」，那是给 agent 看的。已从页面去掉，提交 `82daa1c`。
+
+
+## 中文
+
+- 之前高级设置看起来是英文，因为那次 Playground 的站点语言是 en_US。
+- 插件自带 `languages/wpslug-zh_CN.mo`。站点语言改为 zh_CN 后，高级设置是「中文拼音设置」「拼音格式」「翻译服务」。截图 `playground-advanced-zh.png`。
+- 顶栏品牌原先写死 WPSlug，中文菜单却是「文派素格」。顶栏改为走这条已有翻译。

@@ -557,15 +557,17 @@ body.wenpai-ui-page .wpslug-help-steps li .btn {
     justify-self: start;
 }
 
-body.wenpai-ui-page .wpslug-preview {
-    display: grid;
+body.wenpai-ui-page .wpslug-preview-fields .field {
+    grid-template-columns: 1fr;
     gap: 8px;
-    padding: 4px 0 8px;
 }
-body.wenpai-ui-page .wpslug-preview input {
+body.wenpai-ui-page .wpslug-preview-fields input {
     width: 100%;
     max-width: 100%;
     min-width: 0;
+}
+body.wenpai-ui-page .simple-row > .tile:empty {
+    visibility: hidden;
 }
 body.wenpai-ui-page #wpslug-preview-result {
     background: transparent;

@@ -166,11 +166,15 @@ class WPSlug_Admin
               <p class="card-sub"><?php esc_html_e("按这页上还没保存的选择来转。不写进文章。", "wpslug"); ?></p>
             </div>
           </div>
-          <div class="wpslug-preview">
-            <label for="wpslug-preview-input"><?php esc_html_e("原文", "wpslug"); ?></label>
-            <input type="search" id="wpslug-preview-input" placeholder="<?php esc_attr_e("输入标题看别名", "wpslug"); ?>">
-            <div class="field-label"><?php esc_html_e("别名", "wpslug"); ?></div>
-            <div class="preview-out" id="wpslug-preview-result"></div>
+          <div class="wpslug-preview-fields">
+            <div class="field">
+              <label class="field-label" for="wpslug-preview-input"><?php esc_html_e("原文", "wpslug"); ?></label>
+              <div class="field-ctl"><input type="search" id="wpslug-preview-input" placeholder="<?php esc_attr_e("输入标题看别名", "wpslug"); ?>"></div>
+            </div>
+            <div class="field">
+              <div class="field-label"><?php esc_html_e("别名", "wpslug"); ?></div>
+              <div class="field-ctl"><div class="preview-out" id="wpslug-preview-result"></div></div>
+            </div>
           </div>
           <div class="card-foot start">
             <span class="meta"><?php esc_html_e("不写进文章。", "wpslug"); ?></span>

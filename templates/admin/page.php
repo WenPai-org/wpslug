@@ -173,27 +173,39 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
             <?php endforeach; ?>
           </div>
           <?php if (!$mind) : ?>
-          <div class="notice info" style="margin-top:16px"><span><?php esc_html_e("心思未安装。语义拼音和翻译会走本地拼音，保存不会中断。", "wpslug"); ?></span></div>
+          <div class="notice info"><span><?php esc_html_e("心思未安装。语义拼音和翻译会走本地拼音，保存不会中断。", "wpslug"); ?></span></div>
           <?php endif; ?>
-          <div class="field">
-            <div class="field-label"><?php esc_html_e("自动转换", "wpslug"); ?></div>
-            <div class="field-ctl">
+          <div class="simple-row">
+            <div class="tile" aria-hidden="true"></div>
+            <div>
+              <div class="t"><?php esc_html_e("自动转换", "wpslug"); ?></div>
+              <div class="d"><?php esc_html_e("保存文章和分类时自动转换", "wpslug"); ?></div>
+            </div>
+            <div class="r">
               <input type="hidden" name="wpslug_options[auto_convert]" value="0">
-              <div class="chk"><label><input type="checkbox" name="wpslug_options[auto_convert]" value="1" <?php checked(1, $options["auto_convert"]); ?>> <?php esc_html_e("保存文章和分类时自动转换", "wpslug"); ?></label></div>
+              <label class="chk"><input type="checkbox" name="wpslug_options[auto_convert]" value="1" <?php checked(1, $options["auto_convert"]); ?>></label>
             </div>
           </div>
-          <div class="field">
-            <div class="field-label"><?php esc_html_e("仅发布时转换", "wpslug"); ?></div>
-            <div class="field-ctl">
+          <div class="simple-row">
+            <div class="tile" aria-hidden="true"></div>
+            <div>
+              <div class="t"><?php esc_html_e("仅发布时转换", "wpslug"); ?></div>
+              <div class="d"><?php esc_html_e("草稿自动保存不转换", "wpslug"); ?></div>
+            </div>
+            <div class="r">
               <input type="hidden" name="wpslug_options[convert_on_publish_only]" value="0">
-              <div class="chk"><label><input type="checkbox" name="wpslug_options[convert_on_publish_only]" value="1" <?php checked(1, !empty($options["convert_on_publish_only"])); ?>> <?php esc_html_e("草稿自动保存不转换", "wpslug"); ?></label></div>
+              <label class="chk"><input type="checkbox" name="wpslug_options[convert_on_publish_only]" value="1" <?php checked(1, !empty($options["convert_on_publish_only"])); ?>></label>
             </div>
           </div>
-          <div class="field">
-            <div class="field-label"><?php esc_html_e("强制小写", "wpslug"); ?></div>
-            <div class="field-ctl">
+          <div class="simple-row">
+            <div class="tile" aria-hidden="true"></div>
+            <div>
+              <div class="t"><?php esc_html_e("强制小写", "wpslug"); ?></div>
+              <div class="d"><?php esc_html_e("别名一律小写", "wpslug"); ?></div>
+            </div>
+            <div class="r">
               <input type="hidden" name="wpslug_options[force_lowercase]" value="0">
-              <div class="chk"><label><input type="checkbox" name="wpslug_options[force_lowercase]" value="1" <?php checked(1, $options["force_lowercase"]); ?>> <?php esc_html_e("别名一律小写", "wpslug"); ?></label></div>
+              <label class="chk"><input type="checkbox" name="wpslug_options[force_lowercase]" value="1" <?php checked(1, $options["force_lowercase"]); ?>></label>
             </div>
           </div>
           <div class="card-foot">

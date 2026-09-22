@@ -54,13 +54,13 @@ class WPSlug_Admin
         }
         check_admin_referer("wpslug_reset");
         if (empty($_POST["wpslug_reset_confirm"])) {
-            wp_safe_redirect(admin_url("admin.php?page=wpslug&tab=tools&wpslug_notice=reset-confirm"));
+            wp_safe_redirect(admin_url("options-general.php?page=wpslug&tab=tools&wpslug_notice=reset-confirm"));
             exit;
         }
         delete_option("wpslug_options");
         wp_safe_redirect(
             admin_url(
-                "admin.php?page=wpslug&tab=tools&settings-updated=true"
+                "options-general.php?page=wpslug&tab=tools&settings-updated=true"
             )
         );
         exit;
@@ -191,7 +191,7 @@ class WPSlug_Admin
         }
         $url = static function ($t, $extra = []) {
             $args = array_merge(["page" => "wpslug", "tab" => $t], $extra);
-            return admin_url("admin.php?" . http_build_query($args));
+            return admin_url("options-general.php?" . http_build_query($args));
         };
         include WPSLUG_PLUGIN_DIR . "templates/admin/page.php";
     }
@@ -895,7 +895,7 @@ class WPSlug_Admin
                     "wpslug"
                 ); ?>
                 <a href="<?php echo esc_url(admin_url(
-                    "admin.php?page=wpslug&tab=settings"
+                    "options-general.php?page=wpslug&tab=settings"
                 )); ?>" class="button button-small" style="margin-left: 10px;">
                     <?php esc_html_e("Configure WP Slug", "wpslug"); ?>
                 </a>

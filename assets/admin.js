@@ -165,6 +165,21 @@ jQuery(document).ready(function ($) {
     toggleSEOFeatures();
   }
 
+  function initShellToggles() {
+    document.addEventListener("click", function (e) {
+      var btn = e.target.closest && e.target.closest(".wenpai-app button.toggle[data-for]");
+      if (!btn || btn.disabled || btn.classList.contains("is-locked")) {
+        return;
+      }
+      var box = document.getElementById(btn.getAttribute("data-for"));
+      if (!box) {
+        return;
+      }
+      box.checked = btn.classList.contains("on");
+      box.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+  }
+
   function initPreviewFunctionality() {
     var timer = null;
     var seq = 0;
@@ -755,6 +770,7 @@ jQuery(document).ready(function ($) {
   initConversionModeToggle();
   initTranslationServiceToggle();
   initSEOOptimizationToggle();
+  initShellToggles();
   initPreviewFunctionality();
   initApiTesting();
   initResetSettings();

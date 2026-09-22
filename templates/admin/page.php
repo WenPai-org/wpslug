@@ -133,7 +133,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
       <?php settings_fields("wpslug_settings"); ?>
       <input type="hidden" name="wpslug_current_tab" value="<?php echo esc_attr($tab); ?>">
         <?php if ("simple" === $mode) : ?>
-        <section class="card">
+        <section class="card wpslug-simple">
           <div class="simple-row">
             <div class="tile accent"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("flash") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
             <div>
@@ -141,11 +141,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
               <div class="d"><?php esc_html_e("自动把标题写成别名。", "wpslug"); ?></div>
             </div>
             <div class="r">
-              <input type="hidden" name="wpslug_options[enable_conversion]" value="0">
-              <label class="toggle<?php echo $enabled ? " on" : ""; ?>">
-                <input type="checkbox" name="wpslug_options[enable_conversion]" value="1" <?php checked(1, $options["enable_conversion"]); ?> hidden>
-                <i></i> <?php echo $enabled ? esc_html__("已开启", "wpslug") : esc_html__("未开启", "wpslug"); ?>
-              </label>
+              <?php $this->renderToggle("enable_conversion", "wpslug_options[enable_conversion]", $enabled); ?>
             </div>
           </div>
           <h2 class="section-title"><?php esc_html_e("转换模式", "wpslug"); ?></h2>
@@ -159,13 +155,13 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
                 <div class="t"><?php echo esc_html($label); ?></div>
                 <div class="d"><?php
                 if ("pinyin" === $mode_id) {
-                    esc_html_e("不经过心思。无网络也能用。", "wpslug");
+                    esc_html_e("不经过心思", "wpslug");
                 } elseif ("semantic_pinyin" === $mode_id) {
-                    esc_html_e("未装或额度不够时退回本地拼音。", "wpslug");
+                    esc_html_e("不够时用本地拼音", "wpslug");
                 } elseif ("translation" === $mode_id) {
-                    esc_html_e("经心思或自备密钥。失败不阻断保存。", "wpslug");
+                    esc_html_e("失败仍可保存", "wpslug");
                 } else {
-                    esc_html_e("多语言音译。", "wpslug");
+                    esc_html_e("外文转拉丁字母", "wpslug");
                 }
                 ?></div>
               </span>
@@ -176,36 +172,30 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
           <div class="notice info"><span><?php esc_html_e("心思未安装。语义拼音和翻译会走本地拼音，保存不会中断。", "wpslug"); ?></span></div>
           <?php endif; ?>
           <div class="simple-row">
-            <div class="tile" aria-hidden="true"></div>
             <div>
               <div class="t"><?php esc_html_e("自动转换", "wpslug"); ?></div>
               <div class="d"><?php esc_html_e("保存文章和分类时自动转换", "wpslug"); ?></div>
             </div>
             <div class="r">
-              <input type="hidden" name="wpslug_options[auto_convert]" value="0">
-              <label class="chk"><input type="checkbox" name="wpslug_options[auto_convert]" value="1" <?php checked(1, $options["auto_convert"]); ?>></label>
+              <?php $this->renderToggle("wpslug-auto-convert", "wpslug_options[auto_convert]", !empty($options["auto_convert"])); ?>
             </div>
           </div>
           <div class="simple-row">
-            <div class="tile" aria-hidden="true"></div>
             <div>
               <div class="t"><?php esc_html_e("仅发布时转换", "wpslug"); ?></div>
               <div class="d"><?php esc_html_e("草稿自动保存不转换", "wpslug"); ?></div>
             </div>
             <div class="r">
-              <input type="hidden" name="wpslug_options[convert_on_publish_only]" value="0">
-              <label class="chk"><input type="checkbox" name="wpslug_options[convert_on_publish_only]" value="1" <?php checked(1, !empty($options["convert_on_publish_only"])); ?>></label>
+              <?php $this->renderToggle("wpslug-publish-only", "wpslug_options[convert_on_publish_only]", !empty($options["convert_on_publish_only"])); ?>
             </div>
           </div>
           <div class="simple-row">
-            <div class="tile" aria-hidden="true"></div>
             <div>
               <div class="t"><?php esc_html_e("强制小写", "wpslug"); ?></div>
               <div class="d"><?php esc_html_e("别名一律小写", "wpslug"); ?></div>
             </div>
             <div class="r">
-              <input type="hidden" name="wpslug_options[force_lowercase]" value="0">
-              <label class="chk"><input type="checkbox" name="wpslug_options[force_lowercase]" value="1" <?php checked(1, $options["force_lowercase"]); ?>></label>
+              <?php $this->renderToggle("wpslug-force-lower", "wpslug_options[force_lowercase]", !empty($options["force_lowercase"])); ?>
             </div>
           </div>
           <div class="card-foot">

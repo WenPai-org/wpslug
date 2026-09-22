@@ -155,6 +155,26 @@ class WPSlug_Admin
     }
 
 
+    /**
+     * Kit switch. The visible control is a button; the checkbox is what the form saves.
+     *
+     * @param string $id   Checkbox id. The button points at it with data-for.
+     * @param string $name Option input name.
+     * @param bool   $on   Current value.
+     */
+    private function renderToggle($id, $name, $on)
+    {
+        $on_label = __("已开启", "wpslug");
+        $off_label = __("未开启", "wpslug");
+        ?>
+        <input type="hidden" name="<?php echo esc_attr($name); ?>" value="0">
+        <input type="checkbox" id="<?php echo esc_attr($id); ?>" name="<?php echo esc_attr($name); ?>" value="1" class="screen-reader-text" <?php checked($on); ?>>
+        <button type="button" class="toggle<?php echo $on ? " on" : ""; ?>" data-for="<?php echo esc_attr($id); ?>" data-on="<?php echo esc_attr($on_label); ?>" data-off="<?php echo esc_attr($off_label); ?>" aria-pressed="<?php echo $on ? "true" : "false"; ?>">
+          <i></i> <?php echo esc_html($on ? $on_label : $off_label); ?>
+        </button>
+        <?php
+    }
+
     private function renderPreviewCard()
     {
         ?>

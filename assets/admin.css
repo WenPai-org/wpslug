@@ -587,8 +587,17 @@ body.wenpai-ui-page .wpslug-api-section {
     padding: 0;
     margin: 0;
 }
-body.wenpai-ui-page .simple-row > .tile:empty {
-    visibility: hidden;
+body.wenpai-ui-page .wenpai-app .simple-row > .r {
+    flex: none;
+    margin-left: auto;
+}
+body.wenpai-ui-page .wenpai-app .wpslug-simple > .simple-row > div:first-child:not(.tile) {
+    min-width: 0;
+    flex: 1;
+}
+body.wenpai-ui-page .wenpai-app .wpslug-simple > .card-foot {
+    margin-top: 0;
+    padding-top: 12px;
 }
 body.wenpai-ui-page #wpslug-preview-result .result-final {
     background: transparent;

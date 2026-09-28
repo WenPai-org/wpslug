@@ -193,16 +193,24 @@ jQuery(document).ready(function ($) {
       }
     }
 
+    function clearPreviewResult() {
+      $("#wpslug-preview-result")
+        .removeClass("result-final wpslug-error")
+        .empty();
+    }
+
     function showPreviewOk(slug) {
-      $("#wpslug-preview-result").html(
-        '<span class="result-final">' + escapeHtml(slug) + "</span>"
-      );
+      $("#wpslug-preview-result")
+        .removeClass("wpslug-error")
+        .addClass("result-final")
+        .text(slug);
     }
 
     function showPreviewErr(msg) {
-      $("#wpslug-preview-result").html(
-        '<div class="wpslug-error">' + escapeHtml(msg) + "</div>"
-      );
+      $("#wpslug-preview-result")
+        .removeClass("result-final")
+        .addClass("wpslug-error")
+        .text(msg);
     }
 
     function performPreview() {
@@ -212,12 +220,12 @@ jQuery(document).ready(function ($) {
 
       setPreviewInputState(text);
       if (!text) {
-        $result.empty();
+        clearPreviewResult();
         return;
       }
 
       if (!$result.text()) {
-        $result.text(wpslug_ajax.strings.converting);
+        $result.removeClass("result-final wpslug-error").text(wpslug_ajax.strings.converting);
       }
 
       var extra = $("#wpslug-settings-form").serialize();
@@ -264,7 +272,7 @@ jQuery(document).ready(function ($) {
       setPreviewInputState(text);
       if (!text) {
         seq += 1;
-        $("#wpslug-preview-result").empty();
+        clearPreviewResult();
         return;
       }
       timer = setTimeout(performPreview, 250);

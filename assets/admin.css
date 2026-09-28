@@ -608,16 +608,13 @@ body.wenpai-ui-page .wenpai-app .wpslug-simple > .card-foot {
 body.wenpai-ui-page .wenpai-app .wpslug-simple > .notice + .simple-row {
     margin-top: 12px;
 }
-body.wenpai-ui-page #wpslug-preview-result .result-final {
-    display: inline-block;
+body.wenpai-ui-page #wpslug-preview-result.result-final {
     background: #d4edda;
     color: #155724;
-    padding: 4px 8px;
-    border-radius: 3px;
     font-weight: 600;
 }
-body.wenpai-ui-page #wpslug-preview-result .wpslug-error {
+body.wenpai-ui-page #wpslug-preview-result.wpslug-error {
+    background: #f8d7da;
     color: #d63638;
     font-weight: bold;
-    font-size: 12px;
 }

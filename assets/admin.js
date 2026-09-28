@@ -184,11 +184,33 @@ jQuery(document).ready(function ($) {
     var timer = null;
     var seq = 0;
 
+    function setPreviewInputState(text) {
+      var $input = $("#wpslug-preview-input");
+      if (text) {
+        $input.removeClass("invalid").addClass("valid");
+      } else {
+        $input.removeClass("valid invalid");
+      }
+    }
+
+    function showPreviewOk(slug) {
+      $("#wpslug-preview-result").html(
+        '<span class="result-final">' + escapeHtml(slug) + "</span>"
+      );
+    }
+
+    function showPreviewErr(msg) {
+      $("#wpslug-preview-result").html(
+        '<div class="wpslug-error">' + escapeHtml(msg) + "</div>"
+      );
+    }
+
     function performPreview() {
       var text = $("#wpslug-preview-input").val().trim();
       var $result = $("#wpslug-preview-result");
       var ticket = ++seq;
 
+      setPreviewInputState(text);
       if (!text) {
         $result.empty();
         return;
@@ -213,31 +235,33 @@ jQuery(document).ready(function ($) {
           if (ticket !== seq) {
             return;
           }
-          if (response.success) {
-            $result.text(previewSlug(response.data));
+          var slug = response.success ? previewSlug(response.data) : "";
+          if (slug) {
+            showPreviewOk(slug);
           } else {
-            $result.text(wpslug_ajax.strings.conversion_error);
+            showPreviewErr(wpslug_ajax.strings.conversion_error);
           }
         },
         error: function () {
           if (ticket !== seq) {
             return;
           }
-          $result.text(wpslug_ajax.strings.conversion_error);
+          showPreviewErr(wpslug_ajax.strings.conversion_error);
         },
       });
     }
 
     function previewSlug(data) {
       if (!data) {
-        return wpslug_ajax.strings.conversion_error;
+        return "";
       }
-      return data.final || data.optimized || data.converted || wpslug_ajax.strings.conversion_error;
+      return data.final || data.optimized || data.converted || "";
     }
 
     function schedulePreview() {
       clearTimeout(timer);
       var text = $("#wpslug-preview-input").val().trim();
+      setPreviewInputState(text);
       if (!text) {
         seq += 1;
         $("#wpslug-preview-result").empty();

@@ -574,6 +574,12 @@ body.wenpai-ui-page .wenpai-app .wpslug-preview-fields .preview-out {
     max-width: 100%;
     min-width: 0;
 }
+body.wenpai-ui-page .wenpai-app .wpslug-preview-fields input[type="search"].valid {
+    border-color: #28a745;
+}
+body.wenpai-ui-page .wenpai-app .wpslug-preview-fields input[type="search"].invalid {
+    border-color: #dc3545;
+}
 body.wenpai-ui-page .wenpai-app .wpslug-preview .meta {
     margin-top: 8px;
 }
@@ -603,8 +609,15 @@ body.wenpai-ui-page .wenpai-app .wpslug-simple > .notice + .simple-row {
     margin-top: 12px;
 }
 body.wenpai-ui-page #wpslug-preview-result .result-final {
-    background: transparent;
-    color: inherit;
-    padding: 0;
+    display: inline-block;
+    background: #d4edda;
+    color: #155724;
+    padding: 4px 8px;
+    border-radius: 3px;
     font-weight: 600;
+}
+body.wenpai-ui-page #wpslug-preview-result .wpslug-error {
+    color: #d63638;
+    font-weight: bold;
+    font-size: 12px;
 }

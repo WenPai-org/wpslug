@@ -15,7 +15,7 @@ $notice = "";
 $level = "";
 // phpcs:disable WordPress.Security.NonceVerification.Recommended
 if (isset($_GET["settings-updated"]) && "true" === $_GET["settings-updated"]) {
-    $notice = __("已保存。", "wpslug");
+    $notice = __("Settings saved successfully!", "wpslug");
     $level = "ok";
 }
 if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"]) {
@@ -115,7 +115,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
       <div class="mode">
         <span class="seg">
           <a class="<?php echo "simple" === $mode ? "on" : ""; ?>" href="<?php echo esc_url($url("settings", ["mode" => "simple"])); ?>"><?php esc_html_e("简单", "wpslug"); ?></a>
-          <a class="<?php echo "advanced" === $mode ? "on" : ""; ?>" href="<?php echo esc_url($url("settings", ["mode" => "advanced", "section" => $section])); ?>"><?php esc_html_e("高级", "wpslug"); ?></a>
+          <a class="<?php echo "advanced" === $mode ? "on" : ""; ?>" href="<?php echo esc_url($url("settings", ["mode" => "advanced", "section" => $section])); ?>"><?php esc_html_e("Advanced", "wpslug"); ?></a>
         </span>
       </div>
     </div>
@@ -137,14 +137,15 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
           <div class="simple-row">
             <div class="tile accent"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("flash") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
             <div>
-              <div class="t"><?php esc_html_e("启用转换", "wpslug"); ?></div>
-              <div class="d"><?php esc_html_e("自动把标题写成别名。", "wpslug"); ?></div>
+              <div class="t"><?php esc_html_e("Enable Plugin", "wpslug"); ?></div>
+              <div class="d"><?php esc_html_e("Enable automatic slug conversion for your content", "wpslug"); ?></div>
             </div>
             <div class="r">
               <?php $this->renderToggle("enable_conversion", "wpslug_options[enable_conversion]", $enabled); ?>
             </div>
           </div>
-          <h2 class="section-title"><?php esc_html_e("转换模式", "wpslug"); ?></h2>
+          <h2 class="section-title"><?php esc_html_e("Conversion Mode", "wpslug"); ?></h2>
+          <p class="card-sub"><?php esc_html_e("Choose local pinyin, semantic pinyin (XinSi AI), multi-language translation, or transliteration.", "wpslug"); ?></p>
           <div class="choice-cards wpslug-modes">
             <?php foreach ($modes as $mode_id => $label) :
                 $on = $conv === $mode_id;
@@ -169,12 +170,12 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
             <?php endforeach; ?>
           </div>
           <?php if (!$mind) : ?>
-          <div class="notice info"><span><?php esc_html_e("心思未安装。语义拼音和翻译会走本地拼音，保存不会中断。", "wpslug"); ?></span></div>
+          <div class="notice info"><span><?php esc_html_e("Install WenPai XinSi (WPMind) for semantic pinyin (XinSi AI) and multi-language translation. Until then, local pinyin remains available.", "wpslug"); ?></span></div>
           <?php endif; ?>
           <div class="simple-row">
             <div>
-              <div class="t"><?php esc_html_e("自动转换", "wpslug"); ?></div>
-              <div class="d"><?php esc_html_e("保存文章和分类时自动转换", "wpslug"); ?></div>
+              <div class="t"><?php esc_html_e("Auto Convert", "wpslug"); ?></div>
+              <div class="d"><?php esc_html_e("Automatically convert slugs when saving posts and terms", "wpslug"); ?></div>
             </div>
             <div class="r">
               <?php $this->renderToggle("wpslug-auto-convert", "wpslug_options[auto_convert]", !empty($options["auto_convert"])); ?>
@@ -182,8 +183,8 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
           </div>
           <div class="simple-row">
             <div>
-              <div class="t"><?php esc_html_e("仅发布时转换", "wpslug"); ?></div>
-              <div class="d"><?php esc_html_e("草稿自动保存不转换", "wpslug"); ?></div>
+              <div class="t"><?php esc_html_e("Convert on Publish Only", "wpslug"); ?></div>
+              <div class="d"><?php esc_html_e("Only convert post slugs when status is publish or future (skips draft autosaves)", "wpslug"); ?></div>
             </div>
             <div class="r">
               <?php $this->renderToggle("wpslug-publish-only", "wpslug_options[convert_on_publish_only]", !empty($options["convert_on_publish_only"])); ?>
@@ -191,15 +192,15 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
           </div>
           <div class="simple-row">
             <div>
-              <div class="t"><?php esc_html_e("强制小写", "wpslug"); ?></div>
-              <div class="d"><?php esc_html_e("别名一律小写", "wpslug"); ?></div>
+              <div class="t"><?php esc_html_e("Force Lowercase", "wpslug"); ?></div>
+              <div class="d"><?php esc_html_e("Convert all slugs to lowercase for consistency", "wpslug"); ?></div>
             </div>
             <div class="r">
               <?php $this->renderToggle("wpslug-force-lower", "wpslug_options[force_lowercase]", !empty($options["force_lowercase"])); ?>
             </div>
           </div>
           <div class="card-foot">
-            <button type="submit" class="btn btn-primary"><?php esc_html_e("保存设置", "wpslug"); ?></button>
+            <button type="submit" class="btn btn-primary"><?php esc_html_e("Save Changes", "wpslug"); ?></button>
           </div>
         </section>
         <?php else : ?>
@@ -226,7 +227,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
           <?php $this->{$method}($options); ?>
           <?php if ($section === $section_id) : ?>
           <div class="card-foot">
-            <button type="submit" class="btn btn-primary"><?php esc_html_e("保存设置", "wpslug"); ?></button>
+            <button type="submit" class="btn btn-primary"><?php esc_html_e("Save Changes", "wpslug"); ?></button>
           </div>
           <?php endif; ?>
         </section>
@@ -249,7 +250,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
         <div class="card-head">
           <span class="tile bad"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("info") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
           <div>
-            <h2 class="card-title"><?php esc_html_e("重置设置", "wpslug"); ?></h2>
+            <h2 class="card-title"><?php esc_html_e("Reset to Defaults", "wpslug"); ?></h2>
             <p class="card-sub"><?php esc_html_e("不可恢复。", "wpslug"); ?></p>
           </div>
         </div>
@@ -257,11 +258,11 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
           <?php wp_nonce_field("wpslug_reset"); ?>
           <input type="hidden" name="action" value="wpslug_reset">
           <div class="wenpai-gate">
-            <label><input type="checkbox" name="wpslug_reset_confirm" value="1"> <?php esc_html_e("我已经核对过，并且有数据库备份。这会清掉本插件的设置，不清文章别名。", "wpslug"); ?></label>
+            <label><input type="checkbox" name="wpslug_reset_confirm" value="1"> <?php esc_html_e("Are you sure you want to reset all settings to default values?", "wpslug"); ?> <?php esc_html_e("这会清掉本插件的设置，不清文章别名。", "wpslug"); ?></label>
           </div>
           <div class="card-foot start">
             <span class="meta"><?php esc_html_e("未勾选不能点。", "wpslug"); ?></span>
-            <button type="submit" class="btn btn-danger" data-wenpai-need-apply disabled><?php esc_html_e("重置设置", "wpslug"); ?></button>
+            <button type="submit" class="btn btn-danger" data-wenpai-need-apply disabled><?php esc_html_e("Reset to Defaults", "wpslug"); ?></button>
           </div>
         </form>
       </section>
@@ -285,12 +286,25 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
         <ol class="wpslug-help-steps">
           <li>
             <strong><?php esc_html_e("打开转换", "wpslug"); ?></strong>
-            <span><?php esc_html_e("在设置里打开「启用转换」。关掉之后，新保存的文章不会改别名。", "wpslug"); ?></span>
+            <span><?php printf(
+                /* translators: %s: Enable Plugin label */
+                esc_html__("在设置里打开「%s」。关掉之后，新保存的文章不会改别名。", "wpslug"),
+                esc_html__("Enable Plugin", "wpslug")
+            ); ?></span>
             <a class="btn btn-secondary" href="<?php echo esc_url($url("settings")); ?>"><?php esc_html_e("去设置", "wpslug"); ?></a>
           </li>
           <li>
             <strong><?php esc_html_e("选一个模式", "wpslug"); ?></strong>
-            <span><?php esc_html_e("本地拼音不经过心思。多语言翻译和语义拼音在心思不可用时退回本地拼音，保存不会中断。外语音译用来处理非拉丁字母。", "wpslug"); ?></span>
+            <span><?php echo esc_html(
+                sprintf(
+                    /* translators: 1: Local pinyin, 2: Multi-language translation, 3: Semantic pinyin, 4: Foreign Language Transliteration */
+                    __("%1\$s不经过心思。%2\$s和%3\$s在心思不可用时退回%1\$s，保存不会中断。%4\$s用来处理非拉丁字母。", "wpslug"),
+                    __("Local pinyin", "wpslug"),
+                    __("Multi-language translation", "wpslug"),
+                    __("Semantic pinyin (XinSi AI)", "wpslug"),
+                    __("Foreign Language Transliteration", "wpslug")
+                )
+            ); ?></span>
           </li>
           <li>
             <strong><?php esc_html_e("先预览再保存", "wpslug"); ?></strong>
@@ -308,27 +322,27 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
         </div>
         <ul class="wpslug-help-steps">
           <li>
-            <strong><?php esc_html_e("拼音", "wpslug"); ?></strong>
+            <strong><?php esc_html_e("Pinyin", "wpslug"); ?></strong>
             <span><?php esc_html_e("全拼或首字母、词间分隔、是否保留英文和数字。", "wpslug"); ?></span>
           </li>
           <li>
-            <strong><?php esc_html_e("音译", "wpslug"); ?></strong>
+            <strong><?php esc_html_e("Transliteration", "wpslug"); ?></strong>
             <span><?php esc_html_e("西里尔、阿拉伯、希腊等字母转成拉丁字母的方式。", "wpslug"); ?></span>
           </li>
           <li>
-            <strong><?php esc_html_e("翻译", "wpslug"); ?></strong>
+            <strong><?php esc_html_e("Translation", "wpslug"); ?></strong>
             <span><?php esc_html_e("翻译服务、源语言和目标语言。自备密钥留在这一组。", "wpslug"); ?></span>
           </li>
           <li>
-            <strong><?php esc_html_e("SEO", "wpslug"); ?></strong>
+            <strong><?php esc_html_e("SEO Optimization", "wpslug"); ?></strong>
             <span><?php esc_html_e("停用词、标点和别名里保留多少个词。", "wpslug"); ?></span>
           </li>
           <li>
-            <strong><?php esc_html_e("媒体", "wpslug"); ?></strong>
+            <strong><?php esc_html_e("Media Files", "wpslug"); ?></strong>
             <span><?php esc_html_e("上传文件的文件名要不要转换，以及要不要保留扩展名。", "wpslug"); ?></span>
           </li>
           <li>
-            <strong><?php esc_html_e("类型", "wpslug"); ?></strong>
+            <strong><?php esc_html_e("Advanced", "wpslug"); ?></strong>
             <span><?php esc_html_e("哪些文章类型和分类法参与转换。", "wpslug"); ?></span>
           </li>
         </ul>
@@ -355,7 +369,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
 
     <footer class="foot">
       <span><?php echo esc_html(wpslug_plugin_name()); ?> <?php echo esc_html(WPSLUG_VERSION); ?></span>
-      <span class="r"><a href="https://wpcy.com/slug"><?php esc_html_e("文档", "wpslug"); ?></a></span>
+      <span class="r"><a href="https://wpcy.com/slug"><?php esc_html_e("Documentation", "wpslug"); ?></a></span>
     </footer>
   </main>
 </div>

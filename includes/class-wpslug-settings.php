@@ -250,17 +250,26 @@ class WPSlug_Settings
     {
         // Order matches product copy: local pinyin / semantic pinyin / translation / transliteration.
         $modes = [
-            "pinyin" => __("本地拼音", "wpslug"),
+            "pinyin" => __("Local pinyin", "wpslug"),
         ];
 
         if (function_exists("wpmind_is_available") && wpmind_is_available()) {
-            $modes["semantic_pinyin"] = __("语义拼音", "wpslug");
+            $modes["semantic_pinyin"] = __(
+                "Semantic pinyin (XinSi AI)",
+                "wpslug"
+            );
         } elseif (class_exists("\\WPMind\\WPMind")) {
-            $modes["semantic_pinyin"] = __("语义拼音", "wpslug");
+            $modes["semantic_pinyin"] = __(
+                "Semantic pinyin (requires WenPai XinSi)",
+                "wpslug"
+            );
         }
 
-        $modes["translation"] = __("多语言翻译", "wpslug");
-        $modes["transliteration"] = __("外语音译", "wpslug");
+        $modes["translation"] = __("Multi-language translation", "wpslug");
+        $modes["transliteration"] = __(
+            "Foreign Language Transliteration",
+            "wpslug"
+        );
 
         return $modes;
     }
@@ -449,10 +458,13 @@ class WPSlug_Settings
     public function getPostTypeFeatures()
     {
         return [
-            "inherit" => __("沿用全站模式", "wpslug"),
-            "semantic_pinyin" => __("语义拼音", "wpslug"),
-            "seo_slug" => __("多语言翻译", "wpslug"),
-            "pinyin" => __("本地拼音", "wpslug"),
+            "inherit" => __("Use global conversion mode", "wpslug"),
+            "semantic_pinyin" => __(
+                "Semantic pinyin (XinSi AI)",
+                "wpslug"
+            ),
+            "seo_slug" => __("Multi-language translation", "wpslug"),
+            "pinyin" => __("Local pinyin", "wpslug"),
         ];
     }
 

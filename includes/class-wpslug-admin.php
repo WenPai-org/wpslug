@@ -182,17 +182,17 @@ class WPSlug_Admin
           <div class="card-head">
             <span class="tile accent"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("eye") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
             <div>
-              <h2 class="card-title"><?php esc_html_e("预览", "wpslug"); ?></h2>
-              <p class="card-sub"><?php esc_html_e("按这页上还没保存的选择来转。不写进文章。", "wpslug"); ?></p>
+              <h2 class="card-title"><?php esc_html_e("Preview", "wpslug"); ?></h2>
+              <p class="card-sub"><?php esc_html_e("Test your conversion settings with live preview.", "wpslug"); ?></p>
             </div>
           </div>
           <div class="wpslug-preview-fields">
             <div class="field">
               <label class="field-label" for="wpslug-preview-input"><?php esc_html_e("原文", "wpslug"); ?></label>
-              <div class="field-ctl"><input type="search" id="wpslug-preview-input" placeholder="<?php esc_attr_e("输入标题看别名", "wpslug"); ?>" autocomplete="off"></div>
+              <div class="field-ctl"><input type="search" id="wpslug-preview-input" placeholder="<?php esc_attr_e("Enter text to preview conversion...", "wpslug"); ?>" autocomplete="off"></div>
             </div>
             <div class="field">
-              <div class="field-label" id="wpslug-preview-result-label"><?php esc_html_e("别名", "wpslug"); ?></div>
+              <div class="field-label" id="wpslug-preview-result-label"><?php esc_html_e("Slug", "wpslug"); ?></div>
               <div class="field-ctl"><div class="preview-out" id="wpslug-preview-result" role="status" aria-live="polite" aria-labelledby="wpslug-preview-result-label"></div></div>
             </div>
           </div>
@@ -226,12 +226,36 @@ class WPSlug_Admin
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin view parameter.
         $section = isset($_GET["section"]) ? sanitize_key(wp_unslash($_GET["section"])) : "pinyin";
         $adv_sections = [
-            "pinyin" => ["label" => __("拼音", "wpslug"), "icon" => "flash", "sub" => __("格式、分隔和保留。", "wpslug")],
-            "translit" => ["label" => __("音译", "wpslug"), "icon" => "map", "sub" => __("外文怎么转成拉丁字母。", "wpslug")],
-            "translate" => ["label" => __("翻译", "wpslug"), "icon" => "sparkle", "sub" => __("翻译服务、语言和密钥。", "wpslug")],
-            "seo" => ["label" => __("SEO", "wpslug"), "icon" => "equalizer", "sub" => __("停用词和长度。", "wpslug")],
-            "media" => ["label" => __("媒体", "wpslug"), "icon" => "image", "sub" => __("上传时的文件名。", "wpslug")],
-            "types" => ["label" => __("类型", "wpslug"), "icon" => "server", "sub" => __("文章类型和分类法。", "wpslug")],
+            "pinyin" => [
+                "label" => __("Pinyin", "wpslug"),
+                "icon" => "flash",
+                "sub" => __("Configure Chinese characters to Pinyin romanization.", "wpslug"),
+            ],
+            "translit" => [
+                "label" => __("Transliteration", "wpslug"),
+                "icon" => "map",
+                "sub" => __("Convert foreign scripts (Cyrillic, Arabic, Greek) to Latin alphabet.", "wpslug"),
+            ],
+            "translate" => [
+                "label" => __("Translation", "wpslug"),
+                "icon" => "sparkle",
+                "sub" => __("Use online translation services to convert text to English slugs.", "wpslug"),
+            ],
+            "seo" => [
+                "label" => __("SEO Optimization", "wpslug"),
+                "icon" => "equalizer",
+                "sub" => __("Optimize slugs for better search engine performance and user experience.", "wpslug"),
+            ],
+            "media" => [
+                "label" => __("Media Files", "wpslug"),
+                "icon" => "image",
+                "sub" => __("Configure how media file names are handled during upload.", "wpslug"),
+            ],
+            "types" => [
+                "label" => __("Advanced", "wpslug"),
+                "icon" => "server",
+                "sub" => __("Advanced options and content type configuration for power users.", "wpslug"),
+            ],
         ];
         if (!isset($adv_sections[$section])) {
             $section = "pinyin";
@@ -1018,8 +1042,8 @@ class WPSlug_Admin
             "nonce" => wp_create_nonce("wpslug_nonce"),
             "current_tab" => $saved_tab ?: "general",
             "strings" => [
-                "preview" => __("预览", "wpslug"),
-                "converting" => __("转换中…", "wpslug"),
+                "preview" => __("Preview", "wpslug"),
+                "converting" => __("Converting...", "wpslug"),
                 "testing" => __("Testing...", "wpslug"),
                 "test_api" => __("Test API", "wpslug"),
                 "reset_confirm" => __(
@@ -1034,8 +1058,8 @@ class WPSlug_Admin
                     "API connection failed. Please check your credentials.",
                     "wpslug"
                 ),
-                "no_text" => __("先输入要转换的标题。", "wpslug"),
-                "conversion_error" => __("没有转出来。请看上面的模式和高级设置。", "wpslug"),
+                "no_text" => __("Please enter some text to preview.", "wpslug"),
+                "conversion_error" => __("Conversion failed. Please check your settings.", "wpslug"),
             ],
         ]);
     }

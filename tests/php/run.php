@@ -491,6 +491,14 @@ check(strpos($main_source, 'require_once WPSLUG_PLUGIN_DIR . "includes/class-wps
 $release_source = file_get_contents(WPSLUG_PLUGIN_DIR . '.forgejo/workflows/release.yml');
 check(strpos($release_source, 'DEPLOY_HOST') === false, 'release workflow does not deploy to a WordPress site');
 
+$pack_source = file_get_contents(WPSLUG_PLUGIN_DIR . 'scripts/build-candidate.py');
+check(strpos($pack_source, '"lib/wenpai-admin-ui/"') !== false, 'candidate zip allowlist includes vendored admin kit');
+check(strpos($pack_source, 'lib/plugin-update-checker/') !== false, 'candidate zip forbids plugin-update-checker');
+check(strpos($pack_source, 'lib/updatepulse-updater/') !== false, 'candidate zip forbids updatepulse-updater');
+check(strpos($main_source, 'includes/class-wenpai-updater.php') !== false, 'bootstrap loads WenPai Bridge updater');
+check(strpos($main_source, 'plugin-update-checker') === false, 'bootstrap does not load plugin-update-checker');
+check(strpos($main_source, 'updatepulse-updater') === false, 'bootstrap does not load updatepulse-updater');
+
 $GLOBALS['wpslug_options'] = array_merge((new WPSlug_Settings())->getDefaults(), [
     'enable_conversion' => true,
     'auto_convert' => true,

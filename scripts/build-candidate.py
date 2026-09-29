@@ -13,12 +13,35 @@ import subprocess
 import time
 import zipfile
 
-RUNTIME_ROOTS = ("assets/", "includes/", "languages/", "lib/", "templates/")
+# Runtime tree only. Leftover lib/plugin-update-checker and
+# lib/updatepulse-updater stay in git; updates go through
+# includes/class-wenpai-updater.php -> updates.wenpai.net.
+RUNTIME_ROOTS = (
+    "assets/",
+    "includes/",
+    "languages/",
+    "lib/wenpai-admin-ui/",
+    "templates/",
+)
 RUNTIME_FILES = {"readme.txt", "wpslug.php"}
+SKIP_FILES = {
+    "lib/wenpai-admin-ui/phpcs.xml.dist",
+    "lib/wenpai-admin-ui/scripts/wenpai-admin-lint.py",
+}
+FORBIDDEN_PREFIXES = (
+    "lib/plugin-update-checker/",
+    "lib/updatepulse-updater/",
+)
 
 
 def git(*args: str) -> bytes:
     return subprocess.check_output(("git", *args))
+
+
+def is_runtime_path(name: str) -> bool:
+    if name in SKIP_FILES or name.startswith(FORBIDDEN_PREFIXES):
+        return False
+    return name in RUNTIME_FILES or name.startswith(RUNTIME_ROOTS)
 
 
 def tracked_runtime_files() -> list[tuple[str, str]]:
@@ -31,8 +54,16 @@ def tracked_runtime_files() -> list[tuple[str, str]]:
         name = raw_name.decode("utf-8")
         if object_type != "blob":
             continue
-        if name in RUNTIME_FILES or name.startswith(RUNTIME_ROOTS):
+        if is_runtime_path(name):
             entries.append((mode, name))
+    packed = [name for _mode, name in entries]
+    for name in packed:
+        if name.startswith(FORBIDDEN_PREFIXES):
+            raise SystemExit(f"refusing leftover updater in zip: {name}")
+    if not any(name.startswith("lib/wenpai-admin-ui/") for name in packed):
+        raise SystemExit("candidate zip missing lib/wenpai-admin-ui/")
+    if "templates/admin/page.php" not in packed:
+        raise SystemExit("candidate zip missing templates/admin/page.php")
     return sorted(entries, key=lambda item: item[1].encode("utf-8"))
 
 

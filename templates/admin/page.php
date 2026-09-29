@@ -134,15 +134,14 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
             <div class="tile accent"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("flash") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
             <div>
               <div class="t"><?php esc_html_e("Enable Plugin", "wpslug"); ?></div>
-              <?php if (!$enabled) : ?>
-              <div class="d"><?php esc_html_e("还没开。打开后，标题会写成别名。", "wpslug"); ?></div>
-              <?php endif; ?>
+              <div class="d"><?php esc_html_e("Enable automatic slug conversion for your content", "wpslug"); ?></div>
             </div>
             <div class="r">
               <?php $this->renderToggle("enable_conversion", "wpslug_options[enable_conversion]", $enabled); ?>
             </div>
           </div>
           <h2 class="section-title"><?php esc_html_e("Conversion Mode", "wpslug"); ?></h2>
+          <p class="card-sub"><?php esc_html_e("Choose local pinyin, semantic pinyin (XinSi AI), multi-language translation, or transliteration.", "wpslug"); ?></p>
           <div class="choice-cards wpslug-modes">
             <?php foreach ($modes as $mode_id => $label) :
                 $on = $conv === $mode_id;
@@ -151,6 +150,17 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
               <input type="radio" name="wpslug_options[conversion_mode]" value="<?php echo esc_attr($mode_id); ?>" <?php checked($conv, $mode_id); ?>>
               <span>
                 <div class="t"><?php echo esc_html($label); ?></div>
+                <div class="d"><?php
+                if ("pinyin" === $mode_id) {
+                    esc_html_e("不经过心思", "wpslug");
+                } elseif ("semantic_pinyin" === $mode_id) {
+                    esc_html_e("不够时用本地拼音", "wpslug");
+                } elseif ("translation" === $mode_id) {
+                    esc_html_e("失败仍可保存", "wpslug");
+                } else {
+                    esc_html_e("外文转拉丁字母", "wpslug");
+                }
+                ?></div>
               </span>
             </label>
             <?php endforeach; ?>
@@ -161,6 +171,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
           <div class="simple-row">
             <div>
               <div class="t"><?php esc_html_e("Auto Convert", "wpslug"); ?></div>
+              <div class="d"><?php esc_html_e("Automatically convert slugs when saving posts and terms", "wpslug"); ?></div>
             </div>
             <div class="r">
               <?php $this->renderToggle("wpslug-auto-convert", "wpslug_options[auto_convert]", !empty($options["auto_convert"])); ?>
@@ -169,6 +180,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
           <div class="simple-row">
             <div>
               <div class="t"><?php esc_html_e("Convert on Publish Only", "wpslug"); ?></div>
+              <div class="d"><?php esc_html_e("Only convert post slugs when status is publish or future (skips draft autosaves)", "wpslug"); ?></div>
             </div>
             <div class="r">
               <?php $this->renderToggle("wpslug-publish-only", "wpslug_options[convert_on_publish_only]", !empty($options["convert_on_publish_only"])); ?>
@@ -177,6 +189,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
           <div class="simple-row">
             <div>
               <div class="t"><?php esc_html_e("Force Lowercase", "wpslug"); ?></div>
+              <div class="d"><?php esc_html_e("Convert all slugs to lowercase for consistency", "wpslug"); ?></div>
             </div>
             <div class="r">
               <?php $this->renderToggle("wpslug-force-lower", "wpslug_options[force_lowercase]", !empty($options["force_lowercase"])); ?>

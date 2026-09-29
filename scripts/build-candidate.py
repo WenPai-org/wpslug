@@ -13,7 +13,7 @@ import subprocess
 import time
 import zipfile
 
-RUNTIME_ROOTS = ("assets/", "includes/", "languages/")
+RUNTIME_ROOTS = ("assets/", "includes/", "languages/", "lib/", "templates/")
 RUNTIME_FILES = {"readme.txt", "wpslug.php"}
 
 

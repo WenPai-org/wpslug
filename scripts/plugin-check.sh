@@ -25,8 +25,8 @@ fi
   --mode=update \
   --ignore-codes=plugin_updater_detected,trademarked_term \
   --ignore-warnings \
-  --exclude-directories=lib,tests,docs,scripts,vendor,node_modules \
-  --exclude-files=.ci-trigger,.wp-env.json,composer.json,composer.lock,package.json,package-lock.json,phpcs.xml.dist,phpstan.neon.dist \
+  --exclude-directories=lib,tests,docs,scripts,vendor,node_modules,.git,.forgejo \
+  --exclude-files=.ci-trigger,.wp-env.json,composer.json,composer.lock,package.json,package-lock.json,phpcs.xml.dist,phpstan.neon.dist,.gitignore,.git \
   --format=strict-table \
   "${ROOT_ARGS[@]}" \
   "$@"

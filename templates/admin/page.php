@@ -36,13 +36,13 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
         <span class="wenpai-name"><?php echo esc_html(wpslug_brand_name()); ?></span>
       </a>
       <nav class="wenpai-tabs" aria-label="文派素格">
-        <a class="wenpai-tab<?php echo "overview" === $tab ? " is-active" : ""; ?>" href="<?php echo esc_url($url("overview")); ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("home") : ""; ?><?php esc_html_e("概览", "wpslug"); ?></a>
-        <a class="wenpai-tab<?php echo "settings" === $tab ? " is-active" : ""; ?>" href="<?php echo esc_url($url("settings")); ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("equalizer") : ""; ?><?php esc_html_e("设置", "wpslug"); ?></a>
-        <a class="wenpai-tab<?php echo "tools" === $tab ? " is-active" : ""; ?>" href="<?php echo esc_url($url("tools")); ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("server") : ""; ?><?php esc_html_e("工具", "wpslug"); ?></a>
+        <a class="wenpai-tab<?php echo "overview" === $tab ? " is-active" : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>" href="<?php echo esc_url($url("overview")); ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("home") : ""; ?><?php esc_html_e("概览", "wpslug"); ?></a>
+        <a class="wenpai-tab<?php echo "settings" === $tab ? " is-active" : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>" href="<?php echo esc_url($url("settings")); ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("equalizer") : ""; ?><?php esc_html_e("设置", "wpslug"); ?></a>
+        <a class="wenpai-tab<?php echo "tools" === $tab ? " is-active" : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>" href="<?php echo esc_url($url("tools")); ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("server") : ""; ?><?php esc_html_e("工具", "wpslug"); ?></a>
       </nav>
       <div class="wenpai-head-right">
         <a class="btn btn-ghost wenpai-head-action<?php echo "help" === $tab ? " is-active" : ""; ?>" href="<?php echo esc_url($url("help")); ?>" title="<?php echo esc_attr__("帮助", "wpslug"); ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("help") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><span class="wenpai-head-label"><?php esc_html_e("帮助", "wpslug"); ?></span></a>
-        <a class="btn btn-ghost wenpai-head-action" href="https://wpcy.com/support" target="_blank" rel="noopener" title="<?php echo esc_attr__("反馈", "wpslug"); ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("feedback") : ""; ?><span class="wenpai-head-label"><?php esc_html_e("反馈", "wpslug"); ?></span></a>
+        <a class="btn btn-ghost wenpai-head-action" href="https://wpcy.com/support" target="_blank" rel="noopener" title="<?php echo esc_attr__("反馈", "wpslug"); ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("feedback") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><span class="wenpai-head-label"><?php esc_html_e("反馈", "wpslug"); ?></span></a>
       </div>
     </div>
   </div></div>
@@ -63,7 +63,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
     <div class="wenpai-stack">
       <?php if (!$enabled) : ?>
       <div class="next">
-        <span class="tile"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("flash") : ""; ?></span>
+        <span class="tile"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("flash") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
         <div>
           <strong><?php esc_html_e("转换还没开", "wpslug"); ?></strong>
           <div class="meta"><?php esc_html_e("去设置里选拼音、心思或翻译。", "wpslug"); ?></div>
@@ -76,7 +76,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
       <section class="card">
         <h2 class="section-title"><?php esc_html_e("运行状态", "wpslug"); ?></h2>
         <div class="simple-row is-static">
-          <div class="tile <?php echo $enabled ? "ok" : "warn"; ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("flash") : ""; ?></div>
+          <div class="tile <?php echo $enabled ? "ok" : "warn"; ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("flash") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
           <div>
             <div class="t"><?php esc_html_e("转换", "wpslug"); ?></div>
             <div class="d"><?php echo $enabled ? esc_html($modes[$conv] ?? $conv) : esc_html__("未启用。", "wpslug"); ?></div>
@@ -84,7 +84,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
           <div class="r"><span class="pill <?php echo $enabled ? "ok" : "warn"; ?>"><?php echo $enabled ? esc_html__("开", "wpslug") : esc_html__("关", "wpslug"); ?></span></div>
         </div>
         <div class="simple-row is-static">
-          <div class="tile <?php echo $mind ? "ok" : ""; ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("sparkle") : ""; ?></div>
+          <div class="tile <?php echo $mind ? "ok" : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("sparkle") : ""; ?></div>
           <div>
             <div class="t"><?php esc_html_e("文派心思", "wpslug"); ?></div>
             <div class="d"><?php echo $mind ? esc_html__("已接通。额度在心思，这里不做充值。", "wpslug") : esc_html__("未安装时本地拼音兜底，保存不中断。", "wpslug"); ?></div>
@@ -92,7 +92,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
           <div class="r"><span class="pill <?php echo $mind ? "ok" : ""; ?>"><?php echo $mind ? esc_html__("已装", "wpslug") : esc_html__("未装", "wpslug"); ?></span></div>
         </div>
         <div class="simple-row is-static">
-          <div class="tile ok"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("info") : ""; ?></div>
+          <div class="tile ok"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("info") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
           <div>
             <div class="t"><?php esc_html_e("文章类型范围", "wpslug"); ?></div>
             <div class="d"><?php echo esc_html(implode("、", $types)); ?></div>

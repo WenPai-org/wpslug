@@ -483,7 +483,7 @@ class WPSlug_Core {
             '自動草稿',
         );
         if (function_exists('__')) {
-            $placeholders[] = __('Auto Draft');
+            $placeholders[] = __('Auto Draft'); // phpcs:ignore WordPress.WP.I18n.MissingArgDomain -- Match WP core auto-draft title.
         }
 
         return in_array($normalized, $placeholders, true);

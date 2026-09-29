@@ -633,10 +633,29 @@ body.wenpai-ui-page .wenpai-head-action {
     position: relative;
 }
 
+/* WP 7.1 把 .screen-reader-text 勾选画成 16/25px，开关旁边会露出原生框。 */
+body.wenpai-ui-page.wp-core-ui .wenpai-app input[type="checkbox"].screen-reader-text,
+body.wenpai-ui-page .wenpai-app input.screen-reader-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    border: 0;
+    white-space: nowrap;
+}
+
 /* 窄屏：与 kit 页签折行同一断点（782）。品牌+帮助/反馈同一行，页签单独第二行。产品自留。 */
 @media (max-width: 782px) {
     body.wenpai-ui-page .wenpai-head {
         flex-wrap: wrap;
+        padding-top: 12px;
+        row-gap: 8px;
     }
     body.wenpai-ui-page .wenpai-brand {
         order: 1;
@@ -674,6 +693,41 @@ body.wenpai-ui-page .wenpai-head-action {
         flex: 1 0 100%;
         width: 100%;
         min-width: 0;
+    }
+    body.wenpai-ui-page .wenpai-tab {
+        flex: 1 1 0;
+        justify-content: center;
+        padding: 0 6px;
+        min-width: 0;
+    }
+    body.wenpai-ui-page .wenpai-tab svg {
+        margin-right: 4px;
+    }
+    /* WP ≤782 勾选是 25px + ::before 30px，kit 16px 框会把勾画歪。 */
+    body.wenpai-ui-page .wenpai-app .chk input[type="checkbox"],
+    body.wenpai-ui-page .wenpai-app .chk-grid input[type="checkbox"],
+    body.wenpai-ui-page .wenpai-app .opt input[type="checkbox"] {
+        appearance: auto;
+        -webkit-appearance: checkbox;
+        width: 16px;
+        height: 16px;
+        min-width: 16px;
+        min-height: 16px;
+        margin: 0;
+        vertical-align: middle;
+        accent-color: var(--wenpai-accent, #3858e9);
+        background: none;
+        border: 0;
+        box-shadow: none;
+    }
+    body.wenpai-ui-page .wenpai-app .chk input[type="checkbox"]::before,
+    body.wenpai-ui-page .wenpai-app .chk input[type="checkbox"]:checked::before,
+    body.wenpai-ui-page .wenpai-app .chk-grid input[type="checkbox"]::before,
+    body.wenpai-ui-page .wenpai-app .chk-grid input[type="checkbox"]:checked::before,
+    body.wenpai-ui-page .wenpai-app .opt input[type="checkbox"]::before,
+    body.wenpai-ui-page .wenpai-app .opt input[type="checkbox"]:checked::before {
+        display: none;
+        content: none;
     }
     body.wenpai-ui-page .simple-row {
         flex-wrap: wrap;

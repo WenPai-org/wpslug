@@ -338,7 +338,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
             <span><?php esc_html_e("上传文件的文件名要不要转换，以及要不要保留扩展名。", "wpslug"); ?></span>
           </li>
           <li>
-            <strong><?php esc_html_e("Advanced", "wpslug"); ?></strong>
+            <strong><?php esc_html_e("Content Types", "wpslug"); ?></strong>
             <span><?php esc_html_e("哪些文章类型和分类法参与转换。", "wpslug"); ?></span>
           </li>
         </ul>

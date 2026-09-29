@@ -252,9 +252,9 @@ class WPSlug_Admin
                 "sub" => __("Configure how media file names are handled during upload.", "wpslug"),
             ],
             "types" => [
-                "label" => __("Advanced", "wpslug"),
+                "label" => __("Content Types", "wpslug"),
                 "icon" => "server",
-                "sub" => __("Advanced options and content type configuration for power users.", "wpslug"),
+                "sub" => __("哪些文章类型和分类法参与转换。", "wpslug"),
             ],
         ];
         if (!isset($adv_sections[$section])) {

@@ -110,6 +110,7 @@ require WPSLUG_PLUGIN_DIR . 'includes/class-wpslug-translator.php';
 require WPSLUG_PLUGIN_DIR . 'includes/class-wpslug-converter.php';
 require WPSLUG_PLUGIN_DIR . 'includes/class-wpslug-core.php';
 require WPSLUG_PLUGIN_DIR . 'includes/class-wpslug-admin.php';
+require WPSLUG_PLUGIN_DIR . 'includes/class-wpslug-cli.php';
 
 $tests = 0;
 function check($condition, string $message): void {
@@ -389,8 +390,9 @@ $admin_source = file_get_contents(WPSLUG_PLUGIN_DIR . 'includes/class-wpslug-adm
 check(strpos($admin_source, 'Received input data') === false, 'does not write API credentials to debug logs');
 check(substr_count($admin_source, 'current_user_can("manage_options")') >= 3, 'protects settings page and AJAX endpoints with manage_options');
 check(strpos($admin_source, 'https://wpcy.com/c/wpslug/') === false, 'does not link support to the missing community URL');
-check(substr_count($admin_source, 'https://wpcy.com/slug') >= 2, 'points documentation and support at wpcy.com/slug');
-check(strpos($admin_source, 'convert_on_publish_only') !== false, 'exposes convert-on-publish-only in the admin UI');
+$admin_ui = $admin_source . file_get_contents(WPSLUG_PLUGIN_DIR . 'templates/admin/page.php');
+check(substr_count($admin_ui, 'https://wpcy.com/slug') >= 2, 'points documentation and support at wpcy.com/slug');
+check(strpos($admin_ui, 'convert_on_publish_only') !== false, 'exposes convert-on-publish-only in the admin UI');
 check(strpos($admin_source, 'Bulk Convert is an explicit migration') !== false, 'tips that bulk convert is an explicit migration');
 check(strpos($admin_source, 'WPMind quota or budget was exceeded') !== false, 'surfaces WPMind quota notices in admin');
 check(strpos($admin_source, 'wpslug_editor_preview') !== false, 'registers editor slug preview AJAX');
@@ -489,6 +491,14 @@ check(strpos($main_source, 'require_once WPSLUG_PLUGIN_DIR . "includes/class-wps
 $release_source = file_get_contents(WPSLUG_PLUGIN_DIR . '.forgejo/workflows/release.yml');
 check(strpos($release_source, 'DEPLOY_HOST') === false, 'release workflow does not deploy to a WordPress site');
 
+$pack_source = file_get_contents(WPSLUG_PLUGIN_DIR . 'scripts/build-candidate.py');
+check(strpos($pack_source, '"lib/wenpai-admin-ui/"') !== false, 'candidate zip allowlist includes vendored admin kit');
+check(strpos($pack_source, 'lib/plugin-update-checker/') !== false, 'candidate zip forbids plugin-update-checker');
+check(strpos($pack_source, 'lib/updatepulse-updater/') !== false, 'candidate zip forbids updatepulse-updater');
+check(strpos($main_source, 'includes/class-wenpai-updater.php') !== false, 'bootstrap loads WenPai Bridge updater');
+check(strpos($main_source, 'plugin-update-checker') === false, 'bootstrap does not load plugin-update-checker');
+check(strpos($main_source, 'updatepulse-updater') === false, 'bootstrap does not load updatepulse-updater');
+
 $GLOBALS['wpslug_options'] = array_merge((new WPSlug_Settings())->getDefaults(), [
     'enable_conversion' => true,
     'auto_convert' => true,
@@ -506,5 +516,46 @@ $admin = new WPSlug_Admin();
 $admin->handleBulkAction('/wp-admin/edit.php', 'wpslug-convert', [99]);
 $admin->handleBulkAction('/wp-admin/edit.php', 'wpslug-convert', [99]);
 check(count($GLOBALS['wpslug_post_updates']) === 1, 'bulk conversion is idempotent after the canonical slug is written');
+
+
+$cli_source = file_get_contents(WPSLUG_PLUGIN_DIR . 'includes/class-wpslug-cli.php');
+check(strpos($cli_source, 'set" : "empty') !== false, 'CLI reports secrets as set/empty');
+check(strpos($main_source, 'includes/class-wpslug-cli.php') !== false, 'loads WP-CLI command class from the plugin bootstrap');
+
+$GLOBALS['wpslug_options'] = array_merge((new WPSlug_Settings())->getDefaults(), [
+    'enable_conversion' => false,
+    'enabled_post_types' => [],
+    'conversion_mode' => 'translation',
+    'translation_service' => 'none',
+]);
+$off = WPSlug_CLI::doctor_findings((new WPSlug_Settings())->getOptions(), false);
+check(in_array('conversion_off', $off, true), 'doctor reports conversion_off');
+check(in_array('no_post_types', $off, true), 'doctor reports no_post_types');
+check(in_array('translation_unconfigured', $off, true), 'doctor reports translation_unconfigured');
+
+$GLOBALS['wpslug_options']['enable_conversion'] = true;
+$GLOBALS['wpslug_options']['enabled_post_types'] = ['post', 'page'];
+$GLOBALS['wpslug_options']['conversion_mode'] = 'pinyin';
+$ok = WPSlug_CLI::doctor_findings((new WPSlug_Settings())->getOptions());
+check($ok === [], 'doctor is quiet when conversion is on');
+
+$preview = WPSlug_CLI::preview_result('你好，世界', (new WPSlug_Settings())->getOptions());
+check($preview['final'] !== '', 'preview returns a slug');
+check($preview['mode'] === 'pinyin', 'preview uses saved conversion mode');
+
+$GLOBALS['wpslug_posts'][77] = (object) [
+    'ID' => 77,
+    'post_title' => '你好，世界',
+    'post_name' => 'legacy',
+    'post_type' => 'post',
+    'post_status' => 'publish',
+];
+$plan = WPSlug_CLI::plan_post_slug(
+    77,
+    new WPSlug_Settings(),
+    new WPSlug_Converter(),
+    new WPSlug_Optimizer()
+);
+check($plan['skip'] === '' && $plan['old'] === 'legacy' && $plan['new'] !== 'legacy', 'convert plan rewrites a legacy slug');
 
 echo "PASS: {$tests} assertions\n";

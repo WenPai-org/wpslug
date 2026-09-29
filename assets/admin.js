@@ -20,20 +20,15 @@ jQuery(document).ready(function ($) {
 
   function initDependentFields() {
     function toggleDependentFields() {
-      var enableConversion = $("#enable_conversion").is(":checked");
-
+      var $box = $("#enable_conversion");
+      if (!$box.length) {
+        return;
+      }
+      var on = $box.is(":checked");
+      $(".wpslug-when-on").prop("hidden", !on);
       $(".wpslug-dependent").each(function () {
-        var $row = $(this);
-        var dependsOn = $row.data("depends");
-
-        if (dependsOn === "enable_conversion") {
-          if (enableConversion) {
-            $row.removeClass("disabled");
-            $row.find("input, select").prop("disabled", false);
-          } else {
-            $row.addClass("disabled");
-            $row.find("input, select").prop("disabled", true);
-          }
+        if ($(this).data("depends") === "enable_conversion") {
+          $(this).prop("hidden", !on);
         }
       });
     }
@@ -131,7 +126,7 @@ jQuery(document).ready(function ($) {
 
         if ($(".pinyin-first-notice").length === 0) {
           $seoOptimizationCheckbox
-            .closest("td")
+            .closest(".field-ctl")
             .append(
               '<div class="pinyin-first-notice">SEO optimization is automatically disabled in first letter mode for maximum brevity.</div>',
             );
@@ -165,101 +160,129 @@ jQuery(document).ready(function ($) {
     toggleSEOFeatures();
   }
 
+  function initShellToggles() {
+    document.addEventListener("click", function (e) {
+      var btn = e.target.closest && e.target.closest(".wenpai-app button.toggle[data-for]");
+      if (!btn || btn.disabled || btn.classList.contains("is-locked")) {
+        return;
+      }
+      var box = document.getElementById(btn.getAttribute("data-for"));
+      if (!box) {
+        return;
+      }
+      box.checked = btn.classList.contains("on");
+      box.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+  }
+
   function initPreviewFunctionality() {
+    var timer = null;
+    var seq = 0;
+
+    function setPreviewInputState(text) {
+      var $input = $("#wpslug-preview-input");
+      if (text) {
+        $input.removeClass("invalid").addClass("valid");
+      } else {
+        $input.removeClass("valid invalid");
+      }
+    }
+
+    function showPreviewRow() {
+      $("#wpslug-preview-result-row").prop("hidden", false);
+    }
+
+    function clearPreviewResult() {
+      $("#wpslug-preview-result")
+        .removeClass("result-final wpslug-error")
+        .empty();
+      $("#wpslug-preview-result-row").prop("hidden", true);
+    }
+
+    function showPreviewOk(slug) {
+      $("#wpslug-preview-result")
+        .removeClass("wpslug-error")
+        .addClass("result-final")
+        .text(slug);
+      showPreviewRow();
+    }
+
+    function showPreviewErr(msg) {
+      $("#wpslug-preview-result")
+        .removeClass("result-final")
+        .addClass("wpslug-error")
+        .text(msg);
+      showPreviewRow();
+    }
+
     function performPreview() {
       var text = $("#wpslug-preview-input").val().trim();
-      var $button = $("#wpslug-preview-button");
       var $result = $("#wpslug-preview-result");
+      var ticket = ++seq;
 
+      setPreviewInputState(text);
       if (!text) {
-        showNotice("error", wpslug_ajax.strings.no_text);
+        clearPreviewResult();
         return;
       }
 
-      $button.prop("disabled", true).text(wpslug_ajax.strings.converting);
-      $result.html('<div class="wpslug-loading-spinner">Converting...</div>');
+      if (!$result.text()) {
+        $result.removeClass("result-final wpslug-error").text(wpslug_ajax.strings.converting);
+        showPreviewRow();
+      }
 
+      var extra = $("#wpslug-settings-form").serialize();
       $.ajax({
         url: wpslug_ajax.ajax_url,
         type: "POST",
-        data: {
-          action: "wpslug_preview",
-          text: text,
-          nonce: wpslug_ajax.nonce,
-        },
+        data:
+          (extra ? extra + "&" : "") +
+          $.param({
+            action: "wpslug_preview",
+            text: text,
+            nonce: wpslug_ajax.nonce,
+          }),
         success: function (response) {
-          if (response.success) {
-            var data = response.data;
-            var html = buildPreviewResult(data);
-            $result.html(html);
-            hideNotice();
+          if (ticket !== seq) {
+            return;
+          }
+          var slug = response.success ? previewSlug(response.data) : "";
+          if (slug) {
+            showPreviewOk(slug);
           } else {
-            showNotice(
-              "error",
-              response.data.message || wpslug_ajax.strings.conversion_error,
-            );
-            $result.html('<div class="wpslug-error">Preview failed</div>');
+            showPreviewErr(wpslug_ajax.strings.conversion_error);
           }
         },
         error: function () {
-          showNotice("error", wpslug_ajax.strings.conversion_error);
-          $result.html('<div class="wpslug-error">Connection error</div>');
-        },
-        complete: function () {
-          $button.prop("disabled", false).text(wpslug_ajax.strings.preview);
+          if (ticket !== seq) {
+            return;
+          }
+          showPreviewErr(wpslug_ajax.strings.conversion_error);
         },
       });
     }
 
-    function buildPreviewResult(data) {
-      var html = '<div class="result-item">';
-      html += '<span class="result-label">Original:</span> ';
-      html +=
-        '<span class="result-value">' + escapeHtml(data.original) + "</span>";
-      html += "</div>";
-
-      if (data.converted && data.converted !== data.original) {
-        html += '<div class="result-item">';
-        html += '<span class="result-label">Converted:</span> ';
-        html +=
-          '<span class="result-value">' +
-          escapeHtml(data.converted) +
-          "</span>";
-        html += "</div>";
+    function previewSlug(data) {
+      if (!data) {
+        return "";
       }
-
-      if (data.optimized && data.optimized !== data.converted) {
-        html += '<div class="result-item">';
-        html += '<span class="result-label">Optimized:</span> ';
-        html +=
-          '<span class="result-value">' +
-          escapeHtml(data.optimized) +
-          "</span>";
-        html += "</div>";
-      }
-
-      html += '<div class="result-item">';
-      html += '<span class="result-label">Final Slug:</span> ';
-      html +=
-        '<span class="result-final">' + escapeHtml(data.final) + "</span>";
-      html += "</div>";
-
-      html += '<div class="result-meta">';
-      html += "Mode: " + escapeHtml(data.mode);
-      if (data.detected_language) {
-        html += " | Detected: " + escapeHtml(data.detected_language);
-      }
-      html += "</div>";
-
-      return html;
+      return data.final || data.optimized || data.converted || "";
     }
 
-    $("#wpslug-preview-button").on("click", performPreview);
-    $("#wpslug-preview-input").on("keypress", function (e) {
-      if (e.which === 13) {
-        performPreview();
+    function schedulePreview() {
+      clearTimeout(timer);
+      var text = $("#wpslug-preview-input").val().trim();
+      setPreviewInputState(text);
+      if (!text) {
+        seq += 1;
+        clearPreviewResult();
+        return;
       }
-    });
+      timer = setTimeout(performPreview, 250);
+    }
+
+    $("#wpslug-preview-input").on("input", schedulePreview);
+    $("#wpslug-settings-form").on("change", "input, select, textarea", schedulePreview);
   }
 
   function initApiTesting() {
@@ -637,7 +660,7 @@ jQuery(document).ready(function ($) {
           case 13:
             if ($("#wpslug-preview-input").is(":focus")) {
               e.preventDefault();
-              $("#wpslug-preview-button").click();
+              $("#wpslug-preview-input").trigger("input");
             }
             break;
           case 83:
@@ -680,18 +703,6 @@ jQuery(document).ready(function ($) {
   }
 
   function initSEOFeatures() {
-    var $previewInput = $("#wpslug-preview-input");
-    var $previewResult = $("#wpslug-preview-result");
-
-    $previewInput.on("input", function () {
-      var text = $(this).val().trim();
-      if (text.length > 0) {
-        $(this).removeClass("invalid").addClass("valid");
-      } else {
-        $(this).removeClass("valid invalid");
-      }
-    });
-
     $('input[name="wpslug_options[seo_max_words]"]').on("input", function () {
       var value = parseInt($(this).val());
       var $warning = $(this).siblings(".seo-warning");
@@ -718,11 +729,11 @@ jQuery(document).ready(function ($) {
       );
 
       if (mediaDisabled) {
-        $mediaOptions.prop("disabled", true).closest("tr").addClass("disabled");
+        $mediaOptions.prop("disabled", true).closest(".field").addClass("disabled");
       } else {
         $mediaOptions
           .prop("disabled", false)
-          .closest("tr")
+          .closest(".field")
           .removeClass("disabled");
       }
     }
@@ -794,6 +805,7 @@ jQuery(document).ready(function ($) {
   initConversionModeToggle();
   initTranslationServiceToggle();
   initSEOOptimizationToggle();
+  initShellToggles();
   initPreviewFunctionality();
   initApiTesting();
   initResetSettings();

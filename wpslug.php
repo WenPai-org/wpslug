@@ -25,6 +25,19 @@ define("WPSLUG_PLUGIN_DIR", plugin_dir_path(__FILE__));
 define("WPSLUG_PLUGIN_URL", plugin_dir_url(__FILE__));
 define("WPSLUG_PLUGIN_BASENAME", plugin_basename(__FILE__));
 
+function wpslug_brand_name() {
+    $name = apply_filters("wpslug_brand_name", "文派素格");
+    $name = is_string($name) ? trim($name) : "";
+    return $name !== "" ? $name : "文派素格";
+}
+
+function wpslug_plugin_name() {
+    $name = apply_filters("wpslug_plugin_name", "WPSlug");
+    $name = is_string($name) ? trim($name) : "";
+    return $name !== "" ? $name : "WPSlug";
+}
+
+
 class WPSlug
 {
     private static $instance = null;
@@ -95,9 +108,15 @@ class WPSlug
         require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-converter.php";
         require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-core.php";
         require_once WPSLUG_PLUGIN_DIR . "includes/class-wenpai-updater.php";
+        require_once WPSLUG_PLUGIN_DIR . "lib/wenpai-admin-ui/php/load.php";
 
         if (is_admin()) {
             require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-admin.php";
+        }
+
+        if (defined("WP_CLI") && WP_CLI) {
+            require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-cli.php";
+            WP_CLI::add_command("slug", "WPSlug_CLI");
         }
     }
 

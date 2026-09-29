@@ -1,0 +1,16 @@
+body { margin: 0; background: #f0f0f1; font: 14px/22px -apple-system, "PingFang SC", sans-serif; color: #1e1e1e; }
+.top { background: #fff; border-bottom: 1px solid #e0e0e0; height: 56px; display: flex; align-items: center; gap: 12px; padding: 0 32px; }
+.tab { padding: 18px 12px; color: #50575e; text-decoration: none; }
+.tab.on { color: #3858e9; border-bottom: 2px solid #3858e9; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 24px 32px; }
+h1 { font-size: 24px; line-height: 32px; margin: 0 0 8px; }
+.lede { color: #50575e; font-size: 13px; margin: 0 0 20px; }
+.card { background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 20px; margin: 0 0 16px; }
+.choice { display: flex; gap: 12px; flex-wrap: wrap; }
+.choice span { border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px 16px; min-width: 10rem; }
+.choice span.on { border-color: #3858e9; background: #eef1fd; }
+.btn { height: 36px; padding: 0 14px; border-radius: 6px; border: 0; background: #3858e9; color: #fff; }
+.seg a { display: inline-block; padding: 4px 12px; font-size: 13px; text-decoration: none; color: #50575e; border: 1px solid #e0e0e0; }
+.seg a.on { background: #eef1fd; color: #3858e9; }
+.foot { padding: 16px 32px; font-size: 12px; color: #646970; }
+.right { margin-left: auto; }

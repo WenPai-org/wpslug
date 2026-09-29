@@ -3,6 +3,7 @@
     <description>Security, database, internationalization and global-prefix checks for shipped first-party PHP.</description>
     <file>wpslug.php</file>
     <file>includes</file>
+    <file>templates</file>
     <exclude-pattern>includes/dictionary.php</exclude-pattern>
     <arg name="extensions" value="php"/>
     <arg value="s"/>

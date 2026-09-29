@@ -601,6 +601,16 @@ body.wenpai-ui-page .wenpai-app .wpslug-simple > .simple-row > div:first-child:n
     min-width: 0;
     flex: 1;
 }
+body.wenpai-ui-page .wenpai-app .wpslug-simple > .field {
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+body.wenpai-ui-page .wenpai-app .wpslug-simple .field-ctl > .choice-cards {
+    margin-top: 12px;
+}
+body.wenpai-ui-page .wenpai-app .wpslug-simple .field-ctl > .notice {
+    margin-top: 16px;
+}
 body.wenpai-ui-page .wenpai-app .wpslug-simple > .card-foot {
     margin-top: 0;
     padding-top: 12px;

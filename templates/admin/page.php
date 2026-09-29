@@ -140,34 +140,38 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
               <?php $this->renderToggle("enable_conversion", "wpslug_options[enable_conversion]", $enabled); ?>
             </div>
           </div>
-          <h2 class="section-title"><?php esc_html_e("Conversion Mode", "wpslug"); ?></h2>
-          <p class="card-sub"><?php esc_html_e("Choose local pinyin, semantic pinyin (XinSi AI), multi-language translation, or transliteration.", "wpslug"); ?></p>
-          <div class="choice-cards wpslug-modes">
-            <?php foreach ($modes as $mode_id => $label) :
-                $on = $conv === $mode_id;
-                ?>
-            <label class="choice<?php echo $on ? " is-on" : ""; ?>">
-              <input type="radio" name="wpslug_options[conversion_mode]" value="<?php echo esc_attr($mode_id); ?>" <?php checked($conv, $mode_id); ?>>
-              <span>
-                <div class="t"><?php echo esc_html($label); ?></div>
-                <div class="d"><?php
-                if ("pinyin" === $mode_id) {
-                    esc_html_e("不经过心思", "wpslug");
-                } elseif ("semantic_pinyin" === $mode_id) {
-                    esc_html_e("不够时用本地拼音", "wpslug");
-                } elseif ("translation" === $mode_id) {
-                    esc_html_e("失败仍可保存", "wpslug");
-                } else {
-                    esc_html_e("外文转拉丁字母", "wpslug");
-                }
-                ?></div>
-              </span>
-            </label>
-            <?php endforeach; ?>
+          <div class="field">
+            <div class="field-label"><?php esc_html_e("Conversion Mode", "wpslug"); ?></div>
+            <div class="field-ctl">
+              <p class="hint"><?php esc_html_e("Choose local pinyin, semantic pinyin (XinSi AI), multi-language translation, or transliteration.", "wpslug"); ?></p>
+              <div class="choice-cards wpslug-modes">
+                <?php foreach ($modes as $mode_id => $label) :
+                    $on = $conv === $mode_id;
+                    ?>
+                <label class="choice<?php echo $on ? " is-on" : ""; ?>">
+                  <input type="radio" name="wpslug_options[conversion_mode]" value="<?php echo esc_attr($mode_id); ?>" <?php checked($conv, $mode_id); ?>>
+                  <span>
+                    <div class="t"><?php echo esc_html($label); ?></div>
+                    <div class="d"><?php
+                    if ("pinyin" === $mode_id) {
+                        esc_html_e("不经过心思", "wpslug");
+                    } elseif ("semantic_pinyin" === $mode_id) {
+                        esc_html_e("不够时用本地拼音", "wpslug");
+                    } elseif ("translation" === $mode_id) {
+                        esc_html_e("失败仍可保存", "wpslug");
+                    } else {
+                        esc_html_e("外文转拉丁字母", "wpslug");
+                    }
+                    ?></div>
+                  </span>
+                </label>
+                <?php endforeach; ?>
+              </div>
+              <?php if (!$mind) : ?>
+              <div class="notice info"><span><?php esc_html_e("Install WenPai XinSi (WPMind) for semantic pinyin (XinSi AI) and multi-language translation. Until then, local pinyin remains available.", "wpslug"); ?></span></div>
+              <?php endif; ?>
+            </div>
           </div>
-          <?php if (!$mind) : ?>
-          <div class="notice info"><span><?php esc_html_e("Install WenPai XinSi (WPMind) for semantic pinyin (XinSi AI) and multi-language translation. Until then, local pinyin remains available.", "wpslug"); ?></span></div>
-          <?php endif; ?>
           <div class="simple-row">
             <div>
               <div class="t"><?php esc_html_e("Auto Convert", "wpslug"); ?></div>

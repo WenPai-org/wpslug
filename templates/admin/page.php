@@ -15,7 +15,7 @@ $notice = "";
 $level = "";
 // phpcs:disable WordPress.Security.NonceVerification.Recommended
 if (isset($_GET["settings-updated"]) && "true" === $_GET["settings-updated"]) {
-    $notice = __("Settings saved successfully!", "wpslug");
+    $notice = __("已保存。", "wpslug");
     $level = "ok";
 }
 if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"]) {

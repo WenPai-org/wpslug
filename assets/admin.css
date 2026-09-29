@@ -13,7 +13,7 @@
     margin-bottom: 15px;
     color: #23282d;
     font-size: 18px;
-    font-weight: 600;
+    font-weight: 400;
 }
 
 .wpslug-tabs {
@@ -36,7 +36,7 @@
 
 .wpslug-tab.active {
     border-bottom: 2px solid #007cba;
-    font-weight: 600;
+    font-weight: 400;
     background: #f0f0f1;
     color: #007cba;
 }
@@ -218,13 +218,13 @@
 }
 
 #wpslug-preview-result .result-label {
-    font-weight: 600;
+    font-weight: 400;
     color: #23282d;
 }
 
 #wpslug-preview-result .result-value {
     color: #007cba;
-    font-weight: 500;
+    font-weight: 400;
 }
 
 #wpslug-preview-result .result-final {
@@ -232,7 +232,7 @@
     color: #155724;
     padding: 4px 8px;
     border-radius: 3px;
-    font-weight: 600;
+    font-weight: 400;
 }
 
 #wpslug-preview-result .result-meta {
@@ -320,7 +320,7 @@ body.wpslug-admin .field.disabled {
     padding: 2px 6px;
     border-radius: 3px;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 400;
     text-transform: uppercase;
     margin-left: 8px;
 }
@@ -357,7 +357,7 @@ body.wpslug-admin .field.disabled {
 
 .wpslug-error {
     color: #d63638;
-    font-weight: bold;
+    font-weight: 400;
     font-size: 12px;
 }
 
@@ -503,7 +503,7 @@ body.wpslug-admin .field.disabled {
 
 .wpslug-ptm-type strong {
     display: block;
-    font-weight: 600;
+    font-weight: 400;
     line-height: 1.4;
 }
 
@@ -584,7 +584,7 @@ body.wenpai-ui-page .wpslug-help-steps li::before {
     background: var(--wenpai-accent-soft);
     color: var(--wenpai-accent);
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 400;
     line-height: 24px;
     text-align: center;
     margin-top: 1px;
@@ -593,6 +593,7 @@ body.wenpai-ui-page .wpslug-help-steps strong {
     grid-column: 2;
     font-size: 13px;
     line-height: 20px;
+    font-weight: 400;
     color: var(--wenpai-ink);
 }
 body.wenpai-ui-page .wpslug-help-steps span {
@@ -643,6 +644,7 @@ body.wenpai-ui-page .wpslug-help-summary-text {
 body.wenpai-ui-page .wpslug-help-summary-text strong {
     font-size: 14px;
     line-height: 20px;
+    font-weight: 400;
     color: var(--wenpai-ink);
 }
 body.wenpai-ui-page .wpslug-help-summary-text span {
@@ -661,7 +663,7 @@ body.wenpai-ui-page .wpslug-help-dl dt {
     font-size: 13px;
     line-height: 20px;
     color: var(--wenpai-ink);
-    font-weight: 600;
+    font-weight: 400;
     margin-top: 12px;
 }
 body.wenpai-ui-page .wpslug-help-dl dt:first-child {
@@ -748,12 +750,12 @@ body.wenpai-ui-page .wenpai-app .wpslug-simple > .notice + .simple-row {
 body.wenpai-ui-page #wpslug-preview-result.result-final {
     background: #d4edda;
     color: #155724;
-    font-weight: 600;
+    font-weight: 400;
 }
 body.wenpai-ui-page #wpslug-preview-result.wpslug-error {
     background: #f8d7da;
     color: #d63638;
-    font-weight: bold;
+    font-weight: 400;
 }
 
 body.wenpai-ui-page .wenpai-head-action {

@@ -687,4 +687,14 @@ body.wenpai-ui-page #wpslug-preview-result.wpslug-error {
         overflow-x: auto;
         max-width: 100%;
     }
+    body.wenpai-ui-page .wpslug-sections .seg {
+        overflow-x: auto;
+        overflow-y: hidden;
+        max-width: 100%;
+        flex-wrap: nowrap;
+    }
+    body.wenpai-ui-page .wpslug-sections .seg a {
+        white-space: nowrap;
+        flex: none;
+    }
 }

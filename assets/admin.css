@@ -629,6 +629,10 @@ body.wenpai-ui-page #wpslug-preview-result.wpslug-error {
     font-weight: bold;
 }
 
+body.wenpai-ui-page .wenpai-head-action {
+    position: relative;
+}
+
 /* 窄屏：与 kit 页签折行同一断点（782）。品牌+帮助/反馈同一行，页签单独第二行。产品自留。 */
 @media (max-width: 782px) {
     body.wenpai-ui-page .wenpai-head {
@@ -647,6 +651,23 @@ body.wenpai-ui-page #wpslug-preview-result.wpslug-error {
         justify-content: flex-end;
         margin-left: auto;
         min-width: 0;
+    }
+    body.wenpai-ui-page .wenpai-head-right .wenpai-head-action {
+        width: 36px;
+        min-width: 36px;
+        padding: 0;
+        gap: 0;
+    }
+    body.wenpai-ui-page .wenpai-head-right .wenpai-head-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
     }
     body.wenpai-ui-page .wenpai-tabs {
         order: 3;

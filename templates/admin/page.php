@@ -41,8 +41,8 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
         <a class="wenpai-tab<?php echo "tools" === $tab ? " is-active" : ""; ?>" href="<?php echo esc_url($url("tools")); ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("server") : ""; ?><?php esc_html_e("工具", "wpslug"); ?></a>
       </nav>
       <div class="wenpai-head-right">
-        <a class="btn btn-ghost<?php echo "help" === $tab ? " is-active" : ""; ?>" href="<?php echo esc_url($url("help")); ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("help") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php esc_html_e("帮助", "wpslug"); ?></a>
-        <a class="btn btn-ghost" href="https://wpcy.com/support" target="_blank" rel="noopener"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("feedback") : ""; ?><?php esc_html_e("反馈", "wpslug"); ?></a>
+        <a class="btn btn-ghost wenpai-head-action<?php echo "help" === $tab ? " is-active" : ""; ?>" href="<?php echo esc_url($url("help")); ?>" title="<?php echo esc_attr__("帮助", "wpslug"); ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("help") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><span class="wenpai-head-label"><?php esc_html_e("帮助", "wpslug"); ?></span></a>
+        <a class="btn btn-ghost wenpai-head-action" href="https://wpcy.com/support" target="_blank" rel="noopener" title="<?php echo esc_attr__("反馈", "wpslug"); ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("feedback") : ""; ?><span class="wenpai-head-label"><?php esc_html_e("反馈", "wpslug"); ?></span></a>
       </div>
     </div>
   </div></div>

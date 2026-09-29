@@ -629,7 +629,7 @@ body.wenpai-ui-page #wpslug-preview-result.wpslug-error {
     font-weight: bold;
 }
 
-/* 窄屏：与 kit 页签折行同一断点（782）。头栏右侧整行折下，芯片和确认按钮不裁切。产品自留。 */
+/* 窄屏：与 kit 页签折行同一断点（782）。品牌+帮助/反馈同一行，页签单独第二行。产品自留。 */
 @media (max-width: 782px) {
     body.wenpai-ui-page .wenpai-head {
         flex-wrap: wrap;
@@ -637,17 +637,20 @@ body.wenpai-ui-page #wpslug-preview-result.wpslug-error {
     body.wenpai-ui-page .wenpai-brand {
         order: 1;
         min-width: 0;
+        flex: 0 1 auto;
+        margin-right: 8px;
     }
     body.wenpai-ui-page .wenpai-head-right {
         order: 2;
-        flex: 1 0 100%;
-        width: 100%;
+        flex: 1 1 auto;
+        width: auto;
         justify-content: flex-end;
-        margin-left: 0;
+        margin-left: auto;
         min-width: 0;
     }
     body.wenpai-ui-page .wenpai-tabs {
         order: 3;
+        flex: 1 0 100%;
         width: 100%;
         min-width: 0;
     }

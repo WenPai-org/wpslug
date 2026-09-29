@@ -629,20 +629,38 @@ body.wenpai-ui-page #wpslug-preview-result.wpslug-error {
     font-weight: bold;
 }
 
-/* 390px：页头帮助/反馈、状态值、确认句不裁切。产品自留。 */
-@media (max-width: 600px) {
+/* 窄屏：与 kit 页签折行同一断点（782）。头栏右侧整行折下，芯片和确认按钮不裁切。产品自留。 */
+@media (max-width: 782px) {
+    body.wenpai-ui-page .wenpai-head {
+        flex-wrap: wrap;
+    }
+    body.wenpai-ui-page .wenpai-brand {
+        order: 1;
+        min-width: 0;
+    }
     body.wenpai-ui-page .wenpai-head-right {
-        width: 100%;
         order: 2;
+        flex: 1 0 100%;
+        width: 100%;
         justify-content: flex-end;
         margin-left: 0;
+        min-width: 0;
     }
     body.wenpai-ui-page .wenpai-tabs {
         order: 3;
+        width: 100%;
+        min-width: 0;
+    }
+    body.wenpai-ui-page .simple-row {
+        flex-wrap: wrap;
+        row-gap: 8px;
     }
     body.wenpai-ui-page .simple-row .r {
         min-width: 0;
         max-width: 100%;
+        flex: 1 1 auto;
+        margin-left: 0;
+        justify-content: flex-end;
     }
     body.wenpai-ui-page .simple-row .scope {
         white-space: normal;
@@ -650,6 +668,7 @@ body.wenpai-ui-page #wpslug-preview-result.wpslug-error {
         line-height: 20px;
         max-width: 100%;
         overflow-wrap: anywhere;
+        box-sizing: border-box;
     }
     body.wenpai-ui-page .card-foot {
         flex-wrap: wrap;
@@ -659,8 +678,10 @@ body.wenpai-ui-page #wpslug-preview-result.wpslug-error {
         white-space: normal;
         height: auto;
         min-height: 36px;
+        max-width: 100%;
         padding-top: 8px;
         padding-bottom: 8px;
+        flex: 0 1 auto;
     }
     body.wenpai-ui-page .wpslug-sections {
         overflow-x: auto;

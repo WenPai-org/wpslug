@@ -822,29 +822,35 @@ class WPSlug_Admin
             ? $options["post_type_modes"]
             : [];
         ?>
-        <h3 class="section-title"><?php esc_html_e("Post Types", "wpslug"); ?></h3>
-        <div class="chk-grid">
-            <input type="hidden" name="wpslug_options[enabled_post_types][]" value="">
-            <?php foreach ($post_types as $post_type) : ?>
-                <label>
-                    <input type="checkbox"
-                           name="wpslug_options[enabled_post_types][]"
-                           value="<?php echo esc_attr($post_type->name); ?>"
-                           <?php checked(
-                               is_array($options["enabled_post_types"]) &&
-                               in_array($post_type->name, $options["enabled_post_types"])
-                           ); ?>>
-                    <?php echo esc_html($post_type->label); ?>
-                </label>
-            <?php endforeach; ?>
+        <div class="field">
+            <div class="field-label"><?php esc_html_e("Post Types", "wpslug"); ?></div>
+            <div class="field-ctl">
+                <div class="chk-grid">
+                    <input type="hidden" name="wpslug_options[enabled_post_types][]" value="">
+                    <?php foreach ($post_types as $post_type) : ?>
+                        <label>
+                            <input type="checkbox"
+                                   name="wpslug_options[enabled_post_types][]"
+                                   value="<?php echo esc_attr($post_type->name); ?>"
+                                   <?php checked(
+                                       is_array($options["enabled_post_types"]) &&
+                                       in_array($post_type->name, $options["enabled_post_types"])
+                                   ); ?>>
+                            <?php echo esc_html($post_type->label); ?>
+                        </label>
+                    <?php endforeach; ?>
+                </div>
+                <p class="hint"><?php esc_html_e("Select post types to apply slug conversion.", "wpslug"); ?></p>
+            </div>
         </div>
-        <p class="hint"><?php esc_html_e("Select post types to apply slug conversion.", "wpslug"); ?></p>
-        <h3 class="section-title"><?php esc_html_e("Default strategy per post type", "wpslug"); ?></h3>
-        <p class="section-desc"><?php esc_html_e(
-            "Optional overrides per post type. Example: posts → multi-language translation; products → semantic pinyin (XinSi AI). Choose “use global” to follow the conversion mode above.",
-            "wpslug"
-        ); ?></p>
-        <table class="tbl">
+        <div class="field">
+            <div class="field-label"><?php esc_html_e("Default strategy per post type", "wpslug"); ?></div>
+            <div class="field-ctl">
+                <p class="hint"><?php esc_html_e(
+                    "Optional overrides per post type. Example: posts → multi-language translation; products → semantic pinyin (XinSi AI). Choose “use global” to follow the conversion mode above.",
+                    "wpslug"
+                ); ?></p>
+                <table class="tbl">
             <thead>
                 <tr>
                     <th><?php esc_html_e("Post type", "wpslug"); ?></th>
@@ -873,23 +879,29 @@ class WPSlug_Admin
                 <?php endforeach; ?>
             </tbody>
         </table>
-        <h3 class="section-title"><?php esc_html_e("Taxonomies", "wpslug"); ?></h3>
-        <div class="chk-grid">
-            <input type="hidden" name="wpslug_options[enabled_taxonomies][]" value="">
-            <?php foreach (get_taxonomies(["public" => true], "objects") as $taxonomy) : ?>
-                <label>
-                    <input type="checkbox"
-                           name="wpslug_options[enabled_taxonomies][]"
-                           value="<?php echo esc_attr($taxonomy->name); ?>"
-                           <?php checked(
-                               is_array($options["enabled_taxonomies"]) &&
-                               in_array($taxonomy->name, $options["enabled_taxonomies"])
-                           ); ?>>
-                    <?php echo esc_html($taxonomy->label); ?>
-                </label>
-            <?php endforeach; ?>
+            </div>
         </div>
-        <p class="hint"><?php esc_html_e("Select taxonomies to apply slug conversion.", "wpslug"); ?></p>
+        <div class="field">
+            <div class="field-label"><?php esc_html_e("Taxonomies", "wpslug"); ?></div>
+            <div class="field-ctl">
+                <div class="chk-grid">
+                    <input type="hidden" name="wpslug_options[enabled_taxonomies][]" value="">
+                    <?php foreach (get_taxonomies(["public" => true], "objects") as $taxonomy) : ?>
+                        <label>
+                            <input type="checkbox"
+                                   name="wpslug_options[enabled_taxonomies][]"
+                                   value="<?php echo esc_attr($taxonomy->name); ?>"
+                                   <?php checked(
+                                       is_array($options["enabled_taxonomies"]) &&
+                                       in_array($taxonomy->name, $options["enabled_taxonomies"])
+                                   ); ?>>
+                            <?php echo esc_html($taxonomy->label); ?>
+                        </label>
+                    <?php endforeach; ?>
+                </div>
+                <p class="hint"><?php esc_html_e("Select taxonomies to apply slug conversion.", "wpslug"); ?></p>
+            </div>
+        </div>
         <div class="field">
             <div class="field-label"><?php esc_html_e("Display Options", "wpslug"); ?></div>
             <div class="field-ctl">

@@ -541,20 +541,147 @@ body.wenpai-ui-page .btn-ghost.is-active {
     color: var(--wenpai-accent);
     border-color: transparent;
 }
-body.wenpai-ui-page .wpslug-help-steps {
-    margin: 0;
-    padding: 0;
-    list-style: none;
+/* 帮助页：对照 WPSSS .wpsss-help-*。产品自留，不要写进 kit。 */
+body.wenpai-ui-page .wpslug-help-stack {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
+    margin-top: 20px;
+}
+body.wenpai-ui-page .wpslug-help-card {
+    padding: 20px 24px;
+}
+body.wenpai-ui-page .wpslug-help-card .card-head {
+    align-items: flex-start;
+}
+body.wenpai-ui-page .wpslug-help-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0 16px 12px;
+    counter-reset: wpslug-step;
 }
 body.wenpai-ui-page .wpslug-help-steps li {
     display: grid;
-    gap: 4px;
+    grid-template-columns: auto 1fr;
+    gap: 4px 12px;
+    align-items: start;
+    padding: 14px 0;
+    border-top: 1px solid var(--wenpai-line-soft);
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--wenpai-ink-3);
 }
-body.wenpai-ui-page .wpslug-help-steps li .btn {
+body.wenpai-ui-page .wpslug-help-steps li:first-child {
+    border-top: 0;
+}
+body.wenpai-ui-page .wpslug-help-steps li::before {
+    counter-increment: wpslug-step;
+    content: counter(wpslug-step);
+    grid-row: 1 / span 3;
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    background: var(--wenpai-accent-soft);
+    color: var(--wenpai-accent);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 24px;
+    text-align: center;
+    margin-top: 1px;
+}
+body.wenpai-ui-page .wpslug-help-steps strong {
+    grid-column: 2;
+    font-size: 13px;
+    line-height: 20px;
+    color: var(--wenpai-ink);
+}
+body.wenpai-ui-page .wpslug-help-steps span {
+    grid-column: 2;
+}
+body.wenpai-ui-page .wpslug-help-steps .btn {
+    grid-column: 2;
     justify-self: start;
+    margin-top: 4px;
+}
+body.wenpai-ui-page .wenpai-app details.wpslug-help-details {
+    padding: 0;
+    overflow: hidden;
+    border-top: 0;
+}
+body.wenpai-ui-page .wpslug-help-details > summary {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 16px;
+    cursor: pointer;
+    list-style: none;
+}
+body.wenpai-ui-page .wpslug-help-details > summary::-webkit-details-marker {
+    display: none;
+}
+body.wenpai-ui-page .wpslug-help-details > summary::after {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid var(--wenpai-ink-3);
+    border-bottom: 2px solid var(--wenpai-ink-3);
+    transform: rotate(45deg);
+    transition: transform 0.15s ease;
+    margin-left: 8px;
+}
+body.wenpai-ui-page .wpslug-help-details[open] > summary::after {
+    transform: rotate(-135deg);
+    margin-top: 4px;
+}
+body.wenpai-ui-page .wpslug-help-summary-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+body.wenpai-ui-page .wpslug-help-summary-text strong {
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--wenpai-ink);
+}
+body.wenpai-ui-page .wpslug-help-summary-text span {
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--wenpai-ink-3);
+}
+body.wenpai-ui-page .wpslug-help-body {
+    padding: 0 16px 16px 52px;
+    border-top: 1px solid var(--wenpai-line-soft);
+}
+body.wenpai-ui-page .wpslug-help-dl {
+    margin: 12px 0 0;
+}
+body.wenpai-ui-page .wpslug-help-dl dt {
+    font-size: 13px;
+    line-height: 20px;
+    color: var(--wenpai-ink);
+    font-weight: 600;
+    margin-top: 12px;
+}
+body.wenpai-ui-page .wpslug-help-dl dt:first-child {
+    margin-top: 0;
+}
+body.wenpai-ui-page .wpslug-help-dl dd {
+    margin: 4px 0 0;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--wenpai-ink-3);
+}
+body.wenpai-ui-page .wpslug-help-note {
+    margin: 10px 0 0;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--wenpai-ink-3);
+}
+body.wenpai-ui-page .wpslug-help .card-foot.start {
+    flex-wrap: wrap;
+    row-gap: 10px;
 }
 
 body.wenpai-ui-page .wenpai-app .wenpai-stack > #wpslug-settings-form {

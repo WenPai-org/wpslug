@@ -46,7 +46,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
       </div>
     </div>
   </div></div>
-  <main class="wenpai-main wenpai-wrap">
+  <main class="wenpai-main wenpai-wrap<?php echo "help" === $tab ? " wpslug-help" : ""; ?>">
     <?php if ("" !== $notice) : ?>
     <div class="wenpai-notice-wrap">
       <div class="notice <?php echo esc_attr($level); ?>"><span><?php echo esc_html($notice); ?></span></div>
@@ -275,97 +275,149 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
     <div class="wenpai-page-head">
       <div>
         <h1 class="wenpai-h1"><?php esc_html_e("帮助", "wpslug"); ?></h1>
-        <p class="wenpai-lede"><?php esc_html_e("把标题写成别名。这一页只讲怎么用，不代替文档站。", "wpslug"); ?></p>
+        <p class="wenpai-lede"><?php esc_html_e("新保存的标题按所选模式写成拉丁字母别名。", "wpslug"); ?></p>
       </div>
     </div>
-    <div class="wenpai-stack">
-      <section class="card">
-        <div class="card-head">
-          <span class="tile accent"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("flash") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
-          <div>
-            <h2 class="card-title"><?php esc_html_e("快速开始", "wpslug"); ?></h2>
-            <p class="card-sub"><?php esc_html_e("三步就够。", "wpslug"); ?></p>
-          </div>
+    <section class="card wpslug-help-card">
+      <div class="card-head">
+        <span class="tile ok"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("flash") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+        <div>
+          <h2 class="card-title"><?php esc_html_e("快速开始", "wpslug"); ?></h2>
+          <p class="card-sub"><?php esc_html_e("首次配置按以下顺序完成。", "wpslug"); ?></p>
         </div>
-        <ol class="wpslug-help-steps">
-          <li>
-            <strong><?php esc_html_e("打开转换", "wpslug"); ?></strong>
-            <span><?php printf(
+      </div>
+      <ol class="wpslug-help-steps">
+        <li>
+          <strong><?php
+            printf(
                 /* translators: %s: Enable Plugin label */
-                esc_html__("在设置里打开「%s」。关掉之后，新保存的文章不会改别名。", "wpslug"),
+                esc_html__("打开「%s」", "wpslug"),
                 esc_html__("Enable Plugin", "wpslug")
-            ); ?></span>
-            <a class="btn btn-secondary" href="<?php echo esc_url($url("settings")); ?>"><?php esc_html_e("去设置", "wpslug"); ?></a>
-          </li>
-          <li>
-            <strong><?php esc_html_e("选一个模式", "wpslug"); ?></strong>
-            <span><?php echo esc_html(
-                sprintf(
-                    /* translators: 1: Local pinyin, 2: Multi-language translation, 3: Semantic pinyin, 4: Foreign Language Transliteration */
-                    __("%1\$s不经过心思。%2\$s和%3\$s在心思不可用时退回%1\$s，保存不会中断。%4\$s用来处理非拉丁字母。", "wpslug"),
-                    __("Local pinyin", "wpslug"),
-                    __("Multi-language translation", "wpslug"),
-                    __("Semantic pinyin (XinSi AI)", "wpslug"),
-                    __("Foreign Language Transliteration", "wpslug")
-                )
-            ); ?></span>
-          </li>
-          <li>
-            <strong><?php esc_html_e("先预览再保存", "wpslug"); ?></strong>
-            <span><?php esc_html_e("设置页下面有预览。输入标题就显示别名，按还没保存的选择来转，不写进文章。", "wpslug"); ?></span>
-          </li>
-        </ol>
-      </section>
-      <section class="card">
-        <div class="card-head">
+            );
+            ?></strong>
+          <span><?php esc_html_e("关掉后新保存的不再改，已经写进文章的别名不动。", "wpslug"); ?></span>
+          <a class="btn btn-secondary" href="<?php echo esc_url($url("settings")); ?>"><?php esc_html_e("去设置", "wpslug"); ?></a>
+        </li>
+        <li>
+          <strong><?php esc_html_e("选一种模式", "wpslug"); ?></strong>
+          <span><?php echo esc_html(
+              sprintf(
+                  /* translators: 1: Local pinyin, 2: Multi-language translation, 3: Foreign Language Transliteration */
+                  __("%1\$s、%2\$s或%3\$s。没装心思时没有语义拼音。", "wpslug"),
+                  __("Local pinyin", "wpslug"),
+                  __("Multi-language translation", "wpslug"),
+                  __("Foreign Language Transliteration", "wpslug")
+              )
+          ); ?></span>
+        </li>
+        <li>
+          <strong><?php esc_html_e("预览别名", "wpslug"); ?></strong>
+          <span><?php esc_html_e("设置页下面输入标题，立刻看到结果，不写进文章。", "wpslug"); ?></span>
+        </li>
+      </ol>
+    </section>
+    <div class="wpslug-help-stack">
+      <details class="card wpslug-help-details" open>
+        <summary>
+          <span class="tile"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("home") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+          <span class="wpslug-help-summary-text">
+            <strong><?php esc_html_e("后台页面", "wpslug"); ?></strong>
+            <span><?php esc_html_e("概览、设置、工具各负责什么。", "wpslug"); ?></span>
+          </span>
+        </summary>
+        <div class="wpslug-help-body">
+          <dl class="wpslug-help-dl">
+            <dt><?php esc_html_e("概览", "wpslug"); ?></dt>
+            <dd><?php esc_html_e("转换是否开启、心思是否装了、哪些文章类型会改别名。", "wpslug"); ?></dd>
+            <dt><?php esc_html_e("设置 · 简单", "wpslug"); ?></dt>
+            <dd><?php esc_html_e("启用、转换模式、自动转换 / 仅发布时 / 强制小写。预览在这张表单下面。", "wpslug"); ?></dd>
+            <dt><?php esc_html_e("设置 · 高级", "wpslug"); ?></dt>
+            <dd><?php esc_html_e("拼音、转写、翻译、SEO、媒体、内容类型。一次打开一组，没打开的保存时不会被改掉。", "wpslug"); ?></dd>
+            <dt><?php esc_html_e("工具", "wpslug"); ?></dt>
+            <dd><?php esc_html_e("再留一份预览，以及重置。重置要先勾选确认。", "wpslug"); ?></dd>
+            <dt><?php esc_html_e("文章列表", "wpslug"); ?></dt>
+            <dd><?php esc_html_e("批量改已有内容在文章列表，不在工具页。", "wpslug"); ?></dd>
+          </dl>
+        </div>
+      </details>
+      <details class="card wpslug-help-details">
+        <summary>
           <span class="tile"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("equalizer") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
-          <div>
-            <h2 class="card-title"><?php esc_html_e("高级里有什么", "wpslug"); ?></h2>
-            <p class="card-sub"><?php esc_html_e("一次只打开一组。", "wpslug"); ?></p>
-          </div>
+          <span class="wpslug-help-summary-text">
+            <strong><?php esc_html_e("转换模式", "wpslug"); ?></strong>
+            <span><?php esc_html_e("按标题语言选。失败会退回本地拼音，保存不会中断。", "wpslug"); ?></span>
+          </span>
+        </summary>
+        <div class="wpslug-help-body">
+          <dl class="wpslug-help-dl">
+            <dt><?php esc_html_e("Local pinyin", "wpslug"); ?></dt>
+            <dd><?php esc_html_e("中文标题、不经过心思。没装心思时也用这个。", "wpslug"); ?></dd>
+            <dt><?php esc_html_e("Multi-language translation", "wpslug"); ?></dt>
+            <dd><?php esc_html_e("标题要先译成另一种语言再写成别名。需要心思或自备翻译服务。", "wpslug"); ?></dd>
+            <dt><?php esc_html_e("Foreign Language Transliteration", "wpslug"); ?></dt>
+            <dd><?php esc_html_e("西里尔、阿拉伯、希腊等字母转成拉丁字母。", "wpslug"); ?></dd>
+            <dt><?php esc_html_e("Semantic pinyin (XinSi AI)", "wpslug"); ?></dt>
+            <dd><?php esc_html_e("装了心思才会出现这一项。", "wpslug"); ?></dd>
+          </dl>
         </div>
-        <ul class="wpslug-help-steps">
-          <li>
-            <strong><?php esc_html_e("Pinyin", "wpslug"); ?></strong>
-            <span><?php esc_html_e("全拼或首字母、词间分隔、是否保留英文和数字。", "wpslug"); ?></span>
-          </li>
-          <li>
-            <strong><?php esc_html_e("Transliteration", "wpslug"); ?></strong>
-            <span><?php esc_html_e("西里尔、阿拉伯、希腊等字母转成拉丁字母的方式。", "wpslug"); ?></span>
-          </li>
-          <li>
-            <strong><?php esc_html_e("Translation", "wpslug"); ?></strong>
-            <span><?php esc_html_e("翻译服务、源语言和目标语言。自备密钥留在这一组。", "wpslug"); ?></span>
-          </li>
-          <li>
-            <strong><?php esc_html_e("SEO Optimization", "wpslug"); ?></strong>
-            <span><?php esc_html_e("停用词、标点和别名里保留多少个词。", "wpslug"); ?></span>
-          </li>
-          <li>
-            <strong><?php esc_html_e("Media Files", "wpslug"); ?></strong>
-            <span><?php esc_html_e("上传文件的文件名要不要转换，以及要不要保留扩展名。", "wpslug"); ?></span>
-          </li>
-          <li>
-            <strong><?php esc_html_e("Content Types", "wpslug"); ?></strong>
-            <span><?php esc_html_e("哪些文章类型和分类法参与转换。", "wpslug"); ?></span>
-          </li>
-        </ul>
-        <div class="card-foot start">
-          <span class="meta"><?php esc_html_e("简单页只管开关和模式。", "wpslug"); ?></span>
-          <a class="btn btn-secondary" href="<?php echo esc_url($url("settings", ["mode" => "advanced"])); ?>"><?php esc_html_e("打开高级", "wpslug"); ?></a>
+      </details>
+      <details class="card wpslug-help-details">
+        <summary>
+          <span class="tile"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("help") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+          <span class="wpslug-help-summary-text">
+            <strong><?php esc_html_e("常见问题", "wpslug"); ?></strong>
+            <span><?php esc_html_e("关掉启用、预览、重置、批量。", "wpslug"); ?></span>
+          </span>
+        </summary>
+        <div class="wpslug-help-body">
+          <dl class="wpslug-help-dl">
+            <dt><?php
+              printf(
+                  /* translators: %s: Enable Plugin label */
+                  esc_html__("关掉「%s」后，已经写进文章的别名会怎样？", "wpslug"),
+                  esc_html__("Enable Plugin", "wpslug")
+              );
+              ?></dt>
+            <dd><?php esc_html_e("不动。新保存的不再改。模式和三项开关会立刻藏起来，保存过的值还在。", "wpslug"); ?></dd>
+            <dt><?php esc_html_e("预览会写进文章吗？", "wpslug"); ?></dt>
+            <dd><?php esc_html_e("不会。设置页下面输入标题，立刻看到结果。启用关掉时，设置页这份跟着藏；工具页那份还在。", "wpslug"); ?></dd>
+            <dt><?php esc_html_e("没装心思能用吗？", "wpslug"); ?></dt>
+            <dd><?php esc_html_e("能。用本地拼音。", "wpslug"); ?></dd>
+            <dt><?php esc_html_e("翻译或音译失败能保存吗？", "wpslug"); ?></dt>
+            <dd><?php esc_html_e("能。退回本地拼音，保存不会中断。", "wpslug"); ?></dd>
+            <dt><?php esc_html_e("重置会清掉文章别名吗？", "wpslug"); ?></dt>
+            <dd><?php esc_html_e("不会。只清本插件选项。要先勾选确认。", "wpslug"); ?></dd>
+            <dt><?php esc_html_e("批量改已有内容在哪？", "wpslug"); ?></dt>
+            <dd><?php esc_html_e("文章列表。", "wpslug"); ?></dd>
+            <dt><?php esc_html_e("翻译密钥空着是什么意思？", "wpslug"); ?></dt>
+            <dd><?php esc_html_e("不改已保存的值。页面上不会再显示密钥。", "wpslug"); ?></dd>
+          </dl>
         </div>
-      </section>
-      <section class="card">
+      </details>
+      <details class="card wpslug-help-details">
+        <summary>
+          <span class="tile"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("server") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+          <span class="wpslug-help-summary-text">
+            <strong><?php esc_html_e("WP-CLI", "wpslug"); ?></strong>
+            <span><?php esc_html_e("在已激活插件的站点上可用。", "wpslug"); ?></span>
+          </span>
+        </summary>
+        <div class="wpslug-help-body">
+          <pre class="wenpai-code"><code>wp slug preview "你好，世界"</code></pre>
+          <p class="wpslug-help-note"><?php esc_html_e("完整说明在文档站。不要在命令行里粘贴翻译密钥。", "wpslug"); ?></p>
+        </div>
+      </details>
+      <section class="card wpslug-help-card">
         <div class="card-head">
-          <span class="tile bad"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("info") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+          <span class="tile"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("feedback") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
           <div>
-            <h2 class="card-title"><?php esc_html_e("重置", "wpslug"); ?></h2>
-            <p class="card-sub"><?php esc_html_e("只清本插件的设置，不清已经写进文章的别名。", "wpslug"); ?></p>
+            <h2 class="card-title"><?php esc_html_e("需要更多帮助", "wpslug"); ?></h2>
+            <p class="card-sub"><?php esc_html_e("产品文档与工单支持请访问 wpcy.com。", "wpslug"); ?></p>
           </div>
         </div>
         <div class="card-foot start">
-          <span class="meta"><?php esc_html_e("要先勾选确认。", "wpslug"); ?></span>
-          <a class="btn btn-ghost" href="<?php echo esc_url($url("tools")); ?>"><?php esc_html_e("去工具", "wpslug"); ?></a>
+          <a class="btn btn-secondary" href="https://wpcy.com/slug" target="_blank" rel="noopener"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("external") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php esc_html_e("打开文档", "wpslug"); ?></a>
+          <a class="btn btn-ghost" href="https://wpcy.com/support" target="_blank" rel="noopener"><?php esc_html_e("提交反馈", "wpslug"); ?></a>
         </div>
       </section>
     </div>

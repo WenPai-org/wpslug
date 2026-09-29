@@ -403,7 +403,10 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
           </span>
         </summary>
         <div class="wpslug-help-body">
-          <pre class="wenpai-code"><code>wp slug preview "你好，世界"</code></pre>
+          <pre class="wenpai-code"><code>wp slug status
+wp slug preview "你好，世界"
+wp slug convert 123 --dry-run
+wp slug doctor</code></pre>
           <p class="wpslug-help-note"><?php esc_html_e("完整说明在文档站。不要在命令行里粘贴翻译密钥。", "wpslug"); ?></p>
         </div>
       </details>

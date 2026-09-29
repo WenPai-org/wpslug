@@ -612,9 +612,9 @@ body.wenpai-ui-page .wenpai-app details.wpslug-help-details {
 body.wenpai-ui-page .wpslug-help-details > summary {
     display: grid;
     grid-template-columns: auto 1fr auto;
-    gap: 12px;
+    gap: 14px;
     align-items: center;
-    padding: 14px 16px;
+    padding: 14px 24px;
     cursor: pointer;
     list-style: none;
 }
@@ -653,7 +653,7 @@ body.wenpai-ui-page .wpslug-help-summary-text span {
     color: var(--wenpai-ink-3);
 }
 body.wenpai-ui-page .wpslug-help-body {
-    padding: 0 16px 16px 52px;
+    padding: 0 24px 16px 74px;
     border-top: 1px solid var(--wenpai-line-soft);
 }
 body.wenpai-ui-page .wpslug-help-dl {

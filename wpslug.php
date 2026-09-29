@@ -113,6 +113,11 @@ class WPSlug
         if (is_admin()) {
             require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-admin.php";
         }
+
+        if (defined("WP_CLI") && WP_CLI) {
+            require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-cli.php";
+            WP_CLI::add_command("slug", "WPSlug_CLI");
+        }
     }
 
     public function initLanguages()

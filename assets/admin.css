@@ -597,11 +597,11 @@ body.wenpai-ui-page .wenpai-app .simple-row > .r {
     flex: none;
     margin-left: auto;
 }
-body.wenpai-ui-page .wenpai-app .wpslug-simple > .simple-row > div:first-child:not(.tile) {
+body.wenpai-ui-page .wenpai-app .wpslug-simple .simple-row > div:first-child:not(.tile) {
     min-width: 0;
     flex: 1;
 }
-body.wenpai-ui-page .wenpai-app .wpslug-simple > .field {
+body.wenpai-ui-page .wenpai-app .wpslug-simple .field {
     grid-template-columns: 1fr;
     gap: 8px;
 }

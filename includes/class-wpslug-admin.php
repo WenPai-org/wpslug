@@ -534,64 +534,59 @@ class WPSlug_Admin
             </div>
         </div>
         <div class="wpslug-api-sections">
-            <div class="wpslug-api-section" data-service="google">
-                <h3 class="section-title"><?php esc_html_e("Google Translate API", "wpslug"); ?></h3>
-                <div class="field">
-                    <div class="field-label"><?php esc_html_e("API Key", "wpslug"); ?></div>
-                    <div class="field-ctl">
-                        <div class="field-ctl-row">
-                            <input type="password"
-                                   name="wpslug_options[google_api_key]"
-                                   value="<?php echo esc_attr($options["google_api_key"]); ?>"
-                                   autocomplete="new-password">
-                            <button type="button" class="btn btn-secondary wpslug-test-api" data-service="google">
-                                <?php esc_html_e("Test API", "wpslug"); ?>
-                            </button>
-                        </div>
-                        <p class="hint">
-                            <?php esc_html_e("Enter your Google Translate API key.", "wpslug"); ?>
-                            <a href="https://cloud.google.com/translate/docs/setup" target="_blank">
-                                <?php esc_html_e("Get API Key", "wpslug"); ?>
-                            </a>
-                        </p>
+            <div class="field wpslug-api-section" data-service="google">
+                <div class="field-label"><?php esc_html_e("API Key", "wpslug"); ?></div>
+                <div class="field-ctl">
+                    <div class="field-ctl-row">
+                        <input type="password"
+                               name="wpslug_options[google_api_key]"
+                               value="<?php echo esc_attr($options["google_api_key"]); ?>"
+                               autocomplete="new-password">
+                        <button type="button" class="btn btn-secondary wpslug-test-api" data-service="google">
+                            <?php esc_html_e("Test API", "wpslug"); ?>
+                        </button>
                     </div>
+                    <p class="hint">
+                        <?php esc_html_e("Enter your Google Translate API key.", "wpslug"); ?>
+                        <a href="https://cloud.google.com/translate/docs/setup" target="_blank">
+                            <?php esc_html_e("Get API Key", "wpslug"); ?>
+                        </a>
+                    </p>
                 </div>
             </div>
-            <div class="wpslug-api-section" data-service="baidu">
-                <h3 class="section-title"><?php esc_html_e("Baidu Translate API", "wpslug"); ?></h3>
-                <div class="field">
-                    <div class="field-label"><?php esc_html_e("App ID", "wpslug"); ?></div>
-                    <div class="field-ctl">
-                        <input type="text"
-                               name="wpslug_options[baidu_app_id]"
-                               value="<?php echo esc_attr($options["baidu_app_id"]); ?>">
-                        <p class="hint"><?php esc_html_e("Enter your Baidu Translate App ID.", "wpslug"); ?></p>
-                    </div>
-                </div>
-                <div class="field">
-                    <div class="field-label"><?php esc_html_e("Secret Key", "wpslug"); ?></div>
-                    <div class="field-ctl">
-                        <div class="field-ctl-row">
-                            <input type="password"
-                                   name="wpslug_options[baidu_secret_key]"
-                                   value="<?php echo esc_attr($options["baidu_secret_key"]); ?>"
-                                   autocomplete="new-password">
-                            <button type="button" class="btn btn-secondary wpslug-test-api" data-service="baidu">
-                                <?php esc_html_e("Test API", "wpslug"); ?>
-                            </button>
-                        </div>
-                        <p class="hint">
-                            <?php esc_html_e("Enter your Baidu Translate Secret Key.", "wpslug"); ?>
-                            <a href="https://fanyi-api.baidu.com/doc/21" target="_blank">
-                                <?php esc_html_e("Get API Key", "wpslug"); ?>
-                            </a>
-                        </p>
-                    </div>
+            <div class="field wpslug-api-section" data-service="baidu">
+                <div class="field-label"><?php esc_html_e("App ID", "wpslug"); ?></div>
+                <div class="field-ctl">
+                    <input type="text"
+                           name="wpslug_options[baidu_app_id]"
+                           value="<?php echo esc_attr($options["baidu_app_id"]); ?>">
+                    <p class="hint"><?php esc_html_e("Enter your Baidu Translate App ID.", "wpslug"); ?></p>
                 </div>
             </div>
-            <div class="wpslug-api-section" data-service="wpmind">
-                <h3 class="section-title"><?php esc_html_e("WenPai XinSi (WPMind)", "wpslug"); ?></h3>
-                <div class="wpslug-wpmind-status">
+            <div class="field wpslug-api-section" data-service="baidu">
+                <div class="field-label"><?php esc_html_e("Secret Key", "wpslug"); ?></div>
+                <div class="field-ctl">
+                    <div class="field-ctl-row">
+                        <input type="password"
+                               name="wpslug_options[baidu_secret_key]"
+                               value="<?php echo esc_attr($options["baidu_secret_key"]); ?>"
+                               autocomplete="new-password">
+                        <button type="button" class="btn btn-secondary wpslug-test-api" data-service="baidu">
+                            <?php esc_html_e("Test API", "wpslug"); ?>
+                        </button>
+                    </div>
+                    <p class="hint">
+                        <?php esc_html_e("Enter your Baidu Translate Secret Key.", "wpslug"); ?>
+                        <a href="https://fanyi-api.baidu.com/doc/21" target="_blank">
+                            <?php esc_html_e("Get API Key", "wpslug"); ?>
+                        </a>
+                    </p>
+                </div>
+            </div>
+            <div class="field wpslug-api-section" data-service="wpmind">
+                <div class="field-label"><?php esc_html_e("WenPai XinSi (WPMind)", "wpslug"); ?></div>
+                <div class="field-ctl">
+                    <div class="wpslug-wpmind-status">
                     <?php if (function_exists("wpmind_is_available") && wpmind_is_available()) : ?>
                         <p class="hint is-ok"><?php esc_html_e(
                             "WenPai XinSi (WPMind) is active. Credits and BYOK keys are managed there.",
@@ -619,6 +614,7 @@ class WPSlug_Admin
                             <a href="https://wpcy.com/mind/" target="_blank"><?php esc_html_e("Learn more", "wpslug"); ?></a>
                         </p>
                     <?php endif; ?>
+                    </div>
                 </div>
             </div>
         </div>

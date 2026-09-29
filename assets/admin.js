@@ -20,20 +20,15 @@ jQuery(document).ready(function ($) {
 
   function initDependentFields() {
     function toggleDependentFields() {
-      var enableConversion = $("#enable_conversion").is(":checked");
-
+      var $box = $("#enable_conversion");
+      if (!$box.length) {
+        return;
+      }
+      var on = $box.is(":checked");
+      $(".wpslug-when-on").prop("hidden", !on);
       $(".wpslug-dependent").each(function () {
-        var $row = $(this);
-        var dependsOn = $row.data("depends");
-
-        if (dependsOn === "enable_conversion") {
-          if (enableConversion) {
-            $row.removeClass("disabled");
-            $row.find("input, select").prop("disabled", false);
-          } else {
-            $row.addClass("disabled");
-            $row.find("input, select").prop("disabled", true);
-          }
+        if ($(this).data("depends") === "enable_conversion") {
+          $(this).prop("hidden", !on);
         }
       });
     }

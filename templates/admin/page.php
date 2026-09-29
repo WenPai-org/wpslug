@@ -140,6 +140,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
               <?php $this->renderToggle("enable_conversion", "wpslug_options[enable_conversion]", $enabled); ?>
             </div>
           </div>
+          <div class="wpslug-when-on"<?php echo $enabled ? "" : " hidden"; ?>>
           <div class="field">
             <div class="field-label"><?php esc_html_e("Conversion Mode", "wpslug"); ?></div>
             <div class="field-ctl">
@@ -199,6 +200,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
               <?php $this->renderToggle("wpslug-force-lower", "wpslug_options[force_lowercase]", !empty($options["force_lowercase"])); ?>
             </div>
           </div>
+          </div>
           <div class="card-foot">
             <button type="submit" class="btn btn-primary"><?php esc_html_e("Save Changes", "wpslug"); ?></button>
           </div>
@@ -234,7 +236,9 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
         <?php endforeach; ?>
         <?php endif; ?>
     </form>
+    <div class="wpslug-when-on"<?php echo $enabled ? "" : " hidden"; ?>>
     <?php $this->renderPreviewCard(); ?>
+    </div>
     </div>
 
 <?php elseif ("tools" === $tab) : ?>

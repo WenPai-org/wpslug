@@ -193,10 +193,15 @@ jQuery(document).ready(function ($) {
       }
     }
 
+    function showPreviewRow() {
+      $("#wpslug-preview-result-row").prop("hidden", false);
+    }
+
     function clearPreviewResult() {
       $("#wpslug-preview-result")
         .removeClass("result-final wpslug-error")
         .empty();
+      $("#wpslug-preview-result-row").prop("hidden", true);
     }
 
     function showPreviewOk(slug) {
@@ -204,6 +209,7 @@ jQuery(document).ready(function ($) {
         .removeClass("wpslug-error")
         .addClass("result-final")
         .text(slug);
+      showPreviewRow();
     }
 
     function showPreviewErr(msg) {
@@ -211,6 +217,7 @@ jQuery(document).ready(function ($) {
         .removeClass("result-final")
         .addClass("wpslug-error")
         .text(msg);
+      showPreviewRow();
     }
 
     function performPreview() {
@@ -226,6 +233,7 @@ jQuery(document).ready(function ($) {
 
       if (!$result.text()) {
         $result.removeClass("result-final wpslug-error").text(wpslug_ajax.strings.converting);
+        showPreviewRow();
       }
 
       var extra = $("#wpslug-settings-form").serialize();

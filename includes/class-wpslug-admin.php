@@ -191,7 +191,7 @@ class WPSlug_Admin
               <label class="field-label" for="wpslug-preview-input"><?php esc_html_e("原文", "wpslug"); ?></label>
               <div class="field-ctl"><input type="search" id="wpslug-preview-input" placeholder="<?php esc_attr_e("Enter text to preview conversion...", "wpslug"); ?>" autocomplete="off"></div>
             </div>
-            <div class="field">
+            <div class="field" id="wpslug-preview-result-row" hidden>
               <div class="field-label" id="wpslug-preview-result-label"><?php esc_html_e("Slug", "wpslug"); ?></div>
               <div class="field-ctl"><div class="preview-out" id="wpslug-preview-result" role="status" aria-live="polite" aria-labelledby="wpslug-preview-result-label"></div></div>
             </div>

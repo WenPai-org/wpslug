@@ -13,9 +13,9 @@ import subprocess
 import time
 import zipfile
 
-# Runtime tree only. Leftover lib/plugin-update-checker and
-# lib/updatepulse-updater stay in git; updates go through
-# includes/class-wenpai-updater.php -> updates.wenpai.net.
+# Runtime tree only. Updates go through includes/class-wenpai-updater.php
+# -> updates.wenpai.net. Legacy plugin-update-checker / updatepulse must
+# not re-enter the public tree or zip.
 RUNTIME_ROOTS = (
     "assets/",
     "includes/",

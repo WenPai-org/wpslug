@@ -25,6 +25,7 @@ Media conversion applies only to newly uploaded filenames. Bulk conversion is an
 == Changelog ==
 
 = 1.3.1 =
+* Removed: leftover Yahnis Elsts plugin-update-checker and updatepulse-updater trees from the public repo; runtime stays WenPai updater (updates.wenpai.net).
 * Added: root LICENSE (GPLv2 or later) in repo and release zip.
 * Fixed: Plugin Check findings — remove production error_log/debug_backtrace, prefix admin template locals, unique-slug via get_posts, load_textdomain without load_plugin_textdomain.
 * Note: plugin_updater_detected and trademarked_term (wp in WPSlug) intentionally ignored — self-hosted via updates.wenpai.net; not submitted to WordPress.org; wp brand retained.

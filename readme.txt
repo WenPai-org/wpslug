@@ -4,7 +4,7 @@ Tags: slug, pinyin, transliteration, translation, media
 Requires at least: 6.0
 Tested up to: 7.2
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,6 +23,11 @@ Media conversion applies only to newly uploaded filenames. Bulk conversion is an
 3. Configure it under Settings > Slug.
 
 == Changelog ==
+
+= 1.3.1 =
+* Added: root LICENSE (GPLv2 or later) in repo and release zip.
+* Fixed: Plugin Check findings — remove production error_log/debug_backtrace, prefix admin template locals, unique-slug via get_posts, load_textdomain without load_plugin_textdomain.
+* Note: plugin_updater_detected and trademarked_term (wp in WPSlug) intentionally ignored — self-hosted via updates.wenpai.net; not submitted to WordPress.org; wp brand retained.
 
 = 1.3.0 =
 * Added: wenpai-admin-ui 0.2.3 settings shell — overview / settings (simple|advanced) / tools; help is a header link, not a fourth tab.

@@ -78,7 +78,6 @@ class WPSlug_Transliterator {
             }
         } catch (Exception $e) {
             if (isset($options['debug_mode']) && $options['debug_mode']) {
-                error_log('WPSlug transliterateIntl error: ' . $e->getMessage());
             }
         }
         

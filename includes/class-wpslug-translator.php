@@ -90,7 +90,6 @@ class WPSlug_Translator {
 
             if (is_wp_error($response)) {
                 if (isset($options['debug_mode']) && $options['debug_mode']) {
-                    error_log('WPSlug Google Translate Error: ' . $response->get_error_message());
                 }
                 return $this->fallbackTranslate($text, $options);
             }
@@ -98,7 +97,6 @@ class WPSlug_Translator {
             $response_code = wp_remote_retrieve_response_code($response);
             if ($response_code !== 200) {
                 if (isset($options['debug_mode']) && $options['debug_mode']) {
-                    error_log('WPSlug Google Translate HTTP Error: ' . $response_code);
                 }
                 return $this->fallbackTranslate($text, $options);
             }
@@ -114,7 +112,6 @@ class WPSlug_Translator {
             return $this->fallbackTranslate($text, $options);
         } catch (Exception $e) {
             if (isset($options['debug_mode']) && $options['debug_mode']) {
-                error_log('WPSlug translateGoogle error: ' . $e->getMessage());
             }
             return $this->fallbackTranslate($text, $options);
         }
@@ -158,7 +155,6 @@ class WPSlug_Translator {
 
             if (is_wp_error($response)) {
                 if (isset($options['debug_mode']) && $options['debug_mode']) {
-                    error_log('WPSlug Baidu Translate Error: ' . $response->get_error_message());
                 }
                 return $this->fallbackTranslate($text, $options);
             }
@@ -166,7 +162,6 @@ class WPSlug_Translator {
             $response_code = wp_remote_retrieve_response_code($response);
             if ($response_code !== 200) {
                 if (isset($options['debug_mode']) && $options['debug_mode']) {
-                    error_log('WPSlug Baidu Translate HTTP Error: ' . $response_code);
                 }
                 return $this->fallbackTranslate($text, $options);
             }
@@ -181,14 +176,12 @@ class WPSlug_Translator {
 
             if (isset($data['error_code'])) {
                 if (isset($options['debug_mode']) && $options['debug_mode']) {
-                    error_log('WPSlug Baidu Translate API Error: ' . $data['error_code']);
                 }
             }
 
             return $this->fallbackTranslate($text, $options);
         } catch (Exception $e) {
             if (isset($options['debug_mode']) && $options['debug_mode']) {
-                error_log('WPSlug translateBaidu error: ' . $e->getMessage());
             }
             return $this->fallbackTranslate($text, $options);
         }
@@ -213,7 +206,6 @@ class WPSlug_Translator {
         $cached = get_transient($cache_key);
         if ($cached !== false) {
             if ($debug_mode) {
-                error_log('[WPSlug] WPMind cache hit for: ' . $text . ' (' . $source_lang . ' -> ' . $target_lang . ')');
             }
             return $cached;
         }
@@ -221,7 +213,6 @@ class WPSlug_Translator {
         // 2. 检查 WPMind 是否可用
         if (!function_exists('wpmind_is_available') || !wpmind_is_available()) {
             if ($debug_mode) {
-                error_log('[WPSlug] WPMind not available, falling back to pinyin');
             }
             return $this->fallbackTranslate($text, $options);
         }
@@ -229,7 +220,6 @@ class WPSlug_Translator {
         // 3. 文本长度限制（避免超时）
         if (mb_strlen($text) > 200) {
             if ($debug_mode) {
-                error_log('[WPSlug] Text too long (' . mb_strlen($text) . ' chars), using pinyin');
             }
             return $this->fallbackTranslate($text, $options);
         }
@@ -238,7 +228,6 @@ class WPSlug_Translator {
         $chinese_count = preg_match_all('/[\x{4e00}-\x{9fff}]/u', $text);
         if ($chinese_count > 50) {
             if ($debug_mode) {
-                error_log('[WPSlug] Too many Chinese characters (' . $chinese_count . '), using pinyin');
             }
             return $this->fallbackTranslate($text, $options);
         }
@@ -260,7 +249,6 @@ class WPSlug_Translator {
         if (is_wp_error($result)) {
             (new WPSlug_Settings())->recordWpmindQuotaNotice($result);
             if ($debug_mode) {
-                error_log('[WPSlug] WPMind error: ' . $result->get_error_message() . ' (took ' . $elapsed_time . 'ms)');
             }
             return $this->fallbackTranslate($text, $options);
         }
@@ -270,7 +258,6 @@ class WPSlug_Translator {
         // 8. 验证结果有效性
         if (empty($slug)) {
             if ($debug_mode) {
-                error_log('[WPSlug] WPMind returned empty result, using pinyin');
             }
             return $this->fallbackTranslate($text, $options);
         }
@@ -279,7 +266,6 @@ class WPSlug_Translator {
         set_transient($cache_key, $slug, 7 * DAY_IN_SECONDS);
 
         if ($debug_mode) {
-            error_log('[WPSlug] WPMind translated "' . $text . '" to "' . $slug . '" in ' . $elapsed_time . 'ms');
         }
 
         return $slug;
@@ -325,7 +311,6 @@ class WPSlug_Translator {
                 );
             } catch (Exception $e) {
                 if (isset($options['debug_mode']) && $options['debug_mode']) {
-                    error_log('WPSlug batchTranslate error: ' . $e->getMessage());
                 }
                 $results[] = array(
                     'original' => $item,

@@ -4,7 +4,7 @@
 Plugin Name: WPSlug
 Plugin URI: https://wpcy.com/slug
 Description: Advanced slug management plugin with Chinese Pinyin support and SEO optimization.
-Version: 1.3.0
+Version: 1.3.1
 Author: WPCY.COM
 Author URI: https://wpcy.com/slug
 License: GPLv2 or later
@@ -20,7 +20,7 @@ if (!defined("ABSPATH")) {
     exit();
 }
 
-define("WPSLUG_VERSION", "1.3.0");
+define("WPSLUG_VERSION", "1.3.1");
 define("WPSLUG_PLUGIN_DIR", plugin_dir_path(__FILE__));
 define("WPSLUG_PLUGIN_URL", plugin_dir_url(__FILE__));
 define("WPSLUG_PLUGIN_BASENAME", plugin_basename(__FILE__));
@@ -36,6 +36,29 @@ function wpslug_plugin_name() {
     $name = is_string($name) ? trim($name) : "";
     return $name !== "" ? $name : "WPSlug";
 }
+
+
+/**
+ * Debug-only log. Never call error_log() from product code paths that Plugin Check scans.
+ * Intentionally no-op unless WP_DEBUG; does not call error_log (PCP DevelopmentFunctions).
+ */
+function wpslug_debug_log($message, $context = null) {
+    if (!(defined("WP_DEBUG") && WP_DEBUG)) {
+        return;
+    }
+    // Persist via option when settings class is available; otherwise silent.
+    if (class_exists("WPSlug_Settings", false)) {
+        try {
+            $settings = new WPSlug_Settings();
+            if (method_exists($settings, "logError")) {
+                $settings->logError((string) $message, is_array($context) ? $context : []);
+                return;
+            }
+        } catch (Throwable $e) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
+        }
+    }
+}
+
 
 
 class WPSlug
@@ -122,6 +145,7 @@ class WPSlug
 
     public function initLanguages()
     {
+        // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WordPress core filter.
         $locale = apply_filters('plugin_locale', get_locale(), 'wpslug');
         $mo_file = WPSLUG_PLUGIN_DIR . "languages/wpslug-{$locale}.mo";
         
@@ -133,18 +157,18 @@ class WPSlug
     public function loadTextdomain()
     {
         $locale = function_exists("determine_locale") ? determine_locale() : get_locale();
-        $mo_file = WPSLUG_PLUGIN_DIR . "languages/wpslug-{$locale}.mo";
-
-        if (is_readable($mo_file)) {
-            load_textdomain("wpslug", $mo_file);
-            return;
+        $candidates = [
+            WPSLUG_PLUGIN_DIR . "languages/wpslug-{$locale}.mo",
+        ];
+        if (defined("WP_LANG_DIR")) {
+            $candidates[] = trailingslashit(WP_LANG_DIR) . "plugins/wpslug-{$locale}.mo";
         }
-
-        load_plugin_textdomain(
-            "wpslug",
-            false,
-            dirname(plugin_basename(__FILE__)) . "/languages/"
-        );
+        foreach ($candidates as $mo_file) {
+            if (is_readable($mo_file)) {
+                load_textdomain("wpslug", $mo_file);
+                return;
+            }
+        }
     }
 
     public function activate()
@@ -174,7 +198,7 @@ class WPSlug
             add_option('wpslug_activation_redirect', true);
             
         } catch (Exception $e) {
-            error_log('WP Slug activation error: ' . $e->getMessage());
+            wpslug_debug_log("activation error: " . $e->getMessage());
             wp_die(
                 esc_html__('An error occurred during plugin activation. Please check your server logs.', 'wpslug'),
                 esc_html__('Plugin Activation Error', 'wpslug'),
@@ -193,7 +217,7 @@ class WPSlug
             delete_option('wpslug_activation_redirect');
             
         } catch (Exception $e) {
-            error_log('WP Slug deactivation error: ' . $e->getMessage());
+            wpslug_debug_log("deactivation error: " . $e->getMessage());
         }
     }
 
@@ -224,9 +248,7 @@ class WPSlug
 
                         self::uninstallSiteData();
                     } catch (Throwable $e) {
-                        error_log(
-                            'WP Slug site uninstall error: ' . $e->getMessage()
-                        );
+                        wpslug_debug_log("site uninstall error: " . $e->getMessage());
                     } finally {
                         if ($switched) {
                             restore_current_blog();
@@ -239,7 +261,7 @@ class WPSlug
 
             self::uninstallSiteData();
         } catch (Throwable $e) {
-            error_log('WP Slug uninstall error: ' . $e->getMessage());
+            wpslug_debug_log("uninstall error: " . $e->getMessage());
         }
     }
 

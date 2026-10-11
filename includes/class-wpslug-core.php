@@ -519,29 +519,36 @@ class WPSlug_Core {
      * Checks the call stack for ACF's internal post type class or field save functions.
      */
     private function isAcfInternalRequest() {
-        if (function_exists('get_current_screen')) {
+        if (function_exists("get_current_screen")) {
             $screen = get_current_screen();
             if ($screen && in_array($screen->post_type, self::$excluded_post_types, true)) {
                 return true;
             }
         }
 
-        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15);
-        foreach ($trace as $frame) {
-            if (isset($frame['class']) && strpos($frame['class'], 'ACF_Internal_Post_Type') !== false) {
-                return true;
-            }
-            if (isset($frame['class']) && strpos($frame['class'], 'ACF_Field_Group') !== false) {
-                return true;
-            }
-            if (in_array($frame['function'], array(
-                'acf_update_field',
-                'acf_import_field_group',
-                'acf_import_internal_post_type',
-            ), true)) {
-                return true;
+        // Prefer action/filter signals over debug_backtrace (PCP DevelopmentFunctions).
+        $acf_actions = [
+            "acf/save_post",
+            "acf/update_field",
+            "acf/update_field_group",
+            "acf/import_field_group",
+        ];
+        foreach ($acf_actions as $action) {
+            if (doing_action($action) || did_action($action)) {
+                // did_action alone is too sticky; require doing_action for import/update.
+                if (doing_action($action)) {
+                    return true;
+                }
             }
         }
+        if (function_exists("acf_get_setting") && !empty($GLOBALS["acf_form"])) {
+            return true;
+        }
+        // phpcs:disable WordPress.Security.NonceVerification.Missing -- read-only signal probe.
+        if (isset($_POST["acf"]) && is_array($_POST["acf"])) {
+            return true;
+        }
+        // phpcs:enable
 
         return false;
     }

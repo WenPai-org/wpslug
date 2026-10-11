@@ -23,7 +23,7 @@ RUNTIME_ROOTS = (
     "lib/wenpai-admin-ui/",
     "templates/",
 )
-RUNTIME_FILES = {"readme.txt", "wpslug.php"}
+RUNTIME_FILES = {"readme.txt", "wpslug.php", "LICENSE"}
 SKIP_FILES = {
     "lib/wenpai-admin-ui/phpcs.xml.dist",
     "lib/wenpai-admin-ui/scripts/wenpai-admin-lint.py",
@@ -64,6 +64,8 @@ def tracked_runtime_files() -> list[tuple[str, str]]:
         raise SystemExit("candidate zip missing lib/wenpai-admin-ui/")
     if "templates/admin/page.php" not in packed:
         raise SystemExit("candidate zip missing templates/admin/page.php")
+    if not any(n == "LICENSE" or n.endswith("/LICENSE") for n in packed):
+        raise SystemExit("candidate zip missing LICENSE")
     return sorted(entries, key=lambda item: item[1].encode("utf-8"))
 
 

@@ -457,15 +457,26 @@ class WPSlug_Settings
      */
     public function getPostTypeFeatures()
     {
-        return [
+        $features = [
             "inherit" => __("Use global conversion mode", "wpslug"),
-            "semantic_pinyin" => __(
-                "Semantic pinyin (XinSi AI)",
-                "wpslug"
-            ),
             "seo_slug" => __("Multi-language translation", "wpslug"),
             "pinyin" => __("Local pinyin", "wpslug"),
         ];
+
+        // Content Types: semantic pinyin only when WPMind is installed/ready.
+        if (function_exists("wpmind_is_available") && wpmind_is_available()) {
+            $features = [
+                "inherit" => $features["inherit"],
+                "semantic_pinyin" => __(
+                    "Semantic pinyin (XinSi AI)",
+                    "wpslug"
+                ),
+                "seo_slug" => $features["seo_slug"],
+                "pinyin" => $features["pinyin"],
+            ];
+        }
+
+        return $features;
     }
 
     /**

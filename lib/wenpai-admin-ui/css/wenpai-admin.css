@@ -506,4 +506,19 @@ a.scope:hover { color: var(--wenpai-accent); }
   }
   .wenpai-gate input { margin-right: 8px; }
   .hint, .wenpai-lede, .section-desc { overflow-wrap: anywhere; }
+
+  .card, .field, .field-ctl, .wenpai-stack, .wenpai-main {
+    overflow: visible;
+  }
+}
+
+
+/* select popovers on touch: prefer system menulist (see overlay for pointer:coarse). */
+@media (hover: none) and (pointer: coarse) {
+  .wenpai-app select {
+    appearance: menulist;
+    -webkit-appearance: menulist;
+    background-image: none;
+    padding-right: 10px;
+  }
 }

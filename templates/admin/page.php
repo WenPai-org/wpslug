@@ -30,7 +30,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
       <a class="wenpai-brand" href="<?php echo esc_url($url("overview")); ?>">
         <span class="wenpai-mark"><?php
         if (class_exists("Wenpai_Admin_Icons", false)) {
-            echo Wenpai_Admin_Icons::svg("home"); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+            echo Wenpai_Admin_Icons::svg("feather"); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         }
         ?></span>
         <span class="wenpai-name"><?php echo esc_html(wpslug_brand_name()); ?></span>
@@ -57,7 +57,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
     <div class="wenpai-page-head">
       <div>
         <h1 class="wenpai-h1"><?php esc_html_e("概览", "wpslug"); ?></h1>
-        <p class="wenpai-lede"><?php esc_html_e("把标题写成别名。文章类型范围在这里。", "wpslug"); ?></p>
+        <p class="wenpai-lede"><?php esc_html_e("将标题改写成拼音或翻译别名，可按文章类型分别选用。", "wpslug"); ?></p>
       </div>
     </div>
     <div class="wenpai-stack">
@@ -78,18 +78,18 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
         <div class="simple-row is-static">
           <div class="tile <?php echo $enabled ? "ok" : "warn"; ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("flash") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
           <div>
-            <div class="t"><?php esc_html_e("转换", "wpslug"); ?></div>
+            <div class="t"><?php esc_html_e("转换模式", "wpslug"); ?></div>
             <div class="d"><?php echo $enabled ? esc_html($modes[$conv] ?? $conv) : esc_html__("未启用。", "wpslug"); ?></div>
           </div>
-          <div class="r"><span class="pill <?php echo $enabled ? "ok" : "warn"; ?>"><?php echo $enabled ? esc_html__("开", "wpslug") : esc_html__("关", "wpslug"); ?></span></div>
+          <div class="r"><span class="pill <?php echo $enabled ? "ok" : "warn"; ?>"><?php echo $enabled ? esc_html__("已开启", "wpslug") : esc_html__("未开启", "wpslug"); ?></span></div>
         </div>
         <div class="simple-row is-static">
           <div class="tile <?php echo $mind ? "ok" : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("sparkle") : ""; ?></div>
           <div>
             <div class="t"><?php esc_html_e("文派心思", "wpslug"); ?></div>
-            <div class="d"><?php echo $mind ? esc_html__("已接通。额度在心思，这里不做充值。", "wpslug") : esc_html__("未安装时本地拼音兜底，保存不中断。", "wpslug"); ?></div>
+            <div class="d"><?php echo $mind ? esc_html__("已接通。额度在心思，这里不做充值。", "wpslug") : esc_html__("实现智能语义化拼音和多语言翻译。", "wpslug"); ?></div>
           </div>
-          <div class="r"><span class="pill <?php echo $mind ? "ok" : ""; ?>"><?php echo $mind ? esc_html__("已装", "wpslug") : esc_html__("未装", "wpslug"); ?></span></div>
+          <div class="r"><span class="pill <?php echo $mind ? "ok" : ""; ?>"><?php echo $mind ? esc_html__("已安装", "wpslug") : esc_html__("未安装", "wpslug"); ?></span></div>
         </div>
         <div class="simple-row is-static">
           <div class="tile ok"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("info") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
@@ -155,11 +155,11 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
                     <div class="t"><?php echo esc_html($label); ?></div>
                     <div class="d"><?php
                     if ("pinyin" === $mode_id) {
-                        esc_html_e("不经过心思", "wpslug");
+                        esc_html_e("插件内置组件转换", "wpslug");
                     } elseif ("semantic_pinyin" === $mode_id) {
                         esc_html_e("不够时用本地拼音", "wpslug");
                     } elseif ("translation" === $mode_id) {
-                        esc_html_e("失败仍可保存", "wpslug");
+                        esc_html_e("翻译为目标语言", "wpslug");
                     } else {
                         esc_html_e("外文转拉丁字母", "wpslug");
                     }

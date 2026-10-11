@@ -182,6 +182,83 @@ class WPSlug_Updater {
         ];
     }
 
+
+    /**
+     * Prefer shipped plugin/readme metadata over a stale cloud-bridge payload.
+     *
+     * View details uses plugins_api; bridge may still advertise an older
+     * "tested" (e.g. 6.7.1) after the local header moved to 7.1.x.
+     *
+     * @param object $info Plugin information object.
+     * @return object
+     */
+    private function overlay_local_plugin_info( object $info ): object {
+        $plugin_path = WP_PLUGIN_DIR . '/' . $this->plugin_file;
+        if ( ! function_exists( 'get_plugin_data' ) ) {
+            require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        }
+
+        $plugin_data = array();
+        if ( file_exists( $plugin_path ) ) {
+            $plugin_data = get_plugin_data( $plugin_path, false, false );
+        }
+
+        // Always prefer the installed package identity over a stale bridge payload
+        // (bridge may still say Version 1.2.5 / Author WPSlug.com).
+        $info->version = $this->version;
+        $info->slug    = $this->slug;
+
+        if ( function_exists( 'wpslug_brand_name' ) ) {
+            $info->name = wpslug_brand_name();
+        } elseif ( ! empty( $plugin_data['Name'] ) ) {
+            $info->name = $plugin_data['Name'];
+        }
+
+        if ( ! empty( $plugin_data['Author'] ) ) {
+            // Keep HTML author link when AuthorURI is present.
+            $info->author = $plugin_data['Author'];
+        }
+        if ( ! empty( $plugin_data['AuthorName'] ) ) {
+            $info->author_profile = ! empty( $plugin_data['AuthorURI'] )
+                ? (string) $plugin_data['AuthorURI']
+                : self::PLUGIN_HOME_URL;
+        }
+        if ( ! empty( $plugin_data['PluginURI'] ) ) {
+            $info->homepage = $plugin_data['PluginURI'];
+        } else {
+            $info->homepage = self::PLUGIN_HOME_URL;
+        }
+        if ( ! empty( $plugin_data['Description'] ) ) {
+            if ( empty( $info->sections ) || ! is_array( $info->sections ) ) {
+                $info->sections = array();
+            }
+            // Keep bridge changelog if any; always refresh description from local header.
+            $info->sections['description'] = $plugin_data['Description'];
+        }
+        if ( ! empty( $plugin_data['RequiresWP'] ) ) {
+            $info->requires = $plugin_data['RequiresWP'];
+        }
+        if ( ! empty( $plugin_data['RequiresPHP'] ) ) {
+            $info->requires_php = $plugin_data['RequiresPHP'];
+        }
+
+        $readme = dirname( $plugin_path ) . '/readme.txt';
+        if ( is_readable( $readme ) ) {
+            $raw = (string) file_get_contents( $readme );
+            if ( preg_match( '/^Tested up to:\s*(\S+)\s*$/mi', $raw, $m ) ) {
+                $info->tested = $m[1];
+            }
+            if ( preg_match( '/^Requires at least:\s*(\S+)\s*$/mi', $raw, $m ) ) {
+                $info->requires = $m[1];
+            }
+            if ( preg_match( '/^Requires PHP:\s*(\S+)\s*$/mi', $raw, $m ) ) {
+                $info->requires_php = $m[1];
+            }
+        }
+
+        return $info;
+    }
+
     /**
      * 插件详情弹窗数据。
      *
@@ -224,7 +301,7 @@ class WPSlug_Updater {
             $info->sections      = array_map( [ $this, 'markdown_to_html' ], $response['sections'] ?? [] );
             $info->external      = true;
 
-            return $info;
+            return $this->overlay_local_plugin_info( $info );
         }
 
         // API 不可用或插件未注册时，用本地插件头信息兜底
@@ -253,7 +330,7 @@ class WPSlug_Updater {
         ];
         $info->external     = true;
 
-        return $info;
+        return $this->overlay_local_plugin_info( $info );
     }
 
     /**

@@ -905,3 +905,32 @@ body.wenpai-ui-page .wenpai-app input.screen-reader-text {
         flex: none;
     }
 }
+
+/* Top WP notices must not squeeze the 4.0 shell (2026-10-11 review). */
+body.wpslug-admin #wpbody-content {
+  overflow-x: hidden;
+  min-width: 0;
+}
+body.wpslug-admin #wpbody-content > .notice,
+body.wpslug-admin #wpbody-content > .updated,
+body.wpslug-admin #wpbody-content > .error,
+body.wpslug-admin #wpbody-content > .fade,
+body.wpslug-admin #wpbody-content > .update-nag {
+  display: block;
+  float: none;
+  clear: both;
+  width: auto;
+  max-width: calc(100% - 64px);
+  box-sizing: border-box;
+  margin: 16px 32px 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+}
+
+/* Mobile: do not trap native select popovers (see kit wenpai-admin-wp.css). */
+@media (max-width: 782px) {
+  body.wpslug-admin #wpbody-content {
+    overflow-x: visible;
+  }
+}

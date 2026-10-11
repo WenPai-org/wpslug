@@ -92,7 +92,6 @@ class WPSlug_Converter {
             // 2. 检查 WPMind 是否可用
             if (!function_exists('wpmind_pinyin') || !function_exists('wpmind_is_available') || !wpmind_is_available()) {
                 if ($debug_mode) {
-                    error_log('[WPSlug] WPMind not available for semantic pinyin, falling back to regular pinyin');
                 }
                 return $this->convertPinyin($text, $options);
             }
@@ -100,7 +99,6 @@ class WPSlug_Converter {
             // 3. 文本长度限制（避免超时）
             if (mb_strlen($text) > 200) {
                 if ($debug_mode) {
-                    error_log('[WPSlug] Text too long for semantic pinyin, using regular pinyin');
                 }
                 return $this->convertPinyin($text, $options);
             }
@@ -115,7 +113,6 @@ class WPSlug_Converter {
             if (is_wp_error($result)) {
                 $this->settings->recordWpmindQuotaNotice($result);
                 if ($debug_mode) {
-                    error_log('[WPSlug] WPMind pinyin error: ' . $result->get_error_message());
                 }
                 return $this->convertPinyin($text, $options);
             }
@@ -125,13 +122,11 @@ class WPSlug_Converter {
 
             if (empty($slug)) {
                 if ($debug_mode) {
-                    error_log('[WPSlug] WPMind returned empty pinyin, using regular pinyin');
                 }
                 return $this->convertPinyin($text, $options);
             }
 
             if ($debug_mode) {
-                error_log('[WPSlug] Semantic pinyin: "' . $text . '" → "' . $slug . '"');
             }
 
             return $slug;

@@ -670,7 +670,6 @@ class WPSlug_Settings
             "timestamp" => current_time("mysql"),
             "message" => $message,
             "context" => $context,
-            "backtrace" => wp_debug_backtrace_summary(),
         ];
 
         $error_log = get_option("wpslug_error_log", []);
@@ -680,16 +679,7 @@ class WPSlug_Settings
             $error_log = array_slice($error_log, -100);
         }
 
-        update_option("wpslug_error_log", $error_log);
-
-        if (defined("WP_DEBUG") && WP_DEBUG) {
-            error_log(
-                "WP Slug Plugin: " .
-                    $message .
-                    " | Context: " .
-                    json_encode($context)
-            );
-        }
+        update_option("wpslug_error_log", $error_log, false);
     }
 
     /**

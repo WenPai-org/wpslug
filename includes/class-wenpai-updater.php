@@ -79,12 +79,19 @@ class WPSlug_Updater {
         $this->slug        = dirname( $plugin_file );
         $this->version     = $version;
 
-        // 检查是否被 wp-china-yes 集中更新接管
-        $is_overridden = apply_filters(
-            'wenpai_updater_override',
+        // 检查是否被 wp-china-yes / 文派集中更新接管（产品前缀 + 生态兼容别名）。
+        $is_overridden = (bool) apply_filters(
+            'wpslug_updater_override',
             false,
             $this->slug
         );
+        if ( ! $is_overridden ) {
+            $is_overridden = (bool) apply_filters(
+                'wenpai_updater_override', // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Shared WenPai ecosystem hook (china-yes / 云桥集中更新).
+                false,
+                $this->slug
+            );
+        }
 
         if ( ! $is_overridden ) {
             $this->register_hooks();

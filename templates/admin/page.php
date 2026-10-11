@@ -6,21 +6,21 @@ defined("ABSPATH") || exit();
 /** @var callable $url */
 /** @var string $section */
 /** @var array<string, array{label: string, icon: string, sub: string}> $adv_sections */
-$enabled = !empty($options["enable_conversion"]);
-$conv = isset($options["conversion_mode"]) ? (string) $options["conversion_mode"] : "pinyin";
-$types = is_array($options["enabled_post_types"] ?? null) ? $options["enabled_post_types"] : [];
-$mind = function_exists("wpmind_is_available") && wpmind_is_available();
-$modes = $this->settings->getConversionModes();
-$notice = "";
-$level = "";
+$wpslug_enabled = !empty($options["enable_conversion"]);
+$wpslug_conv = isset($options["conversion_mode"]) ? (string) $options["conversion_mode"] : "pinyin";
+$wpslug_types = is_array($options["enabled_post_types"] ?? null) ? $options["enabled_post_types"] : [];
+$wpslug_mind = function_exists("wpmind_is_available") && wpmind_is_available();
+$wpslug_modes = $this->settings->getConversionModes();
+$wpslug_notice = "";
+$wpslug_level = "";
 // phpcs:disable WordPress.Security.NonceVerification.Recommended
 if (isset($_GET["settings-updated"]) && "true" === $_GET["settings-updated"]) {
-    $notice = __("已保存。", "wpslug");
-    $level = "ok";
+    $wpslug_notice = __("已保存。", "wpslug");
+    $wpslug_level = "ok";
 }
 if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"]) {
-    $notice = __("重置前请先勾选确认。", "wpslug");
-    $level = "bad";
+    $wpslug_notice = __("重置前请先勾选确认。", "wpslug");
+    $wpslug_level = "bad";
 }
 // phpcs:enable
 ?>
@@ -47,9 +47,9 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
     </div>
   </div></div>
   <main class="wenpai-main wenpai-wrap<?php echo "help" === $tab ? " wpslug-help" : ""; ?>">
-    <?php if ("" !== $notice) : ?>
+    <?php if ("" !== $wpslug_notice) : ?>
     <div class="wenpai-notice-wrap">
-      <div class="notice <?php echo esc_attr($level); ?>"><span><?php echo esc_html($notice); ?></span></div>
+      <div class="notice <?php echo esc_attr($wpslug_level); ?>"><span><?php echo esc_html($wpslug_notice); ?></span></div>
     </div>
     <?php endif; ?>
 
@@ -61,7 +61,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
       </div>
     </div>
     <div class="wenpai-stack">
-      <?php if (!$enabled) : ?>
+      <?php if (!$wpslug_enabled) : ?>
       <div class="next">
         <span class="tile"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("flash") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
         <div>
@@ -76,28 +76,28 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
       <section class="card">
         <h2 class="section-title"><?php esc_html_e("运行状态", "wpslug"); ?></h2>
         <div class="simple-row is-static">
-          <div class="tile <?php echo $enabled ? "ok" : "warn"; ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("flash") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+          <div class="tile <?php echo $wpslug_enabled ? "ok" : "warn"; ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("flash") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
           <div>
             <div class="t"><?php esc_html_e("转换模式", "wpslug"); ?></div>
-            <div class="d"><?php echo $enabled ? esc_html($modes[$conv] ?? $conv) : esc_html__("未启用。", "wpslug"); ?></div>
+            <div class="d"><?php echo $wpslug_enabled ? esc_html($wpslug_modes[$wpslug_conv] ?? $wpslug_conv) : esc_html__("未启用。", "wpslug"); ?></div>
           </div>
-          <div class="r"><span class="pill <?php echo $enabled ? "ok" : "warn"; ?>"><?php echo $enabled ? esc_html__("已开启", "wpslug") : esc_html__("未开启", "wpslug"); ?></span></div>
+          <div class="r"><span class="pill <?php echo $wpslug_enabled ? "ok" : "warn"; ?>"><?php echo $wpslug_enabled ? esc_html__("已开启", "wpslug") : esc_html__("未开启", "wpslug"); ?></span></div>
         </div>
         <div class="simple-row is-static">
-          <div class="tile <?php echo $mind ? "ok" : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("sparkle") : ""; ?></div>
+          <div class="tile <?php echo $wpslug_mind ? "ok" : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("sparkle") : ""; ?></div>
           <div>
             <div class="t"><?php esc_html_e("文派心思", "wpslug"); ?></div>
-            <div class="d"><?php echo $mind ? esc_html__("已接通。额度在心思，这里不做充值。", "wpslug") : esc_html__("实现智能语义化拼音和多语言翻译。", "wpslug"); ?></div>
+            <div class="d"><?php echo $wpslug_mind ? esc_html__("已接通。额度在心思，这里不做充值。", "wpslug") : esc_html__("实现智能语义化拼音和多语言翻译。", "wpslug"); ?></div>
           </div>
-          <div class="r"><span class="pill <?php echo $mind ? "ok" : ""; ?>"><?php echo $mind ? esc_html__("已安装", "wpslug") : esc_html__("未安装", "wpslug"); ?></span></div>
+          <div class="r"><span class="pill <?php echo $wpslug_mind ? "ok" : ""; ?>"><?php echo $wpslug_mind ? esc_html__("已安装", "wpslug") : esc_html__("未安装", "wpslug"); ?></span></div>
         </div>
         <div class="simple-row is-static">
           <div class="tile ok"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("info") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
           <div>
             <div class="t"><?php esc_html_e("文章类型范围", "wpslug"); ?></div>
-            <div class="d"><?php echo esc_html(implode("、", $types)); ?></div>
+            <div class="d"><?php echo esc_html(implode("、", $wpslug_types)); ?></div>
           </div>
-          <div class="r"><span class="scope"><?php echo esc_html(implode(" / ", $types)); ?></span></div>
+          <div class="r"><span class="scope"><?php echo esc_html(implode(" / ", $wpslug_types)); ?></span></div>
         </div>
       </section>
     </div>
@@ -119,8 +119,8 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
     <?php if ("advanced" === $mode) : ?>
     <div class="mode wpslug-sections">
       <span class="seg">
-        <?php foreach ($adv_sections as $section_id => $meta) : ?>
-        <a class="<?php echo $section === $section_id ? "on" : ""; ?>" href="<?php echo esc_url($url("settings", ["mode" => "advanced", "section" => $section_id])); ?>"><?php echo esc_html($meta["label"]); ?></a>
+        <?php foreach ($adv_sections as $wpslug_section_id => $wpslug_meta) : ?>
+        <a class="<?php echo $section === $wpslug_section_id ? "on" : ""; ?>" href="<?php echo esc_url($url("settings", ["mode" => "advanced", "section" => $wpslug_section_id])); ?>"><?php echo esc_html($wpslug_meta["label"]); ?></a>
         <?php endforeach; ?>
       </span>
     </div>
@@ -137,28 +137,28 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
               <div class="d"><?php esc_html_e("Enable automatic slug conversion for your content", "wpslug"); ?></div>
             </div>
             <div class="r">
-              <?php $this->renderToggle("enable_conversion", "wpslug_options[enable_conversion]", $enabled); ?>
+              <?php $this->renderToggle("enable_conversion", "wpslug_options[enable_conversion]", $wpslug_enabled); ?>
             </div>
           </div>
-          <div class="wpslug-when-on"<?php echo $enabled ? "" : " hidden"; ?>>
+          <div class="wpslug-when-on"<?php echo $wpslug_enabled ? "" : " hidden"; ?>>
           <div class="field">
             <div class="field-label"><?php esc_html_e("Conversion Mode", "wpslug"); ?></div>
             <div class="field-ctl">
               <p class="hint"><?php esc_html_e("Choose local pinyin, semantic pinyin (XinSi AI), multi-language translation, or transliteration.", "wpslug"); ?></p>
               <div class="choice-cards wpslug-modes">
-                <?php foreach ($modes as $mode_id => $label) :
-                    $on = $conv === $mode_id;
+                <?php foreach ($wpslug_modes as $wpslug_mode_id => $wpslug_label) :
+                    $wpslug_on = $wpslug_conv === $wpslug_mode_id;
                     ?>
-                <label class="choice<?php echo $on ? " is-on" : ""; ?>">
-                  <input type="radio" name="wpslug_options[conversion_mode]" value="<?php echo esc_attr($mode_id); ?>" <?php checked($conv, $mode_id); ?>>
+                <label class="choice<?php echo $wpslug_on ? " is-on" : ""; ?>">
+                  <input type="radio" name="wpslug_options[conversion_mode]" value="<?php echo esc_attr($wpslug_mode_id); ?>" <?php checked($wpslug_conv, $wpslug_mode_id); ?>>
                   <span>
-                    <div class="t"><?php echo esc_html($label); ?></div>
+                    <div class="t"><?php echo esc_html($wpslug_label); ?></div>
                     <div class="d"><?php
-                    if ("pinyin" === $mode_id) {
+                    if ("pinyin" === $wpslug_mode_id) {
                         esc_html_e("插件内置组件转换", "wpslug");
-                    } elseif ("semantic_pinyin" === $mode_id) {
+                    } elseif ("semantic_pinyin" === $wpslug_mode_id) {
                         esc_html_e("不够时用本地拼音", "wpslug");
-                    } elseif ("translation" === $mode_id) {
+                    } elseif ("translation" === $wpslug_mode_id) {
                         esc_html_e("翻译为目标语言", "wpslug");
                     } else {
                         esc_html_e("外文转拉丁字母", "wpslug");
@@ -168,7 +168,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
                 </label>
                 <?php endforeach; ?>
               </div>
-              <?php if (!$mind) : ?>
+              <?php if (!$wpslug_mind) : ?>
               <div class="notice info"><span><?php esc_html_e("Install WenPai XinSi (WPMind) for semantic pinyin (XinSi AI) and multi-language translation. Until then, local pinyin remains available.", "wpslug"); ?></span></div>
               <?php endif; ?>
             </div>
@@ -207,7 +207,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
         </section>
         <?php else : ?>
         <?php
-        $renderers = [
+        $wpslug_renderers = [
             "pinyin" => "renderPinyinSettings",
             "translit" => "renderTransliterationSettings",
             "translate" => "renderTranslationSettings",
@@ -215,19 +215,19 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
             "media" => "renderMediaSettings",
             "types" => "renderAdvancedSettings",
         ];
-        foreach ($renderers as $section_id => $method) :
-            $meta = $adv_sections[$section_id];
+        foreach ($wpslug_renderers as $wpslug_section_id => $wpslug_method) :
+            $wpslug_meta = $adv_sections[$wpslug_section_id];
             ?>
-        <section class="card"<?php echo $section === $section_id ? "" : " hidden"; ?>>
+        <section class="card"<?php echo $section === $wpslug_section_id ? "" : " hidden"; ?>>
           <div class="card-head">
-            <span class="tile accent"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg($meta["icon"]) : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+            <span class="tile accent"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg($wpslug_meta["icon"]) : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
             <div>
-              <h2 class="card-title"><?php echo esc_html($meta["label"]); ?></h2>
-              <p class="card-sub"><?php echo esc_html($meta["sub"]); ?></p>
+              <h2 class="card-title"><?php echo esc_html($wpslug_meta["label"]); ?></h2>
+              <p class="card-sub"><?php echo esc_html($wpslug_meta["sub"]); ?></p>
             </div>
           </div>
-          <?php $this->{$method}($options); ?>
-          <?php if ($section === $section_id) : ?>
+          <?php $this->{$wpslug_method}($options); ?>
+          <?php if ($section === $wpslug_section_id) : ?>
           <div class="card-foot">
             <button type="submit" class="btn btn-primary"><?php esc_html_e("Save Changes", "wpslug"); ?></button>
           </div>
@@ -236,7 +236,7 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
         <?php endforeach; ?>
         <?php endif; ?>
     </form>
-    <div class="wpslug-when-on"<?php echo $enabled ? "" : " hidden"; ?>>
+    <div class="wpslug-when-on"<?php echo $wpslug_enabled ? "" : " hidden"; ?>>
     <?php $this->renderPreviewCard(); ?>
     </div>
     </div>

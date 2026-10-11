@@ -178,23 +178,34 @@ class WPSlug_Optimizer {
         $suffix = 1;
         
         while (true) {
-            $query = $wpdb->prepare("
-                SELECT ID FROM {$wpdb->posts} 
-                WHERE post_name = %s 
-                AND post_type = %s 
-                AND ID != %d
-                LIMIT 1
-            ", $slug, $post_type, $post_id);
-            
-            // $query is prepared with placeholders immediately above.
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-            if (!$wpdb->get_var($query)) {
+            $query = new WP_Query(
+                [
+                    "name" => $slug,
+                    "post_type" => $post_type,
+                    "post_status" => "any",
+                    "posts_per_page" => 5,
+                    "fields" => "ids",
+                    "no_found_rows" => true,
+                    "update_post_meta_cache" => false,
+                    "update_post_term_cache" => false,
+                ]
+            );
+            $ids = array_map("intval", $query->posts);
+            $conflict = array_values(
+                array_filter(
+                    $ids,
+                    static function ($id) use ($post_id) {
+                        return (int) $id !== (int) $post_id;
+                    }
+                )
+            );
+            if (!$conflict) {
                 break;
             }
-            
-            $slug = $original_slug . '-' . $suffix;
+
+            $slug = $original_slug . "-" . $suffix;
             $suffix++;
-            
+
             if ($suffix > 100) {
                 break;
             }

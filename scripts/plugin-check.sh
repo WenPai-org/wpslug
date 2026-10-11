@@ -18,13 +18,17 @@ if [[ "$(id -u)" -eq 0 ]]; then
   ROOT_ARGS+=(--allow-root)
 fi
 
-# WPSlug is distributed from FeiCode and deliberately uses a self-hosted
-# Update URI. The brand is established. Ignore only those WordPress.org
-# directory-policy codes; all remaining release-package errors are fatal.
+# WenPai plugins are self-hosted (updates.wenpai.net) and are NOT submitted to
+# WordPress.org. Ignore ONLY these directory-policy codes; document in packaging SOP.
+# Everything else (including warnings) fails the release gate.
+#
+# - plugin_updater_detected: intentional Update URI + includes/class-wenpai-updater.php
+# - trademarked_term: "wp" in WPSlug / wpslug — product brand; not a WP.org listing
+IGNORE_CODES="plugin_updater_detected,trademarked_term"
+
 "${WP[@]}" plugin check "$PLUGIN_SLUG" \
   --mode=update \
-  --ignore-codes=plugin_updater_detected,trademarked_term \
-  --ignore-warnings \
+  --ignore-codes="$IGNORE_CODES" \
   --exclude-directories=lib,tests,docs,scripts,vendor,node_modules,.git,.forgejo \
   --exclude-files=.ci-trigger,.wp-env.json,composer.json,composer.lock,package.json,package-lock.json,phpcs.xml.dist,phpstan.neon.dist,.gitignore,.git \
   --format=strict-table \

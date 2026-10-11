@@ -21,6 +21,13 @@ jobs:
         with:
           fetch-depth: 0
 
+
+      - name: Public docs gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/public-docs-gate.py --cwd .
+
       - name: Verify tools
         shell: bash
         run: |

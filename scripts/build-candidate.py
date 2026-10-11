@@ -64,7 +64,7 @@ def tracked_runtime_files() -> list[tuple[str, str]]:
         raise SystemExit("candidate zip missing lib/wenpai-admin-ui/")
     if "templates/admin/page.php" not in packed:
         raise SystemExit("candidate zip missing templates/admin/page.php")
-    if not any(n == "LICENSE" or n.endswith("/LICENSE") for n in names):
+    if not any(n == "LICENSE" or n.endswith("/LICENSE") for n in packed):
         raise SystemExit("candidate zip missing LICENSE")
     return sorted(entries, key=lambda item: item[1].encode("utf-8"))
 

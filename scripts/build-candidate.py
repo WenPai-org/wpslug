@@ -41,6 +41,9 @@ def git(*args: str) -> bytes:
 def is_runtime_path(name: str) -> bool:
     if name in SKIP_FILES or name.startswith(FORBIDDEN_PREFIXES):
         return False
+    # PCP hidden_files: never ship .gitkeep / other dotfiles.
+    if any(part.startswith(".") for part in name.split("/")):
+        return False
     return name in RUNTIME_FILES or name.startswith(RUNTIME_ROOTS)
 
 

@@ -29,7 +29,7 @@ IGNORE_CODES="plugin_updater_detected,trademarked_term"
 "${WP[@]}" plugin check "$PLUGIN_SLUG" \
   --mode=update \
   --ignore-codes="$IGNORE_CODES" \
-  --exclude-directories=lib,tests,docs,scripts,vendor,node_modules,.git,.forgejo \
+  --exclude-directories=lib,tests,docs,scripts,vendor,node_modules,dist,.git,.forgejo \
   --exclude-files=.ci-trigger,.wp-env.json,composer.json,composer.lock,package.json,package-lock.json,phpcs.xml.dist,phpstan.neon.dist,.gitignore,.git \
   --format=strict-table \
   "${ROOT_ARGS[@]}" \

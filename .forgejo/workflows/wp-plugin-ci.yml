@@ -14,6 +14,11 @@ jobs:
       - name: Checkout
         uses: https://github.com/actions/checkout@11d5960a326750d5838078e36cf38b85af677262
 
+
+      - name: Public docs gate
+        run: |
+          python3 scripts/public-docs-gate.py --cwd .
+
       - name: PHP Parallel Lint
         run: |
           parallel-lint --exclude vendor --exclude node_modules .

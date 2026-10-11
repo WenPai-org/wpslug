@@ -45,6 +45,11 @@ class WPSlug_Admin
         add_action("admin_head", [$this, "hideDefaultNotices"]);
         add_filter("admin_body_class", [$this, "bodyClass"]);
         add_action("admin_post_wpslug_reset", [$this, "handleReset"]);
+        add_filter(
+            "plugin_action_links_" . WPSLUG_PLUGIN_BASENAME,
+            [$this, "actionLinks"]
+        );
+        add_filter("all_plugins", [$this, "injectPluginSlug"]);
     }
 
     public function handleReset()
@@ -64,6 +69,39 @@ class WPSlug_Admin
             )
         );
         exit;
+    }
+
+
+    /**
+     * Plugins list: Settings before Deactivate.
+     *
+     * @param string[] $links Action links.
+     * @return string[]
+     */
+    public function actionLinks($links)
+    {
+        $url = admin_url("options-general.php?page=wpslug");
+        array_unshift(
+            $links,
+            '<a href="' . esc_url($url) . '">' . esc_html__("设置", "wpslug") . "</a>"
+        );
+        return $links;
+    }
+
+    /**
+     * Give the list table a slug so "View details" appears (Update URI plugins
+     * only get a slug after an update check lands in the transient).
+     *
+     * @param array<string, array<string, mixed>> $plugins Plugins.
+     * @return array<string, array<string, mixed>>
+     */
+    public function injectPluginSlug($plugins)
+    {
+        $file = WPSLUG_PLUGIN_BASENAME;
+        if (isset($plugins[$file]) && empty($plugins[$file]["slug"])) {
+            $plugins[$file]["slug"] = "wpslug";
+        }
+        return $plugins;
     }
 
     public function bodyClass($classes)
@@ -738,6 +776,9 @@ class WPSlug_Admin
             <tbody>
                 <?php foreach ($post_types as $post_type) :
                     $current = isset($mode_map[$post_type->name]) ? $mode_map[$post_type->name] : "inherit";
+                    if (!isset($features[$current])) {
+                        $current = "inherit";
+                    }
                     ?>
                     <tr>
                         <td>

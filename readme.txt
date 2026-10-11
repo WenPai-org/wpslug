@@ -2,9 +2,9 @@
 Contributors: wenpai
 Tags: slug, pinyin, transliteration, translation, media
 Requires at least: 6.0
-Tested up to: 7.1
+Tested up to: 7.2
 Requires PHP: 7.4
-Stable tag: 1.2.6
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,6 +23,22 @@ Media conversion applies only to newly uploaded filenames. Bulk conversion is an
 3. Configure it under Settings > Slug.
 
 == Changelog ==
+
+= 1.3.0 =
+* Added: wenpai-admin-ui 0.2.3 settings shell — overview / settings (simple|advanced) / tools; help is a header link, not a fourth tab.
+* Added: `wp slug` CLI — status, preview, convert [--dry-run] [--yes], doctor. Secrets print as set or empty.
+* Changed: when conversion is off, hide mode / toggles / settings preview immediately (`.wpslug-when-on`), do not disable inputs.
+* Changed: preview keeps the source title visible; alias appears only with a result; success/fail color the whole frame.
+* Changed: simple conversion mode is a one-column `.field`; without XinSi the three cards are local pinyin / multi-language translation / transliteration.
+* Changed: admin font-weight 400; hierarchy from spacing.
+* Changed: narrow header help/feedback icon-only; 782px checkbox clip and full-width tabs.
+* Changed: help page follows WPSSS structure — quick start + details accordion.
+* Changed: overview pills use 已开启/未开启 and 已安装/未安装; brand mark is Lucide feather.
+* Changed: hide core update-nag on the shell; relocate third-party top notices into main content.
+* Changed: at ≤782px, select overflow is unlocked and touch uses the system menulist.
+* Changed: content-type semantic pinyin option only when XinSi is available.
+* Changed: local pinyin / translation subcopy tightened; overview lede no longer says 可选自选.
+* Fixed: zh_CN.po/mo/l10n.php for new shell and CLI strings.
 
 = 1.2.6 =
 * Changed: translation service label to XinSi AI (Recommended) / 心思 AI（推荐）.

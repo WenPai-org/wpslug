@@ -103,6 +103,18 @@ class WPSlug_Settings
 
     public function validateOptions($options)
     {
+        if (class_exists("Wenpai_Admin_Settings")) {
+            $fw = Wenpai_Admin_Settings::get_instance($this->option_name);
+            if (null === $fw) {
+                $fw = Wenpai_Admin_Settings::register($this->option_name, $this->getSchema(), ["group" => "wpslug_settings"]);
+            }
+            return $fw->sanitize(is_array($options) ? $options : []);
+        }
+        return $this->validateOptionsLegacy($options);
+    }
+
+    public function validateOptionsLegacy($options)
+    {
         if (!is_array($options)) {
             return $this->defaults;
         }

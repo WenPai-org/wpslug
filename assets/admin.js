@@ -102,10 +102,10 @@ jQuery(document).ready(function ($) {
 
   function initSEOOptimizationToggle() {
     function toggleSEOFeatures() {
-      var seoEnabled = $("#enable_seo_optimization").is(":checked");
+      var seoEnabled = $('input[name="wpslug_options[enable_seo_optimization]"]').is(":checked");
       var pinyinFormat = $('select[name="wpslug_options[pinyin_format]"]').val();
       var conversionMode = $("#conversion_mode").val();
-      var removeStopWords = $("#remove_stop_words").is(":checked");
+      var removeStopWords = $('input[name="wpslug_options[remove_stop_words]"]').is(":checked");
 
       var isFirstLetterMode =
         conversionMode === "pinyin" && pinyinFormat === "first";
@@ -114,7 +114,7 @@ jQuery(document).ready(function ($) {
       var $seoOptions = $(
         ".wpslug-seo-dependent input, .wpslug-seo-dependent select, .wpslug-seo-dependent textarea",
       );
-      var $seoOptimizationCheckbox = $("#enable_seo_optimization");
+      var $seoOptimizationCheckbox = $('input[name="wpslug_options[enable_seo_optimization]"]');
       var $stopWordsOptions = $(
         ".wpslug-stopwords-dependent input, .wpslug-stopwords-dependent select, .wpslug-stopwords-dependent textarea",
       );
@@ -153,8 +153,8 @@ jQuery(document).ready(function ($) {
       }
     }
 
-    $(document).on("change", "#enable_seo_optimization", toggleSEOFeatures);
-    $(document).on("change", "#remove_stop_words", toggleSEOFeatures);
+    $(document).on("change", 'input[name="wpslug_options[enable_seo_optimization]"]', toggleSEOFeatures);
+    $(document).on("change", 'input[name="wpslug_options[remove_stop_words]"]', toggleSEOFeatures);
     $('select[name="wpslug_options[pinyin_format]"]').on("change", toggleSEOFeatures);
     $("#conversion_mode").on("change", toggleSEOFeatures);
     toggleSEOFeatures();
@@ -456,8 +456,8 @@ jQuery(document).ready(function ($) {
 
           $("#enable_conversion").trigger("change");
           $("#conversion_mode").trigger("change");
-          $("#enable_seo_optimization").trigger("change");
-          $("#remove_stop_words").trigger("change");
+          $('input[name="wpslug_options[enable_seo_optimization]"]').trigger("change");
+          $('input[name="wpslug_options[remove_stop_words]"]').trigger("change");
           $('select[name="wpslug_options[pinyin_format]"]').trigger("change");
           $('select[name="wpslug_options[translation_service]"]').trigger("change");
 
@@ -535,8 +535,8 @@ jQuery(document).ready(function ($) {
         hasError = true;
       }
 
-      var enableSEO = $("#enable_seo_optimization").is(":checked");
-      var removeStopWords = $("#remove_stop_words").is(":checked");
+      var enableSEO = $('input[name="wpslug_options[enable_seo_optimization]"]').is(":checked");
+      var removeStopWords = $('input[name="wpslug_options[remove_stop_words]"]').is(":checked");
       var stopWordsList = $('textarea[name="wpslug_options[stop_words_list]"]').val().trim();
 
       if (enableSEO && removeStopWords && stopWordsList === "") {
@@ -690,7 +690,7 @@ jQuery(document).ready(function ($) {
   }
 
   function initSmartDefaults() {
-    $("#remove_stop_words").on("change", function () {
+    $('input[name="wpslug_options[remove_stop_words]"]').on("change", function () {
       var isChecked = $(this).is(":checked");
       var $stopWordsList = $('textarea[name="wpslug_options[stop_words_list]"]');
 

@@ -667,6 +667,14 @@ class WPSlug_Settings
         $meta = [
             "preserve_english" => ["label" => __("Preserve English letters in mixed content", "wpslug")],
             "preserve_numbers" => ["label" => __("Preserve numbers in slugs", "wpslug")],
+            "pinyin_format" => ["type" => "select", "label" => __("Pinyin Format", "wpslug"), "desc" => __("Choose between full pinyin or first letters only. First letter mode creates very concise URLs and automatically disables SEO optimization.", "wpslug"), "choices" => ["full" => __("Full Pinyin (ni-hao)", "wpslug"), "first" => __("First Letter Only (n-h)", "wpslug")]],
+            "pinyin_separator" => ["type" => "select", "label" => __("Word Separator", "wpslug"), "desc" => __("Choose the separator between pinyin words.", "wpslug"), "choices" => ["-" => __("Dash (-)", "wpslug"), "_" => __("Underscore (_)", "wpslug"), "" => __("No Separator", "wpslug")]],
+            "media_conversion_mode" => ["type" => "select", "label" => __("Media Conversion Mode", "wpslug"), "choices" => ["normal" => __("Normal Conversion (same as content)", "wpslug"), "md5" => __("MD5 Hash (generates unique hash)", "wpslug"), "none" => __("No Conversion (keep original)", "wpslug")]],
+            "transliteration_method" => ["type" => "select", "label" => __("Transliteration Method", "wpslug"), "choices" => $this->getTransliterationMethods()],
+            "translation_service" => ["type" => "select", "label" => __("Translation Service", "wpslug"), "choices" => $this->getTranslationServices()],
+            "translation_source_lang" => ["type" => "select", "label" => __("Source Language", "wpslug"), "choices" => $this->getLanguages()],
+            "translation_target_lang" => ["type" => "select", "label" => __("Target Language", "wpslug"), "choices" => $this->getLanguages()],
+            "seo_max_words" => ["label" => __("Maximum Words", "wpslug"), "min" => 1, "max" => 30],
         ];
         $secrets = ["google_api_key", "baidu_secret_key"];
         $schema = [];
@@ -679,11 +687,14 @@ class WPSlug_Settings
                 $fn = isset($rules[$key]) ? $rules[$key] : function ($v) use ($V) { return $V::validateString($v); };
             }
             $schema[$key] = [
-                "type" => $type,
+                "type" => isset($meta[$key]["type"]) ? $meta[$key]["type"] : $type,
                 "default" => $default,
                 "secret" => in_array($key, $secrets, true),
                 "label" => isset($meta[$key]["label"]) ? $meta[$key]["label"] : $key,
                 "desc" => isset($meta[$key]["desc"]) ? $meta[$key]["desc"] : "",
+                "choices" => isset($meta[$key]["choices"]) ? $meta[$key]["choices"] : [],
+                "min" => isset($meta[$key]["min"]) ? $meta[$key]["min"] : null,
+                "max" => isset($meta[$key]["max"]) ? $meta[$key]["max"] : null,
                 "sanitize" => function ($v) use ($fn, $default) { return $fn(null === $v ? $default : $v); },
             ];
         }

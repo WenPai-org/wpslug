@@ -125,6 +125,15 @@ class WPSlug_Admin
 
     public function addAdminMenu()
     {
+        if (class_exists("Wenpai_Admin_Menu", false)) {
+            Wenpai_Admin_Menu::register([
+                "slug" => "wpslug",
+                "label" => __("Slug", "wpslug"),
+                "title" => __("WPSlug Settings", "wpslug"),
+                "render" => [$this, "displayAdminPage"],
+            ]);
+            return;
+        }
         add_options_page(
             __("WPSlug Settings", "wpslug"),
             __("Slug", "wpslug"),

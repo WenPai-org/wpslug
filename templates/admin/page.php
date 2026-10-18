@@ -24,29 +24,30 @@ if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"])
 }
 // phpcs:enable
 ?>
-<div class="wenpai-app">
-  <div class="wenpai-top"><div class="wenpai-wrap">
-    <div class="wenpai-head">
-      <a class="wenpai-brand" href="<?php echo esc_url($url("overview")); ?>">
-        <span class="wenpai-mark"><?php
-        if (class_exists("Wenpai_Admin_Icons", false)) {
-            echo Wenpai_Admin_Icons::svg("feather"); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-        }
-        ?></span>
-        <span class="wenpai-name"><?php echo esc_html(wpslug_brand_name()); ?></span>
-      </a>
-      <nav class="wenpai-tabs" aria-label="文派素格">
-        <a class="wenpai-tab<?php echo "overview" === $tab ? " is-active" : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>" href="<?php echo esc_url($url("overview")); ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("home") : ""; ?><?php esc_html_e("概览", "wpslug"); ?></a>
-        <a class="wenpai-tab<?php echo "settings" === $tab ? " is-active" : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>" href="<?php echo esc_url($url("settings")); ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("equalizer") : ""; ?><?php esc_html_e("设置", "wpslug"); ?></a>
-        <a class="wenpai-tab<?php echo "tools" === $tab ? " is-active" : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>" href="<?php echo esc_url($url("tools")); ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("server") : ""; ?><?php esc_html_e("工具", "wpslug"); ?></a>
-      </nav>
-      <div class="wenpai-head-right">
-        <a class="btn btn-ghost wenpai-head-action<?php echo "help" === $tab ? " is-active" : ""; ?>" href="<?php echo esc_url($url("help")); ?>" title="<?php echo esc_attr__("帮助", "wpslug"); ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("help") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><span class="wenpai-head-label"><?php esc_html_e("帮助", "wpslug"); ?></span></a>
-        <a class="btn btn-ghost wenpai-head-action" href="https://wpcy.com/support" target="_blank" rel="noopener" title="<?php echo esc_attr__("反馈", "wpslug"); ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("feedback") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><span class="wenpai-head-label"><?php esc_html_e("反馈", "wpslug"); ?></span></a>
-      </div>
-    </div>
-  </div></div>
-  <main class="wenpai-main wenpai-wrap<?php echo "help" === $tab ? " wpslug-help" : ""; ?>">
+<?php
+$wpslug_icon = static function ($n) {
+    return class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg($n) : "";
+};
+Wenpai_Admin_Shell::open([
+    "slug" => "wpslug",
+    "name" => wpslug_brand_name(),
+    "mark_html" => $wpslug_icon("feather"),
+    "home_url" => $url("overview"),
+    "current" => $tab,
+    "tabs" => [
+        ["id" => "overview", "label" => __("概览", "wpslug"), "url" => $url("overview"), "icon_html" => $wpslug_icon("home")],
+        ["id" => "settings", "label" => __("设置", "wpslug"), "url" => $url("settings"), "icon_html" => $wpslug_icon("equalizer")],
+        ["id" => "tools", "label" => __("工具", "wpslug"), "url" => $url("tools"), "icon_html" => $wpslug_icon("server")],
+    ],
+    "help_url" => $url("help"),
+    "help_label" => __("帮助", "wpslug"),
+    "help_icon_html" => $wpslug_icon("help"),
+    "feedback_url" => "https://wpcy.com/support",
+    "feedback_label" => __("反馈", "wpslug"),
+    "feedback_icon_html" => $wpslug_icon("feedback"),
+    "main_class" => "help" === $tab ? "wpslug-help" : "",
+]);
+?>
     <?php if ("" !== $wpslug_notice) : ?>
     <div class="wenpai-notice-wrap">
       <div class="notice <?php echo esc_attr($wpslug_level); ?>"><span><?php echo esc_html($wpslug_notice); ?></span></div>
@@ -426,9 +427,8 @@ wp slug doctor</code></pre>
     </div>
 <?php endif; ?>
 
-    <footer class="foot">
-      <span><?php echo esc_html(wpslug_plugin_name()); ?> <?php echo esc_html(WPSLUG_VERSION); ?></span>
-      <span class="r"><a href="https://wpcy.com/slug"><?php esc_html_e("Documentation", "wpslug"); ?></a></span>
-    </footer>
-  </main>
-</div>
+<?php
+Wenpai_Admin_Shell::close([
+    "version" => wpslug_plugin_name() . " " . WPSLUG_VERSION,
+    "links" => [["url" => "https://wpcy.com/slug", "label" => __("文档", "wpslug")], ["url" => "https://wpcy.com/support", "label" => __("支持", "wpslug")]],
+]);

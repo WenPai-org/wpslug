@@ -613,6 +613,53 @@ class WPSlug_Settings
         delete_option("wpslug_cache");
     }
 
+    /**
+     * Declarative schema for Wenpai_Admin_Settings (kit layer 3).
+     * Defaults come from $this->defaults; sanitize reuses WPSlug_Validator.
+     */
+    public function getSchema()
+    {
+        $V = "WPSlug_Validator";
+        $rules = [
+            "conversion_mode" => function ($v) use ($V) { return $V::validateConversionMode($v); },
+            "pinyin_separator" => function ($v) use ($V) { return $V::validateSelect($v, ["-", "_", ""], "-"); },
+            "pinyin_format" => function ($v) use ($V) { return $V::validateSelect($v, ["full", "first"], "full"); },
+            "transliteration_method" => function ($v) use ($V) { return $V::validateTransliterationMethod($v); },
+            "translation_service" => function ($v) use ($V) { return $V::validateTranslationService($v); },
+            "media_conversion_mode" => function ($v) use ($V) { return $V::validateSelect($v, ["normal", "md5", "none"], "normal"); },
+            "translation_source_lang" => function ($v) use ($V) { return $V::validateLanguageCode($v) ?: "auto"; },
+            "translation_target_lang" => function ($v) use ($V) { return $V::validateLanguageCode($v) ?: "en"; },
+            "max_length" => function ($v) use ($V) { return $V::validateInteger($v, 0, 500); },
+            "seo_max_words" => function ($v) use ($V) { return $V::validateInteger($v, 1, 30); },
+            "enabled_post_types" => function ($v) use ($V) { return $V::validatePostTypes($v); },
+            "post_type_modes" => function ($v) use ($V) { return $V::validatePostTypeModes($v); },
+            "enabled_taxonomies" => function ($v) use ($V) { return $V::validateTaxonomies($v); },
+            "stop_words_list" => function ($v) use ($V) { return $V::validateTextarea($v); },
+            "media_file_prefix" => function ($v) use ($V) { return $V::validateString($v, 50); },
+            "google_api_key" => function ($v) use ($V) { return $V::validateApiKey($v); },
+            "baidu_app_id" => function ($v) use ($V) { return $V::validateApiKey($v); },
+            "baidu_secret_key" => function ($v) use ($V) { return $V::validateApiKey($v); },
+        ];
+        $secrets = ["google_api_key", "baidu_secret_key"];
+        $schema = [];
+        foreach ($this->defaults as $key => $default) {
+            if (is_bool($default)) {
+                $type = "toggle";
+                $fn = function ($v) use ($V) { return $V::validateBoolean($v); };
+            } else {
+                $type = is_int($default) ? "number" : (is_array($default) ? "multicheck" : "text");
+                $fn = isset($rules[$key]) ? $rules[$key] : function ($v) use ($V) { return $V::validateString($v); };
+            }
+            $schema[$key] = [
+                "type" => $type,
+                "default" => $default,
+                "secret" => in_array($key, $secrets, true),
+                "sanitize" => function ($v) use ($fn, $default) { return $fn(null === $v ? $default : $v); },
+            ];
+        }
+        return $schema;
+    }
+
     public function getDefaults()
     {
         return $this->defaults;

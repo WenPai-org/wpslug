@@ -450,7 +450,7 @@ jQuery(document).ready(function ($) {
             'input[name="wpslug_options[enabled_taxonomies][]"][value="post_tag"]',
           ).prop("checked", true);
 
-          $("#stop_words_list").val(
+          $('textarea[name="wpslug_options[stop_words_list]"]').val(
             "the,a,an,and,or,but,in,on,at,to,for,of,with,by,from,up,about,into,through,during,before,after,above,below,between,among,since,without,within",
           );
 
@@ -537,7 +537,7 @@ jQuery(document).ready(function ($) {
 
       var enableSEO = $("#enable_seo_optimization").is(":checked");
       var removeStopWords = $("#remove_stop_words").is(":checked");
-      var stopWordsList = $("#stop_words_list").val().trim();
+      var stopWordsList = $('textarea[name="wpslug_options[stop_words_list]"]').val().trim();
 
       if (enableSEO && removeStopWords && stopWordsList === "") {
         showNotice(
@@ -692,7 +692,7 @@ jQuery(document).ready(function ($) {
   function initSmartDefaults() {
     $("#remove_stop_words").on("change", function () {
       var isChecked = $(this).is(":checked");
-      var $stopWordsList = $("#stop_words_list");
+      var $stopWordsList = $('textarea[name="wpslug_options[stop_words_list]"]');
 
       if (isChecked && $stopWordsList.val().trim() === "") {
         $stopWordsList.val(

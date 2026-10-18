@@ -663,6 +663,7 @@ class WPSlug_Admin
             <?php endif; ?>
         </div>
         <div class="field wpslug-seo-dependent wpslug-stopwords-dependent">
+            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("stop_words_list"); else : ?>
             <div class="field-label"><?php esc_html_e("Stop Words List", "wpslug"); ?></div>
             <div class="field-ctl">
                 <textarea name="wpslug_options[stop_words_list]"
@@ -673,6 +674,7 @@ class WPSlug_Admin
                     "wpslug"
                 ); ?></p>
             </div>
+            <?php endif; ?>
         </div>
         <?php
     }
@@ -725,6 +727,7 @@ class WPSlug_Admin
             <?php endif; ?>
         </div>
         <div class="field">
+            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("media_file_prefix"); else : ?>
             <div class="field-label"><?php esc_html_e("Media File Prefix", "wpslug"); ?></div>
             <div class="field-ctl">
                 <input type="text"
@@ -735,6 +738,7 @@ class WPSlug_Admin
                     "wpslug"
                 ); ?></p>
             </div>
+            <?php endif; ?>
         </div>
         <div class="field">
             <div class="field-label"><?php esc_html_e("Preserve Original Extension", "wpslug"); ?></div>

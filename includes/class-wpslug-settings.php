@@ -674,6 +674,8 @@ class WPSlug_Settings
             "translation_service" => ["type" => "select", "label" => __("Translation Service", "wpslug"), "choices" => $this->getTranslationServices()],
             "translation_source_lang" => ["type" => "select", "label" => __("Source Language", "wpslug"), "choices" => $this->getLanguages()],
             "translation_target_lang" => ["type" => "select", "label" => __("Target Language", "wpslug"), "choices" => $this->getLanguages()],
+            "stop_words_list" => ["type" => "textarea", "label" => __("Stop Words List", "wpslug"), "desc" => __("Comma-separated list of stop words to remove from slugs.", "wpslug")],
+            "media_file_prefix" => ["label" => __("Media File Prefix", "wpslug"), "desc" => __("Optional prefix to add to all media file names (e.g., \"img-\", \"file-\").", "wpslug")],
             "seo_max_words" => ["label" => __("Maximum Words", "wpslug"), "min" => 1, "max" => 30],
         ];
         $secrets = ["google_api_key", "baidu_secret_key"];

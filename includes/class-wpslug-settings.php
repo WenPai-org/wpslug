@@ -667,6 +667,9 @@ class WPSlug_Settings
         $meta = [
             "preserve_english" => ["label" => __("Preserve English letters in mixed content", "wpslug")],
             "preserve_numbers" => ["label" => __("Preserve numbers in slugs", "wpslug")],
+            "google_api_key" => ["secret" => true, "label" => __("API Key", "wpslug")],
+            "baidu_app_id" => ["label" => __("App ID", "wpslug")],
+            "baidu_secret_key" => ["secret" => true, "label" => __("Secret Key", "wpslug")],
             "enable_seo_optimization" => ["label" => __("Enable SEO-friendly slug optimization", "wpslug")],
             "smart_punctuation" => ["label" => __("Intelligently handle punctuation marks", "wpslug")],
             "mixed_content_optimization" => ["label" => __("Optimize mixed language and number content", "wpslug")],

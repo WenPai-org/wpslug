@@ -360,6 +360,8 @@ class WPSlug_Admin
         <div class="field">
             <div class="field-label"><?php esc_html_e("Preserve Settings", "wpslug"); ?></div>
             <div class="field-ctl">
+                <?php $wpslug_fw = (new WPSlug_Settings())->getFramework(); ?>
+                <?php if ($wpslug_fw) : $wpslug_fw->render_field("preserve_english"); $wpslug_fw->render_field("preserve_numbers"); else : ?>
                 <input type="hidden" name="wpslug_options[preserve_english]" value="0">
                 <div class="chk">
                     <label>
@@ -380,6 +382,7 @@ class WPSlug_Admin
                         <?php esc_html_e("Preserve numbers in slugs", "wpslug"); ?>
                     </label>
                 </div>
+                <?php endif; ?>
                 <p class="hint"><?php esc_html_e(
                     "Keep English letters and numbers when converting mixed language content.",
                     "wpslug"

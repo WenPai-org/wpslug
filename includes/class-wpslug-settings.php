@@ -101,6 +101,18 @@ class WPSlug_Settings
         }
     }
 
+    public function getFramework()
+    {
+        if (!class_exists("Wenpai_Admin_Settings")) {
+            return null;
+        }
+        $fw = Wenpai_Admin_Settings::get_instance($this->option_name);
+        if (null === $fw) {
+            $fw = Wenpai_Admin_Settings::register($this->option_name, $this->getSchema(), ["group" => "wpslug_settings"]);
+        }
+        return $fw;
+    }
+
     public function validateOptions($options)
     {
         if (class_exists("Wenpai_Admin_Settings")) {
@@ -652,6 +664,10 @@ class WPSlug_Settings
             "baidu_app_id" => function ($v) use ($V) { return $V::validateApiKey($v); },
             "baidu_secret_key" => function ($v) use ($V) { return $V::validateApiKey($v); },
         ];
+        $meta = [
+            "preserve_english" => ["label" => __("Preserve English letters in mixed content", "wpslug")],
+            "preserve_numbers" => ["label" => __("Preserve numbers in slugs", "wpslug")],
+        ];
         $secrets = ["google_api_key", "baidu_secret_key"];
         $schema = [];
         foreach ($this->defaults as $key => $default) {
@@ -666,6 +682,8 @@ class WPSlug_Settings
                 "type" => $type,
                 "default" => $default,
                 "secret" => in_array($key, $secrets, true),
+                "label" => isset($meta[$key]["label"]) ? $meta[$key]["label"] : $key,
+                "desc" => isset($meta[$key]["desc"]) ? $meta[$key]["desc"] : "",
                 "sanitize" => function ($v) use ($fn, $default) { return $fn(null === $v ? $default : $v); },
             ];
         }

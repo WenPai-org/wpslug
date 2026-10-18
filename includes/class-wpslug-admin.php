@@ -321,6 +321,7 @@ class WPSlug_Admin
     {
         ?>
         <div class="field">
+            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("pinyin_format"); else : ?>
             <div class="field-label"><?php esc_html_e("Pinyin Format", "wpslug"); ?></div>
             <div class="field-ctl">
                 <select name="wpslug_options[pinyin_format]" id="pinyin_format">
@@ -336,8 +337,10 @@ class WPSlug_Admin
                     "wpslug"
                 ); ?></p>
             </div>
+            <?php endif; ?>
         </div>
         <div class="field">
+            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("pinyin_separator"); else : ?>
             <div class="field-label"><?php esc_html_e("Word Separator", "wpslug"); ?></div>
             <div class="field-ctl">
                 <select name="wpslug_options[pinyin_separator]">
@@ -356,6 +359,7 @@ class WPSlug_Admin
                     "wpslug"
                 ); ?></p>
             </div>
+            <?php endif; ?>
         </div>
         <div class="field">
             <div class="field-label"><?php esc_html_e("Preserve Settings", "wpslug"); ?></div>
@@ -396,6 +400,7 @@ class WPSlug_Admin
     {
         ?>
         <div class="field">
+            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("transliteration_method"); else : ?>
             <div class="field-label"><?php esc_html_e("Transliteration Method", "wpslug"); ?></div>
             <div class="field-ctl">
                 <select name="wpslug_options[transliteration_method]">
@@ -410,6 +415,7 @@ class WPSlug_Admin
                     "wpslug"
                 ); ?></p>
             </div>
+            <?php endif; ?>
         </div>
         <?php
     }
@@ -418,6 +424,7 @@ class WPSlug_Admin
     {
         ?>
         <div class="field">
+            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("translation_service"); else : ?>
             <div class="field-label"><?php esc_html_e("Translation Service", "wpslug"); ?></div>
             <div class="field-ctl">
                 <select name="wpslug_options[translation_service]" id="translation_service">
@@ -432,8 +439,10 @@ class WPSlug_Admin
                     "wpslug"
                 ); ?></p>
             </div>
+            <?php endif; ?>
         </div>
         <div class="field">
+            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("translation_source_lang"); else : ?>
             <div class="field-label"><?php esc_html_e("Source Language", "wpslug"); ?></div>
             <div class="field-ctl">
                 <select name="wpslug_options[translation_source_lang]">
@@ -448,8 +457,10 @@ class WPSlug_Admin
                     "wpslug"
                 ); ?></p>
             </div>
+            <?php endif; ?>
         </div>
         <div class="field">
+            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("translation_target_lang"); else : ?>
             <div class="field-label"><?php esc_html_e("Target Language", "wpslug"); ?></div>
             <div class="field-ctl">
                 <select name="wpslug_options[translation_target_lang]">
@@ -464,6 +475,7 @@ class WPSlug_Admin
                     "wpslug"
                 ); ?></p>
             </div>
+            <?php endif; ?>
         </div>
         <div class="wpslug-api-sections">
             <div class="field wpslug-api-section" data-service="google">
@@ -635,6 +647,7 @@ class WPSlug_Admin
             </div>
         </div>
         <div class="field wpslug-seo-dependent wpslug-stopwords-dependent">
+            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("seo_max_words"); else : ?>
             <div class="field-label"><?php esc_html_e("Maximum Words", "wpslug"); ?></div>
             <div class="field-ctl">
                 <input type="number"
@@ -647,6 +660,7 @@ class WPSlug_Admin
                     "wpslug"
                 ); ?></p>
             </div>
+            <?php endif; ?>
         </div>
         <div class="field wpslug-seo-dependent wpslug-stopwords-dependent">
             <div class="field-label"><?php esc_html_e("Stop Words List", "wpslug"); ?></div>
@@ -689,6 +703,7 @@ class WPSlug_Admin
             </div>
         </div>
         <div class="field">
+            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("media_conversion_mode"); else : ?>
             <div class="field-label"><?php esc_html_e("Media Conversion Mode", "wpslug"); ?></div>
             <div class="field-ctl">
                 <select name="wpslug_options[media_conversion_mode]">
@@ -707,6 +722,7 @@ class WPSlug_Admin
                     "wpslug"
                 ); ?></p>
             </div>
+            <?php endif; ?>
         </div>
         <div class="field">
             <div class="field-label"><?php esc_html_e("Media File Prefix", "wpslug"); ?></div>

@@ -667,6 +667,13 @@ class WPSlug_Settings
         $meta = [
             "preserve_english" => ["label" => __("Preserve English letters in mixed content", "wpslug")],
             "preserve_numbers" => ["label" => __("Preserve numbers in slugs", "wpslug")],
+            "enable_seo_optimization" => ["label" => __("Enable SEO-friendly slug optimization", "wpslug")],
+            "smart_punctuation" => ["label" => __("Intelligently handle punctuation marks", "wpslug")],
+            "mixed_content_optimization" => ["label" => __("Optimize mixed language and number content", "wpslug")],
+            "remove_stop_words" => ["label" => __("Remove common stop words from slugs", "wpslug")],
+            "disable_file_convert" => ["label" => __("Disable automatic file name conversion for uploaded media", "wpslug")],
+            "preserve_media_extension" => ["label" => __("Always preserve the original file extension", "wpslug")],
+            "show_slug_column" => ["label" => __("Show slug column in post and page lists for easy reference", "wpslug")],
             "pinyin_format" => ["type" => "select", "label" => __("Pinyin Format", "wpslug"), "desc" => __("Choose between full pinyin or first letters only. First letter mode creates very concise URLs and automatically disables SEO optimization.", "wpslug"), "choices" => ["full" => __("Full Pinyin (ni-hao)", "wpslug"), "first" => __("First Letter Only (n-h)", "wpslug")]],
             "pinyin_separator" => ["type" => "select", "label" => __("Word Separator", "wpslug"), "desc" => __("Choose the separator between pinyin words.", "wpslug"), "choices" => ["-" => __("Dash (-)", "wpslug"), "_" => __("Underscore (_)", "wpslug"), "" => __("No Separator", "wpslug")]],
             "media_conversion_mode" => ["type" => "select", "label" => __("Media Conversion Mode", "wpslug"), "choices" => ["normal" => __("Normal Conversion (same as content)", "wpslug"), "md5" => __("MD5 Hash (generates unique hash)", "wpslug"), "none" => __("No Conversion (keep original)", "wpslug")]],

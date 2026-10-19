@@ -25,7 +25,14 @@ Media conversion applies only to newly uploaded filenames. Bulk conversion is an
 == Changelog ==
 
 = 1.3.2 =
-* Version bump to 1.3.2.
+* Changed: bundled wenpai-admin-ui 0.2.3.3 → 0.2.5; admin menu and page chrome come from the kit (Wenpai_Admin_Menu / Wenpai_Admin_Shell) instead of hand-written markup.
+* Changed: settings use a declarative schema (Wenpai_Admin_Settings); option validation delegates to the kit, with the legacy validator kept as fallback.
+* Changed: settings page renders 19 fields through the kit's render_field (selects, toggles, seo_max_words, stop_words_list, media_file_prefix), with the hand-written markup kept as fallback.
+* Changed: admin.js selects fields by name instead of id, so kit-generated ids do not break show/hide or Test API.
+* Added: schema labels for toggles and API credential fields.
+* Changed: zh_CN copy review — terms are 分类项, the separator is 连字符（-） (source string now "Hyphen (-)"), transliteration is consistently 转写 (外文转写), spaces between Chinese and Latin/digits, and the Tools page intro now says the preview is on that page.
+* Fixed: PHP test harness defines WPSLUG_PLUGIN_BASENAME and stubs WP_Query so the suite runs to completion.
+* Note: post type / taxonomy multichecks, per-post-type modes and API credential inputs stay hand-written (runtime choices; Test API button layout).
 
 = 1.3.1 =
 * Removed: leftover Yahnis Elsts plugin-update-checker and updatepulse-updater trees from the public repo; runtime stays WenPai updater (updates.wenpai.net).

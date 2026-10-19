@@ -1322,3 +1322,49 @@ msgstr "文档"
 #: templates/admin/page.php:404
 msgid "支持"
 msgstr "支持"
+
+#: includes/class-wpslug-settings.php
+msgid "Saving…"
+msgstr "正在保存…"
+
+#: includes/class-wpslug-settings.php
+msgid "The other settings were saved."
+msgstr "其余设置已保存。"
+
+#. translators: %d: total number of fields with errors.
+#: includes/class-wpslug-settings.php
+#, php-format
+msgid "and %d more"
+msgstr "等 %d 项"
+
+#: includes/class-wpslug-settings.php
+msgid "Follow the global setting"
+msgstr "跟随全局设置"
+
+#. translators: %s: what would be listed, e.g. post types.
+#: includes/class-wpslug-settings.php
+#, php-format
+msgid "No %s to choose from yet."
+msgstr "还没有可选的%s。"
+
+#. translators: 1: hidden tab label, 2: first tab label.
+#: includes/class-wpslug-settings.php
+#, php-format
+msgid "The current mode does not use the %1$s settings, so you are back on %2$s."
+msgstr "当前模式不需要%1$s的设置，已切回%2$s。"
+
+#: includes/class-wpslug-settings.php
+msgid "Working…"
+msgstr "正在处理…"
+
+#: includes/class-wpslug-settings.php
+msgid "Done."
+msgstr "已完成。"
+
+#: includes/class-wpslug-settings.php
+msgid "Could not finish the action. Please try again later."
+msgstr "暂时无法完成操作，请稍后再试。"
+
+#: includes/class-wpslug-settings.php
+msgid "Could not finish the action. Please reload the page and try again."
+msgstr "暂时无法完成操作，请刷新页面后再试。"

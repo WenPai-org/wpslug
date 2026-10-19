@@ -714,4 +714,7 @@ $page_src = file_get_contents(__DIR__ . '/../../templates/admin/page.php');
 check(strpos($page_src, '"Save Changes"') === false && substr_count($page_src, '"Save Settings"') === 2, 'every settings tab saves with Save Settings');
 check(strpos($page_src, '把本插件的设置恢复为默认值，不可撤销。') !== false, 'reset card subtitle says what is reset');
 check(strpos($fields['enabled_post_types']['desc'], 'If none are selected') !== false && strpos($fields['enabled_taxonomies']['desc'], 'If none are selected') !== false, 'post type and taxonomy hints say what none selected means');
+$kit_keys = array_keys(Wenpai_Admin_Settings::default_strings());
+$our_keys = array_keys($settings->getFrameworkStrings());
+check(array_diff($kit_keys, $our_keys) === [], 'WPSlug translates every kit string (missing: ' . implode(', ', array_diff($kit_keys, $our_keys)) . ')');
 echo "PASS: {$tests} assertions\n";

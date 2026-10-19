@@ -152,6 +152,19 @@ class WPSlug_Settings
             /* translators: %d: number of settings that were not saved. */
             "invalid" => __("Could not save %d settings. Please follow the hint under each field.", "wpslug"),
             "invalid_value" => __("This value is not valid. The previous setting was kept.", "wpslug"),
+            "saving" => __("Saving…", "wpslug"),
+            "partial_saved" => __("The other settings were saved.", "wpslug"),
+            /* translators: %d: total number of fields with errors. */
+            "invalid_more" => __("and %d more", "wpslug"),
+            "follow_global" => __("Follow the global setting", "wpslug"),
+            /* translators: %s: what would be listed, e.g. post types. */
+            "empty_choices" => __("No %s to choose from yet.", "wpslug"),
+            /* translators: 1: hidden tab label, 2: first tab label. */
+            "tab_hidden" => __("The current mode does not use the %1\$s settings, so you are back on %2\$s.", "wpslug"),
+            "action_busy" => __("Working…", "wpslug"),
+            "action_ok" => __("Done.", "wpslug"),
+            "action_failed" => __("Could not finish the action. Please try again later.", "wpslug"),
+            "action_denied" => __("Could not finish the action. Please reload the page and try again.", "wpslug"),
         ];
     }
 

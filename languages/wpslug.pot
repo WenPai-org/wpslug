@@ -1316,3 +1316,49 @@ msgstr ""
 #: wpslug.php:209
 msgid "An error occurred during plugin activation. Please check your server logs."
 msgstr ""
+
+#: includes/class-wpslug-settings.php
+msgid "Saving…"
+msgstr ""
+
+#: includes/class-wpslug-settings.php
+msgid "The other settings were saved."
+msgstr ""
+
+#. translators: %d: total number of fields with errors.
+#: includes/class-wpslug-settings.php
+#, php-format
+msgid "and %d more"
+msgstr ""
+
+#: includes/class-wpslug-settings.php
+msgid "Follow the global setting"
+msgstr ""
+
+#. translators: %s: what would be listed, e.g. post types.
+#: includes/class-wpslug-settings.php
+#, php-format
+msgid "No %s to choose from yet."
+msgstr ""
+
+#. translators: 1: hidden tab label, 2: first tab label.
+#: includes/class-wpslug-settings.php
+#, php-format
+msgid "The current mode does not use the %1$s settings, so you are back on %2$s."
+msgstr ""
+
+#: includes/class-wpslug-settings.php
+msgid "Working…"
+msgstr ""
+
+#: includes/class-wpslug-settings.php
+msgid "Done."
+msgstr ""
+
+#: includes/class-wpslug-settings.php
+msgid "Could not finish the action. Please try again later."
+msgstr ""
+
+#: includes/class-wpslug-settings.php
+msgid "Could not finish the action. Please reload the page and try again."
+msgstr ""

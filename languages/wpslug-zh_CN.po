@@ -1354,8 +1354,8 @@ msgid "The current mode does not use the %1$s settings, so you are back on %2$s.
 msgstr "当前模式不需要%1$s的设置，已切回%2$s。"
 
 #: includes/class-wpslug-settings.php
-msgid "Working…"
-msgstr "正在处理…"
+msgid "Working"
+msgstr "正在处理"
 
 #: includes/class-wpslug-settings.php
 msgid "Done."

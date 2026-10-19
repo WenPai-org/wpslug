@@ -161,7 +161,7 @@ class WPSlug_Settings
             "empty_choices" => __("No %s to choose from yet.", "wpslug"),
             /* translators: 1: hidden tab label, 2: first tab label. */
             "tab_hidden" => __("The current mode does not use the %1\$s settings, so you are back on %2\$s.", "wpslug"),
-            "action_busy" => __("Working…", "wpslug"),
+            "action_busy" => __("Working", "wpslug"),
             "action_ok" => __("Done.", "wpslug"),
             "action_failed" => __("Could not finish the action. Please try again later.", "wpslug"),
             "action_denied" => __("Could not finish the action. Please reload the page and try again.", "wpslug"),

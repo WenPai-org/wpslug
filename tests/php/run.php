@@ -717,4 +717,5 @@ check(strpos($fields['enabled_post_types']['desc'], 'If none are selected') !== 
 $kit_keys = array_keys(Wenpai_Admin_Settings::default_strings());
 $our_keys = array_keys($settings->getFrameworkStrings());
 check(array_diff($kit_keys, $our_keys) === [], 'WPSlug translates every kit string (missing: ' . implode(', ', array_diff($kit_keys, $our_keys)) . ')');
+check(substr($settings->getFrameworkStrings()['action_busy'], -3) !== '…', 'action_busy has no ellipsis (kit JS appends one)');
 echo "PASS: {$tests} assertions\n";

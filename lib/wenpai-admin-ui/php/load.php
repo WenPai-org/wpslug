@@ -62,6 +62,8 @@ if ( ! function_exists( 'wenpai_admin_ui_boot' ) ) {
 			'class-wenpai-admin-loader.php',
 			'class-wenpai-admin-shell.php',
 			'class-wenpai-admin-icons.php',
+			'class-wenpai-admin-menu.php',
+			'class-wenpai-admin-settings.php',
 		);
 		foreach ( $files as $file ) {
 			$path = $dir . $file;

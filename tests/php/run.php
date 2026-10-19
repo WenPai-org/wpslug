@@ -125,6 +125,19 @@ require WPSLUG_PLUGIN_DIR . 'includes/class-wpslug-admin.php';
 require WPSLUG_PLUGIN_DIR . 'includes/class-wpslug-cli.php';
 
 $tests = 0;
+if (!class_exists("WP_Query")) {
+    class WP_Query {
+        public $posts = [];
+        public function __construct($args = []) {
+            foreach (($GLOBALS["wpslug_posts"] ?? []) as $id => $p) {
+                if (($p->post_name ?? null) === ($args["name"] ?? null) && (empty($args["post_type"]) || ($p->post_type ?? "post") === $args["post_type"])) {
+                    $this->posts[] = (int) $id;
+                }
+            }
+        }
+    }
+}
+
 function check($condition, string $message): void {
     global $tests;
     $tests++;
@@ -524,6 +537,9 @@ $GLOBALS['wpslug_posts'][99] = (object) [
     'post_status' => 'publish',
 ];
 $GLOBALS['wpslug_post_updates'] = [];
+if (!defined("WPSLUG_PLUGIN_BASENAME")) {
+    define("WPSLUG_PLUGIN_BASENAME", "wpslug/wpslug.php");
+}
 $admin = new WPSlug_Admin();
 $admin->handleBulkAction('/wp-admin/edit.php', 'wpslug-convert', [99]);
 $admin->handleBulkAction('/wp-admin/edit.php', 'wpslug-convert', [99]);

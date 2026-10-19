@@ -227,6 +227,32 @@ class WPSlug_Admin
     }
 
     /**
+     * A kit secret field with the "Test Connection" button on the same line as
+     * its input (design review of #87). The kit has no field actions yet, so the
+     * button is placed right after the control in the kit's own markup.
+     *
+     * @param string $id      Secret field id.
+     * @param string $service Service passed to wpslug_test_api.
+     */
+    private function keyFieldWithTest($id, $service)
+    {
+        $fw = $this->fw();
+        if (!$fw) {
+            return;
+        }
+        $html   = $fw->field_html($id);
+        $button = '<button type="button" class="btn btn-secondary wpslug-test-api" data-service="' . esc_attr($service) . '">' . esc_html__("Test Connection", "wpslug") . '</button>';
+        $start  = strpos($html, '</label>');
+        $end    = strpos($html, '<p class="wenpai-field__', (false === $start) ? 0 : $start);
+        if (false === $start || false === $end) {
+            echo $html . $button; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- kit-escaped field, escaped button.
+            return;
+        }
+        $start += strlen('</label>');
+        echo substr($html, 0, $start) . '<div class="wpslug-key-row">' . substr($html, $start, $end - $start) . $button . '</div>' . substr($html, $end); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- kit-escaped field, escaped button.
+    }
+
+    /**
      * Data attributes that make a hand-written block follow a field (kit depends_on).
      *
      * @param array $depends_on Same shape as the schema key.
@@ -403,7 +429,7 @@ class WPSlug_Admin
 
     /**
      * Translation. Key fields follow translation_service through depends_on.
-     * The "Test API" buttons and the WPMind status block stay hand-written until
+     * The "Test Connection" buttons and the WPMind status block stay hand-written until
      * the kit has field actions and a read-only status field.
      */
     private function renderTranslationSettings($options)
@@ -413,19 +439,13 @@ class WPSlug_Admin
         $this->field("translation_target_lang");
         ?>
         <div class="wpslug-api-sections">
-            <?php $this->field("google_api_key"); ?>
+            <?php $this->keyFieldWithTest("google_api_key", "google"); ?>
             <div class="wpslug-api-actions"<?php echo $this->dependsAttrs(["field" => "translation_service", "value" => "google"]); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
-                <button type="button" class="btn btn-secondary wpslug-test-api" data-service="google">
-                    <?php esc_html_e("Test API", "wpslug"); ?>
-                </button>
                 <a href="https://cloud.google.com/translate/docs/setup" target="_blank" rel="noopener"><?php esc_html_e("Get API Key", "wpslug"); ?></a>
             </div>
             <?php $this->field("baidu_app_id"); ?>
-            <?php $this->field("baidu_secret_key"); ?>
+            <?php $this->keyFieldWithTest("baidu_secret_key", "baidu"); ?>
             <div class="wpslug-api-actions"<?php echo $this->dependsAttrs(["field" => "translation_service", "value" => "baidu"]); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
-                <button type="button" class="btn btn-secondary wpslug-test-api" data-service="baidu">
-                    <?php esc_html_e("Test API", "wpslug"); ?>
-                </button>
                 <a href="https://fanyi-api.baidu.com/doc/21" target="_blank" rel="noopener"><?php esc_html_e("Get API Key", "wpslug"); ?></a>
             </div>
             <div class="field wpslug-api-section"<?php echo $this->dependsAttrs(["field" => "translation_service", "value" => "wpmind"]); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
@@ -636,7 +656,7 @@ class WPSlug_Admin
                 "preview" => __("Preview", "wpslug"),
                 "converting" => __("Converting...", "wpslug"),
                 "testing" => __("Testing...", "wpslug"),
-                "test_api" => __("Test API", "wpslug"),
+                "test_api" => __("Test Connection", "wpslug"),
                 "seo_first_letter" => __(
                     "Not available with first-letter pinyin. Switch to full pinyin to turn it on.",
                     "wpslug"

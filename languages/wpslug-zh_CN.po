@@ -80,8 +80,8 @@ msgstr "高级"
 
 #: templates/admin/page.php:166
 #: templates/admin/page.php:196
-msgid "Save Changes"
-msgstr "保存更改"
+msgid "Save Settings"
+msgstr "保存设置"
 
 #: templates/admin/page.php:228
 #: templates/admin/page.php:241
@@ -228,8 +228,8 @@ msgstr "API 密钥"
 #: includes/class-wpslug-admin.php:419
 #: includes/class-wpslug-admin.php:427
 #: includes/class-wpslug-admin.php:639
-msgid "Test API"
-msgstr "测试 API"
+msgid "Test Connection"
+msgstr "测试连接"
 
 #: includes/class-wpslug-settings.php:756
 msgid "Enter your Google Translate API key."
@@ -369,16 +369,16 @@ msgid "Post Types"
 msgstr "文章类型"
 
 #: includes/class-wpslug-settings.php:773
-msgid "Select post types to apply slug conversion."
-msgstr "选择要应用别名转换的文章类型。"
+msgid "Select post types to apply slug conversion. If none are selected, every post type is converted."
+msgstr "选择要应用别名转换的文章类型。都不勾时，所有文章类型都会转换。"
 
 #: includes/class-wpslug-settings.php:788
 msgid "Taxonomies"
 msgstr "分类法"
 
 #: includes/class-wpslug-settings.php:789
-msgid "Select taxonomies to apply slug conversion."
-msgstr "选择要应用别名转换的分类法。"
+msgid "Select taxonomies to apply slug conversion. If none are selected, every taxonomy is converted."
+msgstr "选择要应用别名转换的分类法。都不勾时，所有分类法都会转换。"
 
 #: includes/class-wpslug-settings.php:796
 msgid "Show slug column in post and page lists for easy reference"
@@ -1047,8 +1047,8 @@ msgid "本页可直接预览别名，不写进文章。重置是危险动作，�
 msgstr "本页可直接预览别名，不写进文章。重置是危险动作，要先勾选确认。"
 
 #: templates/admin/page.php:229
-msgid "不可恢复。"
-msgstr "不可恢复。"
+msgid "把本插件的设置恢复为默认值，不可撤销。"
+msgstr "把本插件的设置恢复为默认值，不可撤销。"
 
 #: templates/admin/page.php:237
 msgid "这会清掉本插件的设置，不清文章别名。"

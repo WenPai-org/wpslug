@@ -770,7 +770,7 @@ class WPSlug_Settings
             "enabled_post_types" => [
                 "type" => "multiselect",
                 "label" => __("Post Types", "wpslug"),
-                "desc" => __("Select post types to apply slug conversion.", "wpslug"),
+                "desc" => __("Select post types to apply slug conversion. If none are selected, every post type is converted.", "wpslug"),
                 "choices" => $post_types,
             ],
             "post_type_modes" => [
@@ -786,7 +786,7 @@ class WPSlug_Settings
             "enabled_taxonomies" => [
                 "type" => "multiselect",
                 "label" => __("Taxonomies", "wpslug"),
-                "desc" => __("Select taxonomies to apply slug conversion.", "wpslug"),
+                "desc" => __("Select taxonomies to apply slug conversion. If none are selected, every taxonomy is converted.", "wpslug"),
                 "choices" => $taxonomies,
             ],
             "disable_file_convert" => ["label" => __("Disable automatic file name conversion for uploaded media", "wpslug"), "desc" => __("When checked, media files will not be converted automatically.", "wpslug")],

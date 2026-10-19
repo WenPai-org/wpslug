@@ -701,4 +701,17 @@ $load_at = strpos($main030, 'require_once WPSLUG_PLUGIN_DIR . "lib/wenpai-admin-
 check($load_at !== false && $load_at < strpos($main030, 'class WPSlug'), 'kit load.php is required at plugin load time so its plugins_loaded@1 boot runs before options.php saves');
 check(strpos($tpl030, 'renderToggle') === false && strpos($tpl030, 'wpslug-when-on') === false, 'old toggle buttons and when-on wrappers are gone');
 
+
+// Design review of #87: Test Connection sits on the key input's line; wording.
+$key_row = new ReflectionMethod($admin030, 'keyFieldWithTest');
+$key_row->setAccessible(true);
+ob_start();
+$key_row->invoke($admin030, 'google_api_key', 'google');
+$key_html = ob_get_clean();
+check(preg_match('~<div class="wpslug-key-row">.*type="password"[^>]*><button type="button" class="btn btn-secondary wpslug-test-api" data-service="google">Test Connection</button></div><p class="wenpai-field__~s', $key_html) === 1, 'Test Connection button shares a row with the Google key input, before the field notes');
+check(strpos($key_html, '__wenpai_clear') !== false && strpos($key_html, 'saved-google-key') === false, 'key row keeps the kit secret state and never echoes the key');
+$page_src = file_get_contents(__DIR__ . '/../../templates/admin/page.php');
+check(strpos($page_src, '"Save Changes"') === false && substr_count($page_src, '"Save Settings"') === 2, 'every settings tab saves with Save Settings');
+check(strpos($page_src, '把本插件的设置恢复为默认值，不可撤销。') !== false, 'reset card subtitle says what is reset');
+check(strpos($fields['enabled_post_types']['desc'], 'If none are selected') !== false && strpos($fields['enabled_taxonomies']['desc'], 'If none are selected') !== false, 'post type and taxonomy hints say what none selected means');
 echo "PASS: {$tests} assertions\n";

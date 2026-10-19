@@ -937,3 +937,24 @@ body.wpslug-admin #wpbody-content > .update-nag {
     overflow-x: visible;
   }
 }
+
+/* Test Connection sits on the same line as its key input. */
+body.wenpai-ui-page .wenpai-app .wpslug-key-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+body.wenpai-ui-page .wenpai-app .wpslug-key-row > .wenpai-control,
+body.wenpai-ui-page .wenpai-app .wpslug-key-row > input,
+body.wenpai-ui-page .wenpai-app .wpslug-key-row > span {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+body.wenpai-ui-page .wenpai-app .wpslug-key-row > input {
+    width: auto;
+    max-width: none;
+}
+body.wenpai-ui-page .wenpai-app .wpslug-key-row .wpslug-test-api {
+    flex: 0 0 auto;
+    margin-left: 0;
+}

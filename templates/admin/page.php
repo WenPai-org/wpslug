@@ -163,7 +163,7 @@ Wenpai_Admin_Shell::open([
           <?php $this->renderSwitchRow("force_lowercase"); ?>
           </div>
           <div class="card-foot">
-            <button type="submit" class="btn btn-primary"><?php esc_html_e("Save Changes", "wpslug"); ?></button>
+            <button type="submit" class="btn btn-primary"><?php esc_html_e("Save Settings", "wpslug"); ?></button>
           </div>
         </section>
         <?php else : ?>
@@ -193,7 +193,7 @@ Wenpai_Admin_Shell::open([
           <?php $this->{$wpslug_method}($options); ?>
           <?php if ($section === $wpslug_section_id) : ?>
           <div class="card-foot">
-            <button type="submit" class="btn btn-primary"><?php esc_html_e("Save Changes", "wpslug"); ?></button>
+            <button type="submit" class="btn btn-primary"><?php esc_html_e("Save Settings", "wpslug"); ?></button>
           </div>
           <?php endif; ?>
         </section>
@@ -226,7 +226,7 @@ Wenpai_Admin_Shell::open([
           <span class="tile bad"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("info") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
           <div>
             <h2 class="card-title"><?php esc_html_e("Reset to Defaults", "wpslug"); ?></h2>
-            <p class="card-sub"><?php esc_html_e("不可恢复。", "wpslug"); ?></p>
+            <p class="card-sub"><?php esc_html_e("把本插件的设置恢复为默认值，不可撤销。", "wpslug"); ?></p>
           </div>
         </div>
         <form method="post" action="<?php echo esc_url(admin_url("admin-post.php")); ?>">

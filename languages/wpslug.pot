@@ -145,7 +145,7 @@ msgstr ""
 #: includes/class-wpslug-admin.php:419
 #: includes/class-wpslug-admin.php:427
 #: includes/class-wpslug-admin.php:639
-msgid "Test API"
+msgid "Test Connection"
 msgstr ""
 
 #: includes/class-wpslug-admin.php:421
@@ -784,7 +784,7 @@ msgid "Post Types"
 msgstr ""
 
 #: includes/class-wpslug-settings.php:773
-msgid "Select post types to apply slug conversion."
+msgid "Select post types to apply slug conversion. If none are selected, every post type is converted."
 msgstr ""
 
 #: includes/class-wpslug-settings.php:778
@@ -808,7 +808,7 @@ msgid "Taxonomies"
 msgstr ""
 
 #: includes/class-wpslug-settings.php:789
-msgid "Select taxonomies to apply slug conversion."
+msgid "Select taxonomies to apply slug conversion. If none are selected, every taxonomy is converted."
 msgstr ""
 
 #: includes/class-wpslug-settings.php:792
@@ -1066,7 +1066,7 @@ msgstr ""
 
 #: templates/admin/page.php:166
 #: templates/admin/page.php:196
-msgid "Save Changes"
+msgid "Save Settings"
 msgstr ""
 
 #: templates/admin/page.php:219
@@ -1079,7 +1079,7 @@ msgid "Reset to Defaults"
 msgstr ""
 
 #: templates/admin/page.php:229
-msgid "不可恢复。"
+msgid "把本插件的设置恢复为默认值，不可撤销。"
 msgstr ""
 
 #: templates/admin/page.php:236

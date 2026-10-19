@@ -203,22 +203,64 @@ class WPSlug_Admin
 
 
     /**
-     * Kit switch. The visible control is a button; the checkbox is what the form saves.
+     * The kit settings instance. The kit is vendored in lib/ and always loaded
+     * (the page shell needs it too), so there is no hand-written fallback.
      *
-     * @param string $id   Checkbox id. The button points at it with data-for.
-     * @param string $name Option input name.
-     * @param bool   $on   Current value.
+     * @return Wenpai_Admin_Settings|null
      */
-    private function renderToggle($id, $name, $on)
+    private function fw()
     {
-        $on_label = __("已开启", "wpslug");
-        $off_label = __("未开启", "wpslug");
+        return $this->settings->getFramework();
+    }
+
+    /**
+     * Echo one framework field.
+     *
+     * @param string $id Field id.
+     */
+    private function field($id)
+    {
+        $fw = $this->fw();
+        if ($fw) {
+            $fw->render_field($id);
+        }
+    }
+
+    /**
+     * Data attributes that make a hand-written block follow a field (kit depends_on).
+     *
+     * @param array $depends_on Same shape as the schema key.
+     * @return string Leading space included, or ''.
+     */
+    private function dependsAttrs(array $depends_on)
+    {
+        $fw = $this->fw();
+        return $fw ? $fw->depends_on_attrs($depends_on) : "";
+    }
+
+    /**
+     * Simple-page row: title and description on the left, the kit switch on the right.
+     *
+     * @param string $id Toggle field id.
+     */
+    private function renderSwitchRow($id)
+    {
+        $fw = $this->fw();
+        if (!$fw) {
+            return;
+        }
+        $f = $fw->fields()[$id];
+        $rid = "wpslug-row-" . $id;
         ?>
-        <input type="hidden" name="<?php echo esc_attr($name); ?>" value="0">
-        <input type="checkbox" id="<?php echo esc_attr($id); ?>" name="<?php echo esc_attr($name); ?>" value="1" class="screen-reader-text" <?php checked($on); ?>>
-        <button type="button" class="toggle<?php echo $on ? " on" : ""; ?>" data-for="<?php echo esc_attr($id); ?>" data-on="<?php echo esc_attr($on_label); ?>" data-off="<?php echo esc_attr($off_label); ?>" aria-pressed="<?php echo $on ? "true" : "false"; ?>">
-          <i></i> <?php echo esc_html($on ? $on_label : $off_label); ?>
-        </button>
+          <div class="simple-row"<?php echo $this->dependsAttrs((array) $f["depends_on"]); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts. ?>>
+            <div>
+              <div class="t" id="<?php echo esc_attr($rid); ?>-t"><?php echo esc_html($f["label"]); ?></div>
+              <div class="d" id="<?php echo esc_attr($rid); ?>-d"><?php echo esc_html($f["desc"]); ?></div>
+            </div>
+            <div class="r">
+              <?php $fw->render_control($id, ["labelledby" => $rid . "-t", "describedby" => $rid . "-d"]); ?>
+            </div>
+          </div>
         <?php
     }
 
@@ -304,6 +346,10 @@ class WPSlug_Admin
                 "sub" => __("哪些文章类型和分类法参与转换。", "wpslug"),
             ],
         ];
+        $adv_sections = array_intersect_key(
+            $adv_sections,
+            array_flip($this->visibleSections($options))
+        );
         if (!isset($adv_sections[$section])) {
             $section = "pinyin";
         }
@@ -317,217 +363,72 @@ class WPSlug_Admin
         include WPSLUG_PLUGIN_DIR . "templates/admin/page.php";
     }
 
+    /**
+     * Advanced sections shown for the saved settings. Decided on the server
+     * from saved values (no live switching): transliteration only when it is
+     * the global mode; translation when it is the global mode or a post type
+     * uses multi-language translation. Pinyin is the fallback of every mode,
+     * so it always shows. Fields of a section that is not shown are not in the
+     * form, and validateOptions() keeps their saved values.
+     *
+     * @param array $options Saved options.
+     * @return string[] Section ids.
+     */
+    public function visibleSections($options)
+    {
+        $mode = isset($options["conversion_mode"]) ? (string) $options["conversion_mode"] : "pinyin";
+        $map = isset($options["post_type_modes"]) && is_array($options["post_type_modes"]) ? $options["post_type_modes"] : [];
+        $ids = ["pinyin"];
+        if ("transliteration" === $mode) {
+            $ids[] = "translit";
+        }
+        if ("translation" === $mode || in_array("seo_slug", $map, true)) {
+            $ids[] = "translate";
+        }
+        return array_merge($ids, ["seo", "media", "types"]);
+    }
+
     private function renderPinyinSettings($options)
     {
-        ?>
-        <div class="field">
-            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("pinyin_format"); else : ?>
-            <div class="field-label"><?php esc_html_e("Pinyin Format", "wpslug"); ?></div>
-            <div class="field-ctl">
-                <select name="wpslug_options[pinyin_format]" id="pinyin_format">
-                    <option value="full" <?php selected($options["pinyin_format"], "full"); ?>>
-                        <?php esc_html_e("Full Pinyin (ni-hao)", "wpslug"); ?>
-                    </option>
-                    <option value="first" <?php selected($options["pinyin_format"], "first"); ?>>
-                        <?php esc_html_e("First Letter Only (n-h)", "wpslug"); ?>
-                    </option>
-                </select>
-                <p class="hint"><?php esc_html_e(
-                    "Choose between full pinyin or first letters only. First letter mode creates very concise URLs and automatically disables SEO optimization.",
-                    "wpslug"
-                ); ?></p>
-            </div>
-            <?php endif; ?>
-        </div>
-        <div class="field">
-            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("pinyin_separator"); else : ?>
-            <div class="field-label"><?php esc_html_e("Word Separator", "wpslug"); ?></div>
-            <div class="field-ctl">
-                <select name="wpslug_options[pinyin_separator]">
-                    <option value="-" <?php selected($options["pinyin_separator"], "-"); ?>>
-                        <?php esc_html_e("Hyphen (-)", "wpslug"); ?>
-                    </option>
-                    <option value="_" <?php selected($options["pinyin_separator"], "_"); ?>>
-                        <?php esc_html_e("Underscore (_)", "wpslug"); ?>
-                    </option>
-                    <option value="" <?php selected($options["pinyin_separator"], ""); ?>>
-                        <?php esc_html_e("No Separator", "wpslug"); ?>
-                    </option>
-                </select>
-                <p class="hint"><?php esc_html_e(
-                    "Choose the separator between pinyin words.",
-                    "wpslug"
-                ); ?></p>
-            </div>
-            <?php endif; ?>
-        </div>
-        <div class="field">
-            <div class="field-label"><?php esc_html_e("Preserve Settings", "wpslug"); ?></div>
-            <div class="field-ctl">
-                <?php $wpslug_fw = (new WPSlug_Settings())->getFramework(); ?>
-                <?php if ($wpslug_fw) : $wpslug_fw->render_field("preserve_english"); $wpslug_fw->render_field("preserve_numbers"); else : ?>
-                <input type="hidden" name="wpslug_options[preserve_english]" value="0">
-                <div class="chk">
-                    <label>
-                        <input type="checkbox"
-                               name="wpslug_options[preserve_english]"
-                               value="1"
-                               <?php checked(1, $options["preserve_english"]); ?>>
-                        <?php esc_html_e("Preserve English letters in mixed content", "wpslug"); ?>
-                    </label>
-                </div>
-                <input type="hidden" name="wpslug_options[preserve_numbers]" value="0">
-                <div class="chk">
-                    <label>
-                        <input type="checkbox"
-                               name="wpslug_options[preserve_numbers]"
-                               value="1"
-                               <?php checked(1, $options["preserve_numbers"]); ?>>
-                        <?php esc_html_e("Preserve numbers in slugs", "wpslug"); ?>
-                    </label>
-                </div>
-                <?php endif; ?>
-                <p class="hint"><?php esc_html_e(
-                    "Keep English letters and numbers when converting mixed language content.",
-                    "wpslug"
-                ); ?></p>
-            </div>
-        </div>
-        <?php
+        $this->field("pinyin_format");
+        $this->field("pinyin_separator");
+        $this->field("preserve_english");
+        $this->field("preserve_numbers");
     }
 
     private function renderTransliterationSettings($options)
     {
-        ?>
-        <div class="field">
-            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("transliteration_method"); else : ?>
-            <div class="field-label"><?php esc_html_e("Transliteration Method", "wpslug"); ?></div>
-            <div class="field-ctl">
-                <select name="wpslug_options[transliteration_method]">
-                    <?php foreach ($this->settings->getTransliterationMethods() as $method => $label) : ?>
-                        <option value="<?php echo esc_attr($method); ?>" <?php selected($options["transliteration_method"], $method); ?>>
-                            <?php echo esc_html($label); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-                <p class="hint"><?php esc_html_e(
-                    "Choose the transliteration method. iconv and Intl provide better accuracy if available.",
-                    "wpslug"
-                ); ?></p>
-            </div>
-            <?php endif; ?>
-        </div>
-        <?php
+        $this->field("transliteration_method");
     }
 
+    /**
+     * Translation. Key fields follow translation_service through depends_on.
+     * The "Test API" buttons and the WPMind status block stay hand-written until
+     * the kit has field actions and a read-only status field.
+     */
     private function renderTranslationSettings($options)
     {
+        $this->field("translation_service");
+        $this->field("translation_source_lang");
+        $this->field("translation_target_lang");
         ?>
-        <div class="field">
-            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("translation_service"); else : ?>
-            <div class="field-label"><?php esc_html_e("Translation Service", "wpslug"); ?></div>
-            <div class="field-ctl">
-                <select name="wpslug_options[translation_service]" id="translation_service">
-                    <?php foreach ($this->settings->getTranslationServices() as $service => $label) : ?>
-                        <option value="<?php echo esc_attr($service); ?>" <?php selected($options["translation_service"], $service); ?>>
-                            <?php echo esc_html($label); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-                <p class="hint"><?php esc_html_e(
-                    "Choose translation service. Useful for non-English content to generate English slugs.",
-                    "wpslug"
-                ); ?></p>
-            </div>
-            <?php endif; ?>
-        </div>
-        <div class="field">
-            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("translation_source_lang"); else : ?>
-            <div class="field-label"><?php esc_html_e("Source Language", "wpslug"); ?></div>
-            <div class="field-ctl">
-                <select name="wpslug_options[translation_source_lang]">
-                    <?php foreach ($this->settings->getLanguages() as $lang => $label) : ?>
-                        <option value="<?php echo esc_attr($lang); ?>" <?php selected($options["translation_source_lang"], $lang); ?>>
-                            <?php echo esc_html($label); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-                <p class="hint"><?php esc_html_e(
-                    "Source language for translation. Auto-detect is recommended.",
-                    "wpslug"
-                ); ?></p>
-            </div>
-            <?php endif; ?>
-        </div>
-        <div class="field">
-            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("translation_target_lang"); else : ?>
-            <div class="field-label"><?php esc_html_e("Target Language", "wpslug"); ?></div>
-            <div class="field-ctl">
-                <select name="wpslug_options[translation_target_lang]">
-                    <?php foreach ($this->settings->getLanguages() as $lang => $label) : ?>
-                        <option value="<?php echo esc_attr($lang); ?>" <?php selected($options["translation_target_lang"], $lang); ?>>
-                            <?php echo esc_html($label); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-                <p class="hint"><?php esc_html_e(
-                    "Target language for translation. English is recommended for SEO.",
-                    "wpslug"
-                ); ?></p>
-            </div>
-            <?php endif; ?>
-        </div>
         <div class="wpslug-api-sections">
-            <div class="field wpslug-api-section" data-service="google">
-                <div class="field-label"><?php esc_html_e("API Key", "wpslug"); ?></div>
-                <div class="field-ctl">
-                    <div class="field-ctl-row">
-                        <input type="password"
-                               name="wpslug_options[google_api_key]"
-                               value="<?php echo esc_attr($options["google_api_key"]); ?>"
-                               autocomplete="new-password">
-                        <button type="button" class="btn btn-secondary wpslug-test-api" data-service="google">
-                            <?php esc_html_e("Test API", "wpslug"); ?>
-                        </button>
-                    </div>
-                    <p class="hint">
-                        <?php esc_html_e("Enter your Google Translate API key.", "wpslug"); ?>
-                        <a href="https://cloud.google.com/translate/docs/setup" target="_blank">
-                            <?php esc_html_e("Get API Key", "wpslug"); ?>
-                        </a>
-                    </p>
-                </div>
+            <?php $this->field("google_api_key"); ?>
+            <div class="wpslug-api-actions"<?php echo $this->dependsAttrs(["field" => "translation_service", "value" => "google"]); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+                <button type="button" class="btn btn-secondary wpslug-test-api" data-service="google">
+                    <?php esc_html_e("Test API", "wpslug"); ?>
+                </button>
+                <a href="https://cloud.google.com/translate/docs/setup" target="_blank" rel="noopener"><?php esc_html_e("Get API Key", "wpslug"); ?></a>
             </div>
-            <div class="field wpslug-api-section" data-service="baidu">
-                <div class="field-label"><?php esc_html_e("App ID", "wpslug"); ?></div>
-                <div class="field-ctl">
-                    <input type="text"
-                           name="wpslug_options[baidu_app_id]"
-                           value="<?php echo esc_attr($options["baidu_app_id"]); ?>">
-                    <p class="hint"><?php esc_html_e("Enter your Baidu Translate App ID.", "wpslug"); ?></p>
-                </div>
+            <?php $this->field("baidu_app_id"); ?>
+            <?php $this->field("baidu_secret_key"); ?>
+            <div class="wpslug-api-actions"<?php echo $this->dependsAttrs(["field" => "translation_service", "value" => "baidu"]); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+                <button type="button" class="btn btn-secondary wpslug-test-api" data-service="baidu">
+                    <?php esc_html_e("Test API", "wpslug"); ?>
+                </button>
+                <a href="https://fanyi-api.baidu.com/doc/21" target="_blank" rel="noopener"><?php esc_html_e("Get API Key", "wpslug"); ?></a>
             </div>
-            <div class="field wpslug-api-section" data-service="baidu">
-                <div class="field-label"><?php esc_html_e("Secret Key", "wpslug"); ?></div>
-                <div class="field-ctl">
-                    <div class="field-ctl-row">
-                        <input type="password"
-                               name="wpslug_options[baidu_secret_key]"
-                               value="<?php echo esc_attr($options["baidu_secret_key"]); ?>"
-                               autocomplete="new-password">
-                        <button type="button" class="btn btn-secondary wpslug-test-api" data-service="baidu">
-                            <?php esc_html_e("Test API", "wpslug"); ?>
-                        </button>
-                    </div>
-                    <p class="hint">
-                        <?php esc_html_e("Enter your Baidu Translate Secret Key.", "wpslug"); ?>
-                        <a href="https://fanyi-api.baidu.com/doc/21" target="_blank">
-                            <?php esc_html_e("Get API Key", "wpslug"); ?>
-                        </a>
-                    </p>
-                </div>
-            </div>
-            <div class="field wpslug-api-section" data-service="wpmind">
+            <div class="field wpslug-api-section"<?php echo $this->dependsAttrs(["field" => "translation_service", "value" => "wpmind"]); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
                 <div class="field-label"><?php esc_html_e("WenPai XinSi (WPMind)", "wpslug"); ?></div>
                 <div class="field-ctl">
                     <div class="wpslug-wpmind-status">
@@ -555,7 +456,7 @@ class WPSlug_Admin
                                 "Install WenPai XinSi (WPMind) for semantic pinyin (XinSi AI) and multi-language translation. Until then, local pinyin remains available.",
                                 "wpslug"
                             ); ?>
-                            <a href="https://wpcy.com/mind/" target="_blank"><?php esc_html_e("Learn more", "wpslug"); ?></a>
+                            <a href="https://wpcy.com/mind/" target="_blank" rel="noopener"><?php esc_html_e("Learn more", "wpslug"); ?></a>
                         </p>
                     <?php endif; ?>
                     </div>
@@ -565,327 +466,36 @@ class WPSlug_Admin
         <?php
     }
 
+    /**
+     * SEO. The group is disabled (not hidden) by several conditions, which the
+     * kit's depends_on cannot express yet, so admin.js keeps that part.
+     */
     private function renderSEOSettings($options)
     {
+        $this->field("enable_seo_optimization");
         ?>
-        <div class="field">
-            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("enable_seo_optimization"); else : ?>
-            <div class="field-label"><?php esc_html_e("Enable SEO Optimization", "wpslug"); ?></div>
-            <div class="field-ctl">
-                <input type="hidden" name="wpslug_options[enable_seo_optimization]" value="0">
-                <div class="chk">
-                    <label>
-                        <input type="checkbox"
-                               name="wpslug_options[enable_seo_optimization]"
-                               value="1"
-                               id="enable_seo_optimization"
-                               <?php checked(1, $options["enable_seo_optimization"]); ?>>
-                        <?php esc_html_e("Enable SEO-friendly slug optimization", "wpslug"); ?>
-                    </label>
-                </div>
-                <p class="hint"><?php esc_html_e(
-                    "Apply SEO best practices to generated slugs.",
-                    "wpslug"
-                ); ?></p>
-            </div>
-            <?php endif; ?>
-        </div>
-        <div class="field wpslug-seo-dependent">
-            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("smart_punctuation"); else : ?>
-            <div class="field-label"><?php esc_html_e("Smart Punctuation", "wpslug"); ?></div>
-            <div class="field-ctl">
-                <input type="hidden" name="wpslug_options[smart_punctuation]" value="0">
-                <div class="chk">
-                    <label>
-                        <input type="checkbox"
-                               name="wpslug_options[smart_punctuation]"
-                               value="1"
-                               <?php checked(1, $options["smart_punctuation"]); ?>>
-                        <?php esc_html_e("Intelligently handle punctuation marks", "wpslug"); ?>
-                    </label>
-                </div>
-                <p class="hint"><?php esc_html_e(
-                    "Convert colons, semicolons, and other punctuation to hyphens or remove them.",
-                    "wpslug"
-                ); ?></p>
-            </div>
-            <?php endif; ?>
-        </div>
-        <div class="field wpslug-seo-dependent">
-            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("mixed_content_optimization"); else : ?>
-            <div class="field-label"><?php esc_html_e("Mixed Content Optimization", "wpslug"); ?></div>
-            <div class="field-ctl">
-                <input type="hidden" name="wpslug_options[mixed_content_optimization]" value="0">
-                <div class="chk">
-                    <label>
-                        <input type="checkbox"
-                               name="wpslug_options[mixed_content_optimization]"
-                               value="1"
-                               <?php checked(1, $options["mixed_content_optimization"]); ?>>
-                        <?php esc_html_e("Optimize mixed language and number content", "wpslug"); ?>
-                    </label>
-                </div>
-                <p class="hint"><?php esc_html_e(
-                    "Better handling of content mixing languages with numbers and English text.",
-                    "wpslug"
-                ); ?></p>
-            </div>
-            <?php endif; ?>
-        </div>
-        <div class="field wpslug-seo-dependent">
-            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("remove_stop_words"); else : ?>
-            <div class="field-label"><?php esc_html_e("Remove Stop Words", "wpslug"); ?></div>
-            <div class="field-ctl">
-                <input type="hidden" name="wpslug_options[remove_stop_words]" value="0">
-                <div class="chk">
-                    <label>
-                        <input type="checkbox"
-                               name="wpslug_options[remove_stop_words]"
-                               value="1"
-                               id="remove_stop_words"
-                               <?php checked(1, $options["remove_stop_words"]); ?>>
-                        <?php esc_html_e("Remove common stop words from slugs", "wpslug"); ?>
-                    </label>
-                </div>
-                <p class="hint"><?php esc_html_e(
-                    'Remove words like "the", "a", "an", "and", etc. to create cleaner slugs.',
-                    "wpslug"
-                ); ?></p>
-            </div>
-            <?php endif; ?>
-        </div>
-        <div class="field wpslug-seo-dependent wpslug-stopwords-dependent">
-            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("seo_max_words"); else : ?>
-            <div class="field-label"><?php esc_html_e("Maximum Words", "wpslug"); ?></div>
-            <div class="field-ctl">
-                <input type="number"
-                       name="wpslug_options[seo_max_words]"
-                       value="<?php echo esc_attr($options["seo_max_words"]); ?>"
-                       min="1"
-                       max="30">
-                <p class="hint"><?php esc_html_e(
-                    "Maximum number of words to keep in slug for SEO optimization.",
-                    "wpslug"
-                ); ?></p>
-            </div>
-            <?php endif; ?>
-        </div>
-        <div class="field wpslug-seo-dependent wpslug-stopwords-dependent">
-            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("stop_words_list"); else : ?>
-            <div class="field-label"><?php esc_html_e("Stop Words List", "wpslug"); ?></div>
-            <div class="field-ctl">
-                <textarea name="wpslug_options[stop_words_list]"
-                          rows="3"
-                          id="stop_words_list"><?php echo esc_textarea($options["stop_words_list"]); ?></textarea>
-                <p class="hint"><?php esc_html_e(
-                    "Comma-separated list of stop words to remove from slugs.",
-                    "wpslug"
-                ); ?></p>
-            </div>
-            <?php endif; ?>
-        </div>
+        <div class="wpslug-seo-dependent"><?php $this->field("smart_punctuation"); ?></div>
+        <div class="wpslug-seo-dependent"><?php $this->field("mixed_content_optimization"); ?></div>
+        <div class="wpslug-seo-dependent"><?php $this->field("remove_stop_words"); ?></div>
+        <div class="wpslug-seo-dependent wpslug-stopwords-dependent"><?php $this->field("seo_max_words"); ?></div>
+        <div class="wpslug-seo-dependent wpslug-stopwords-dependent"><?php $this->field("stop_words_list"); ?></div>
         <?php
     }
 
     private function renderMediaSettings($options)
     {
-        ?>
-        <div class="field">
-            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("disable_file_convert"); else : ?>
-            <div class="field-label"><?php esc_html_e("Media File Conversion", "wpslug"); ?></div>
-            <div class="field-ctl">
-                <input type="hidden" name="wpslug_options[disable_file_convert]" value="0">
-                <div class="chk">
-                    <label>
-                        <input type="checkbox"
-                               name="wpslug_options[disable_file_convert]"
-                               value="1"
-                               <?php checked(1, $options["disable_file_convert"]); ?>>
-                        <?php esc_html_e(
-                            "Disable automatic file name conversion for uploaded media",
-                            "wpslug"
-                        ); ?>
-                    </label>
-                </div>
-                <p class="hint"><?php esc_html_e(
-                    "When checked, media files will not be converted automatically.",
-                    "wpslug"
-                ); ?></p>
-            </div>
-            <?php endif; ?>
-        </div>
-        <div class="field">
-            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("media_conversion_mode"); else : ?>
-            <div class="field-label"><?php esc_html_e("Media Conversion Mode", "wpslug"); ?></div>
-            <div class="field-ctl">
-                <select name="wpslug_options[media_conversion_mode]">
-                    <option value="normal" <?php selected($options["media_conversion_mode"], "normal"); ?>>
-                        <?php esc_html_e("Normal Conversion (same as content)", "wpslug"); ?>
-                    </option>
-                    <option value="md5" <?php selected($options["media_conversion_mode"], "md5"); ?>>
-                        <?php esc_html_e("MD5 Hash (generates unique hash)", "wpslug"); ?>
-                    </option>
-                    <option value="none" <?php selected($options["media_conversion_mode"], "none"); ?>>
-                        <?php esc_html_e("No Conversion (keep original)", "wpslug"); ?>
-                    </option>
-                </select>
-                <p class="hint"><?php esc_html_e(
-                    "Choose how media file names should be processed. MD5 creates unique hashes for file names.",
-                    "wpslug"
-                ); ?></p>
-            </div>
-            <?php endif; ?>
-        </div>
-        <div class="field">
-            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("media_file_prefix"); else : ?>
-            <div class="field-label"><?php esc_html_e("Media File Prefix", "wpslug"); ?></div>
-            <div class="field-ctl">
-                <input type="text"
-                       name="wpslug_options[media_file_prefix]"
-                       value="<?php echo esc_attr($options["media_file_prefix"]); ?>">
-                <p class="hint"><?php esc_html_e(
-                    'Optional prefix to add to all media file names (e.g., "img-", "file-").',
-                    "wpslug"
-                ); ?></p>
-            </div>
-            <?php endif; ?>
-        </div>
-        <div class="field">
-            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("preserve_media_extension"); else : ?>
-            <div class="field-label"><?php esc_html_e("Preserve Original Extension", "wpslug"); ?></div>
-            <div class="field-ctl">
-                <input type="hidden" name="wpslug_options[preserve_media_extension]" value="0">
-                <div class="chk">
-                    <label>
-                        <input type="checkbox"
-                               name="wpslug_options[preserve_media_extension]"
-                               value="1"
-                               <?php checked(1, $options["preserve_media_extension"]); ?>>
-                        <?php esc_html_e("Always preserve the original file extension", "wpslug"); ?>
-                    </label>
-                </div>
-                <p class="hint"><?php esc_html_e(
-                    "Ensures file extensions are kept even when using MD5 conversion.",
-                    "wpslug"
-                ); ?></p>
-            </div>
-            <?php endif; ?>
-        </div>
-        <?php
+        $this->field("disable_file_convert");
+        $this->field("media_conversion_mode");
+        $this->field("media_file_prefix");
+        $this->field("preserve_media_extension");
     }
 
     private function renderAdvancedSettings($options)
     {
-        $post_types = get_post_types(["public" => true], "objects");
-        $features = $this->settings->getPostTypeFeatures();
-        $mode_map = isset($options["post_type_modes"]) && is_array($options["post_type_modes"])
-            ? $options["post_type_modes"]
-            : [];
-        ?>
-        <div class="field">
-            <div class="field-label"><?php esc_html_e("Post Types", "wpslug"); ?></div>
-            <div class="field-ctl">
-                <div class="chk-grid">
-                    <input type="hidden" name="wpslug_options[enabled_post_types][]" value="">
-                    <?php foreach ($post_types as $post_type) : ?>
-                        <label>
-                            <input type="checkbox"
-                                   name="wpslug_options[enabled_post_types][]"
-                                   value="<?php echo esc_attr($post_type->name); ?>"
-                                   <?php checked(
-                                       is_array($options["enabled_post_types"]) &&
-                                       in_array($post_type->name, $options["enabled_post_types"])
-                                   ); ?>>
-                            <?php echo esc_html($post_type->label); ?>
-                        </label>
-                    <?php endforeach; ?>
-                </div>
-                <p class="hint"><?php esc_html_e("Select post types to apply slug conversion.", "wpslug"); ?></p>
-            </div>
-        </div>
-        <div class="field">
-            <div class="field-label"><?php esc_html_e("Default strategy per post type", "wpslug"); ?></div>
-            <div class="field-ctl">
-                <p class="hint"><?php esc_html_e(
-                    "Optional overrides per post type. Example: posts → multi-language translation; products → semantic pinyin (XinSi AI). Choose “use global” to follow the conversion mode above.",
-                    "wpslug"
-                ); ?></p>
-                <table class="tbl">
-            <thead>
-                <tr>
-                    <th><?php esc_html_e("Post type", "wpslug"); ?></th>
-                    <th><?php esc_html_e("Default feature", "wpslug"); ?></th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($post_types as $post_type) :
-                    $current = isset($mode_map[$post_type->name]) ? $mode_map[$post_type->name] : "inherit";
-                    if (!isset($features[$current])) {
-                        $current = "inherit";
-                    }
-                    ?>
-                    <tr>
-                        <td>
-                            <div class="t"><?php echo esc_html($post_type->label); ?></div>
-                            <div class="d"><?php echo esc_html($post_type->name); ?></div>
-                        </td>
-                        <td>
-                            <select name="wpslug_options[post_type_modes][<?php echo esc_attr($post_type->name); ?>]">
-                                <?php foreach ($features as $feature_key => $feature_label) : ?>
-                                    <option value="<?php echo esc_attr($feature_key); ?>" <?php selected($current, $feature_key); ?>>
-                                        <?php echo esc_html($feature_label); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-            </div>
-        </div>
-        <div class="field">
-            <div class="field-label"><?php esc_html_e("Taxonomies", "wpslug"); ?></div>
-            <div class="field-ctl">
-                <div class="chk-grid">
-                    <input type="hidden" name="wpslug_options[enabled_taxonomies][]" value="">
-                    <?php foreach (get_taxonomies(["public" => true], "objects") as $taxonomy) : ?>
-                        <label>
-                            <input type="checkbox"
-                                   name="wpslug_options[enabled_taxonomies][]"
-                                   value="<?php echo esc_attr($taxonomy->name); ?>"
-                                   <?php checked(
-                                       is_array($options["enabled_taxonomies"]) &&
-                                       in_array($taxonomy->name, $options["enabled_taxonomies"])
-                                   ); ?>>
-                            <?php echo esc_html($taxonomy->label); ?>
-                        </label>
-                    <?php endforeach; ?>
-                </div>
-                <p class="hint"><?php esc_html_e("Select taxonomies to apply slug conversion.", "wpslug"); ?></p>
-            </div>
-        </div>
-        <div class="field">
-            <?php if ($wpslug_fw = (new WPSlug_Settings())->getFramework()) : $wpslug_fw->render_field("show_slug_column"); else : ?>
-            <div class="field-label"><?php esc_html_e("Display Options", "wpslug"); ?></div>
-            <div class="field-ctl">
-                <input type="hidden" name="wpslug_options[show_slug_column]" value="0">
-                <div class="chk">
-                    <label>
-                        <input type="checkbox"
-                               name="wpslug_options[show_slug_column]"
-                               value="1"
-                               <?php checked(1, $options["show_slug_column"]); ?>>
-                        <?php esc_html_e(
-                            "Show slug column in post and page lists for easy reference",
-                            "wpslug"
-                        ); ?>
-                    </label>
-                </div>
-            </div>
-            <?php endif; ?>
-        </div>
-        <?php
+        $this->field("enabled_post_types");
+        $this->field("post_type_modes");
+        $this->field("enabled_taxonomies");
+        $this->field("show_slug_column");
     }
 
 
@@ -1014,17 +624,29 @@ class WPSlug_Admin
             delete_transient("wpslug_admin_tab");
         }
 
+        $saved = $this->settings->getOptions();
         wp_localize_script("wpslug-admin", "wpslug_ajax", [
             "ajax_url" => admin_url("admin-ajax.php"),
             "nonce" => wp_create_nonce("wpslug_nonce"),
             "current_tab" => $saved_tab ?: "general",
+            // Saved values, for pages that do not carry these controls.
+            "conversion_mode" => (string) $saved["conversion_mode"],
+            "pinyin_format" => (string) $saved["pinyin_format"],
             "strings" => [
                 "preview" => __("Preview", "wpslug"),
                 "converting" => __("Converting...", "wpslug"),
                 "testing" => __("Testing...", "wpslug"),
                 "test_api" => __("Test API", "wpslug"),
-                "reset_confirm" => __(
-                    "Are you sure you want to reset all settings to default values?",
+                "seo_first_letter" => __(
+                    "Not available with first-letter pinyin. Switch to full pinyin to turn it on.",
+                    "wpslug"
+                ),
+                "seo_off" => __(
+                    "Turn on SEO optimization to use this.",
+                    "wpslug"
+                ),
+                "stop_words_off" => __(
+                    "Turn on stop word removal to use this.",
                     "wpslug"
                 ),
                 "api_test_success" => __(

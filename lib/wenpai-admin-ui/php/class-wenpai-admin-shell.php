@@ -20,7 +20,11 @@ if ( ! class_exists( 'Wenpai_Admin_Shell', false ) ) {
 	class Wenpai_Admin_Shell {
 
 		/**
+		 * Echo the opening chrome: top bar, brand, tabs and main wrapper.
+		 *
 		 * @param array $args {
+		 *     Shell arguments.
+		 *
 		 *     @type string $slug            Product slug (wpslug / wpsss).
 		 *     @type string $name            Product display name (already translated).
 		 *     @type string $mark_html       Product SVG for .wenpai-mark.
@@ -121,7 +125,13 @@ if ( ! class_exists( 'Wenpai_Admin_Shell', false ) ) {
 			}
 			$links = isset( $args['links'] ) && is_array( $args['links'] ) ? $args['links'] : array();
 			if ( '' !== $doc ) {
-				array_unshift( $links, array( 'url' => $doc, 'label' => $dl ) );
+				array_unshift(
+					$links,
+					array(
+						'url'   => $doc,
+						'label' => $dl,
+					)
+				);
 			}
 			if ( array() !== $links ) {
 				echo '<span class="r">';

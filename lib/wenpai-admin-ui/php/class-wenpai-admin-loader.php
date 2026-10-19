@@ -17,9 +17,14 @@ if ( ! class_exists( 'Wenpai_Admin_Loader', false ) ) {
 
 		const STYLE_HANDLE  = 'wenpai-admin-ui';
 		const SCRIPT_HANDLE = 'wenpai-admin-ui';
+		const TOKENS_HANDLE = 'wenpai-admin-ui-tokens';
 
 		/**
+		 * Register and enqueue the kit stylesheet and script.
+		 *
 		 * @param array $args {
+		 *     Optional. Enqueue arguments.
+		 *
 		 *     @type string $body Body class slug, e.g. wpsss-admin. Used only as a hint.
 		 *     @type bool   $full Whether to load the full-page shell CSS (default true).
 		 * }
@@ -38,15 +43,27 @@ if ( ! class_exists( 'Wenpai_Admin_Loader', false ) ) {
 				? (string) $GLOBALS['wenpai_admin_ui_winner']['version']
 				: '0.0.1';
 
+			$tok_file = $dir . '/css/wenpai-tokens.css';
 			$css_file = $dir . '/css/wenpai-admin.css';
 			$wp_file  = $dir . '/css/wenpai-admin-wp.css';
 			$js_file  = $dir . '/js/wenpai-admin.js';
 			$ref      = $dir . '/VERSION';
 
+			// Tokens first: wenpai-admin.css reads every color and size from them.
+			$deps = array();
+			if ( is_readable( $tok_file ) ) {
+				wp_register_style(
+					self::TOKENS_HANDLE,
+					plugins_url( 'css/wenpai-tokens.css', $ref ),
+					array(),
+					$ver
+				);
+				$deps[] = self::TOKENS_HANDLE;
+			}
 			wp_register_style(
 				self::STYLE_HANDLE,
 				plugins_url( 'css/wenpai-admin.css', $ref ),
-				array(),
+				$deps,
 				$ver
 			);
 			wp_register_style(

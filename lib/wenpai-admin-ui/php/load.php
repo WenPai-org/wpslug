@@ -15,6 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 if ( ! function_exists( 'wenpai_admin_ui_register' ) ) {
 	/**
+	 * Register this kit copy as a boot candidate.
+	 *
 	 * @param string $version SemVer from VERSION file.
 	 * @param string $dir     Absolute path to this kit copy (parent of php/).
 	 */
@@ -53,11 +55,11 @@ if ( ! function_exists( 'wenpai_admin_ui_boot' ) ) {
 			}
 		);
 
-		$winner = $candidates[0];
+		$winner                            = $candidates[0];
 		$GLOBALS['wenpai_admin_ui_winner'] = $winner;
 		$GLOBALS['wenpai_admin_ui_booted'] = true;
 
-		$dir = $winner['dir'] . '/php/';
+		$dir   = $winner['dir'] . '/php/';
 		$files = array(
 			'class-wenpai-admin-loader.php',
 			'class-wenpai-admin-shell.php',
@@ -76,6 +78,8 @@ if ( ! function_exists( 'wenpai_admin_ui_boot' ) ) {
 
 if ( ! function_exists( 'wenpai_admin_ui_winner_dir' ) ) {
 	/**
+	 * Absolute directory of the winning kit copy.
+	 *
 	 * @return string Empty before boot.
 	 */
 	function wenpai_admin_ui_winner_dir() {
@@ -87,7 +91,7 @@ if ( ! function_exists( 'wenpai_admin_ui_winner_dir' ) ) {
 }
 
 wenpai_admin_ui_register(
-	trim( (string) file_get_contents( dirname( __DIR__ ) . '/VERSION' ) ),
+	trim( (string) file_get_contents( dirname( __DIR__ ) . '/VERSION' ) ), // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local VERSION file shipped with the kit, not a remote URL; runs before WP_Filesystem is available.
 	dirname( __DIR__ )
 );
 

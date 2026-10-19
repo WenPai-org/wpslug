@@ -32,6 +32,11 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		const TAB_KEY = '__wenpai_tab';
 
 		/**
+		 * Posted key carrying the nonce of the tab marker.
+		 */
+		const TAB_NONCE_KEY = '__wenpai_tab_nonce';
+
+		/**
 		 * Instances keyed by option name.
 		 *
 		 * @var array<string, Wenpai_Admin_Settings>
@@ -89,6 +94,13 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		private $last_sanitized = null;
 
 		/**
+		 * Form-level error of this request (e.g. an expired tab marker).
+		 *
+		 * @var string
+		 */
+		private $form_error = '';
+
+		/**
 		 * Create and register a settings instance for one option.
 		 *
 		 * @param string $option Option name.
@@ -140,9 +152,12 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 				'empty_choices' => '还没有可选的%s。',
 				/* translators: 1: hidden tab label, 2: first tab label. */
 				'tab_hidden'    => '当前模式不需要%1$s的设置，已切回%2$s。',
+				// In-progress copy without the trailing 「…」: kit JS appends it.
 				'action_busy'   => '正在处理',
 				'action_ok'     => '已完成。',
+				// Global fallback only. A handler names the service in its WP_Error message.
 				'action_failed' => '暂时无法完成操作，请稍后再试。',
+				'tab_expired'   => '暂时无法保存，页面已过期，请刷新后再试。',
 				'action_denied' => '暂时无法完成操作，请刷新页面后再试。',
 			);
 		}
@@ -202,6 +217,78 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 				}
 				$this->fields[ $id ] = $f;
 			}
+		}
+
+		/**
+		 * Filter caller HTML: choice icon_html (SVG only) and status render
+		 * (post HTML plus SVG). Without wp_kses (outside WP) it is escaped.
+		 *
+		 * @param string $html    Caller HTML.
+		 * @param string $context 'svg' or 'post'.
+		 * @return string
+		 */
+		private static function kses( $html, $context ) {
+			if ( ! function_exists( 'wp_kses' ) ) {
+				return esc_html( $html );
+			}
+			$svg     = array(
+				'svg'      => array(
+					'class'           => true,
+					'viewbox'         => true,
+					'width'           => true,
+					'height'          => true,
+					'fill'            => true,
+					'stroke'          => true,
+					'stroke-width'    => true,
+					'stroke-linecap'  => true,
+					'stroke-linejoin' => true,
+					'aria-hidden'     => true,
+					'focusable'       => true,
+					'role'            => true,
+					'xmlns'           => true,
+				),
+				'g'        => array(
+					'fill'      => true,
+					'stroke'    => true,
+					'transform' => true,
+				),
+				'path'     => array(
+					'd'               => true,
+					'fill'            => true,
+					'fill-rule'       => true,
+					'clip-rule'       => true,
+					'stroke'          => true,
+					'stroke-width'    => true,
+					'stroke-linecap'  => true,
+					'stroke-linejoin' => true,
+				),
+				'circle'   => array(
+					'cx'   => true,
+					'cy'   => true,
+					'r'    => true,
+					'fill' => true,
+				),
+				'rect'     => array(
+					'x'      => true,
+					'y'      => true,
+					'width'  => true,
+					'height' => true,
+					'rx'     => true,
+					'ry'     => true,
+					'fill'   => true,
+				),
+				'line'     => array(
+					'x1' => true,
+					'y1' => true,
+					'x2' => true,
+					'y2' => true,
+				),
+				'polyline' => array( 'points' => true ),
+				'polygon'  => array( 'points' => true ),
+				'title'    => array(),
+			);
+			$allowed = 'svg' === $context ? $svg : array_merge( wp_kses_allowed_html( 'post' ), $svg );
+			return wp_kses( $html, $allowed );
 		}
 
 		/**
@@ -274,6 +361,43 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		 */
 		public function fields() {
 			return $this->fields;
+		}
+
+		/**
+		 * Nonce action of a tab marker.
+		 *
+		 * @param string $tab Tab id.
+		 * @return string
+		 */
+		private function tab_nonce_action( $tab ) {
+			return 'wenpai_tab_' . $this->option . '_' . $tab;
+		}
+
+		/**
+		 * Whether a posted tab marker was issued by tab_input_html().
+		 *
+		 * @param string $tab   Tab id.
+		 * @param mixed  $nonce Posted nonce.
+		 * @return bool
+		 */
+		private function tab_nonce_ok( $tab, $nonce ) {
+			if ( ! function_exists( 'wp_verify_nonce' ) ) {
+				return true;
+			}
+			return is_scalar( $nonce ) && false !== wp_verify_nonce( (string) $nonce, $this->tab_nonce_action( $tab ) );
+		}
+
+		/**
+		 * Whether a field is posted as checkboxes: when nothing is checked the
+		 * browser sends nothing, so "absent" means "empty", not "not on this
+		 * page". The kit adds a hidden 0 / empty sentinel for these, but
+		 * hand-written forms may not.
+		 *
+		 * @param array $f Field schema.
+		 * @return bool
+		 */
+		private static function is_checkbox_like( array $f ) {
+			return in_array( $f['type'], array( 'toggle', 'multicheck', 'multiselect' ), true ) && ! self::is_secret( $f );
 		}
 
 		/**
@@ -399,13 +523,28 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 			if ( null !== $this->last_sanitized && $input === $this->last_sanitized ) {
 				return $input;
 			}
-			$stored  = $this->stored();
-			$clear   = isset( $input[ self::CLEAR_KEY ] ) && is_array( $input[ self::CLEAR_KEY ] )
+			$stored = $this->stored();
+			$clear  = isset( $input[ self::CLEAR_KEY ] ) && is_array( $input[ self::CLEAR_KEY ] )
 				? array_map( 'strval', $input[ self::CLEAR_KEY ] )
 				: array();
-			$tab     = isset( $input[ self::TAB_KEY ] ) && is_scalar( $input[ self::TAB_KEY ] )
+			$tab    = isset( $input[ self::TAB_KEY ] ) && is_scalar( $input[ self::TAB_KEY ] )
 				? sanitize_key( (string) $input[ self::TAB_KEY ] )
 				: null;
+			if ( null !== $tab && ! $this->tab_nonce_ok( $tab, isset( $input[ self::TAB_NONCE_KEY ] ) ? $input[ self::TAB_NONCE_KEY ] : '' ) ) {
+				// A tab marker we did not issue: write nothing rather than guess which fields were on the page.
+				$this->form_error = $this->strings['tab_expired'];
+				if ( function_exists( 'add_settings_error' ) ) {
+					add_settings_error( $this->option, 'wenpai_tab', $this->form_error, 'error' );
+				}
+				$kept = array();
+				foreach ( $this->fields as $id => $f ) {
+					if ( self::stores( $f ) ) {
+						$kept[ $id ] = array_key_exists( $id, $stored ) ? $stored[ $id ] : $f['default'];
+					}
+				}
+				$this->last_sanitized = $kept;
+				return $kept;
+			}
 			$out     = array();
 			$prevs   = array();
 			$pending = array();
@@ -420,6 +559,12 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 					continue;
 				}
 				$prevs[ $id ] = $prev;
+				if ( null === $raw && ! self::is_checkbox_like( $f ) ) {
+					// Not on the submitted page (text, select, number, matrix …): keep it.
+					// An unchecked checkbox is different: it sends nothing, see is_checkbox_like().
+					$out[ $id ] = $prev;
+					continue;
+				}
 				if ( self::is_secret( $f ) ) {
 					$typed = is_scalar( $raw ) && '' !== trim( (string) $raw );
 					if ( ! $typed ) {
@@ -596,9 +741,9 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 					}
 					return $res;
 				case 'textarea':
-					return null === $v ? $f['default'] : sanitize_textarea_field( wp_unslash( $v ) );
+					return null === $v ? $f['default'] : sanitize_textarea_field( (string) $v );
 				default:
-					return null === $v || ! is_scalar( $v ) ? $f['default'] : sanitize_text_field( wp_unslash( (string) $v ) );
+					return null === $v || ! is_scalar( $v ) ? $f['default'] : sanitize_text_field( (string) $v );
 			}
 		}
 
@@ -704,7 +849,7 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		 * @param string $id Field id.
 		 */
 		public function render_field( $id ) {
-			echo $this->field_html( $id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- field_html() escapes every part.
+			echo $this->field_html( $id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped parts; caller HTML (choice icon_html, status render) goes through wp_kses in field_html().
 		}
 
 		/**
@@ -722,13 +867,19 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		}
 
 		/**
-		 * Hidden marker for per-tab save. Put it once inside the form.
+		 * Hidden marker for per-tab save, with its nonce. Put it once inside the
+		 * form. On save only fields whose 'tab' is this tab are validated and
+		 * written; the kit merges every other field from the saved option. A
+		 * marker whose nonce does not verify writes nothing.
 		 *
 		 * @param string $tab Tab id.
 		 * @return string
 		 */
 		public function tab_input_html( $tab ) {
-			return '<input type="hidden" name="' . esc_attr( $this->option . '[' . self::TAB_KEY . ']' ) . '" value="' . esc_attr( $tab ) . '">';
+			$tab   = sanitize_key( (string) $tab );
+			$nonce = function_exists( 'wp_create_nonce' ) ? wp_create_nonce( $this->tab_nonce_action( $tab ) ) : '';
+			return '<input type="hidden" name="' . esc_attr( $this->option . '[' . self::TAB_KEY . ']' ) . '" value="' . esc_attr( $tab ) . '">'
+				. '<input type="hidden" name="' . esc_attr( $this->option . '[' . self::TAB_NONCE_KEY . ']' ) . '" value="' . esc_attr( $nonce ) . '">';
 		}
 
 		/**
@@ -894,9 +1045,16 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		 *
 		 * Schema: 'actions' => array( array( 'id', 'label', 'ajax' (wp_ajax action),
 		 * 'nonce' (defaults to the ajax action), 'include' (field ids sent along,
-		 * defaults to this field), 'busy' (e.g. 正在测试), 'data' (extra static
-		 * params), 'requires' (field ids that must have a value), 'requires_note'
-		 * (why the button is disabled, e.g. 先填写 API 密钥。) ) ).
+		 * defaults to this field), 'busy' (in-progress copy WITHOUT the trailing
+		 * 「…」, e.g. 正在测试; kit JS appends 「…」; default action_busy 正在处理),
+		 * 'data' (extra static params), 'requires' (field ids that must have a
+		 * value), 'requires_note' (why the button is disabled, e.g. 先填写 API
+		 * 密钥。) ) ).
+		 *
+		 * Receipt copy comes from the handler (see ajax_action()): a failure
+		 * returns WP_Error whose message may name the service, e.g.
+		 * 暂时无法连接百度翻译，请检查密钥。 action_ok / action_failed are only the
+		 * global fallback (bare true/false, network error, timeout).
 		 *
 		 * @param string $id Field id.
 		 * @param array  $f  Field schema.
@@ -1049,7 +1207,9 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 
 		/**
 		 * Choice cards. A choice may be a label, or array( label, desc, icon
-		 * (kit icon name), icon_html (trusted SVG), hint, disabled, locked ).
+		 * (Wenpai_Admin_Icons name, or dashicons-{name}), dashicon ({name}),
+		 * icon_html (SVG, filtered with wp_kses to an SVG allowlist), hint,
+		 * disabled, locked ).
 		 *
 		 * @param array  $f    Field schema.
 		 * @param string $name Input name.
@@ -1065,8 +1225,11 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 				$on   = $v === (string) $k;
 				$dis  = ! empty( $c['disabled'] );
 				$icon = '';
+				$dash = ! empty( $c['dashicon'] ) ? (string) $c['dashicon'] : ( ! empty( $c['icon'] ) && 0 === strpos( (string) $c['icon'], 'dashicons-' ) ? substr( (string) $c['icon'], 10 ) : '' );
 				if ( ! empty( $c['icon_html'] ) ) {
-					$icon = (string) $c['icon_html'];
+					$icon = self::kses( (string) $c['icon_html'], 'svg' );
+				} elseif ( '' !== $dash ) {
+					$icon = '<span class="dashicons dashicons-' . esc_attr( sanitize_html_class( $dash ) ) . '"></span>';
 				} elseif ( ! empty( $c['icon'] ) && class_exists( 'Wenpai_Admin_Icons', false ) ) {
 					$icon = Wenpai_Admin_Icons::svg( (string) $c['icon'] );
 				}
@@ -1087,7 +1250,8 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		 *
 		 * 'status' => array|Closure returning array( level (ok|warn|bad|''), text,
 		 * desc (string or list), link (array( url, label )) ). Or 'render' =>
-		 * callable returning trusted HTML (the plugin escapes it).
+		 * callable returning HTML; it is filtered with wp_kses (post tags + SVG),
+		 * but should still be built by the plugin, not from user input.
 		 *
 		 * @param array  $f   Field schema.
 		 * @param string $fid Field control id; the pill gets {fid}-pill.
@@ -1095,7 +1259,7 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		 */
 		private function status_html( array $f, $fid ) {
 			if ( is_callable( $f['render'] ) ) {
-				return '<div class="wenpai-field__status" data-wenpai-status>' . (string) call_user_func( $f['render'], $f, $this ) . '</div>';
+				return '<div class="wenpai-field__status" data-wenpai-status>' . self::kses( (string) call_user_func( $f['render'], $f, $this ), 'post' ) . '</div>';
 			}
 			$st    = $f['status'] instanceof Closure ? call_user_func( $f['status'], $f, $this ) : $f['status'];
 			$st    = is_array( $st ) ? $st : array();
@@ -1582,6 +1746,17 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 			}
 			$errs = $this->errors();
 			$icon = class_exists( 'Wenpai_Admin_Icons', false ) ? Wenpai_Admin_Icons::svg( 'info' ) : '';
+			$form = $this->form_error;
+			if ( '' === $form && function_exists( 'get_settings_errors' ) ) {
+				foreach ( (array) get_settings_errors( $this->option ) as $e ) {
+					if ( isset( $e['code'], $e['message'] ) && 'wenpai_tab' === $e['code'] ) {
+						$form = (string) $e['message'];
+					}
+				}
+			}
+			if ( '' !== $form ) {
+				return '<div class="wenpai-notice-wrap"><div class="notice bad" role="alert">' . $icon . '<span>' . esc_html( $form ) . '</span></div></div>';
+			}
 			if ( ! empty( $errs ) ) {
 				$items = '';
 				$n     = 0;

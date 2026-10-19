@@ -155,7 +155,7 @@ a.scope:hover { color: var(--wenpai-accent); }
 .wenpai-field .chk,
 .wenpai-field .opts { display: grid; gap: 10px; }
 .wenpai-field .chk label,
-.wenpai-field .opts label { display: flex; align-items: center; gap: var(--wenpai-space-2); font-size: var(--wenpai-text-body); line-height: var(--wenpai-leading-body); }
+.wenpai-field .opts label { display: flex; align-items: center; gap: var(--wenpai-space-2); min-height: 24px; font-size: var(--wenpai-text-body); line-height: var(--wenpai-leading-body); }
 .wenpai-field__state { margin: 0; color: var(--wenpai-ink-3); font-size: var(--wenpai-text-caption); line-height: var(--wenpai-leading-caption); }
 .wenpai-field__clear { display: inline-flex; align-items: center; gap: var(--wenpai-space-2); font-size: var(--wenpai-text-meta); line-height: var(--wenpai-leading-meta); color: var(--wenpai-ink-2); }
 .wenpai-field__error { margin: 0; color: var(--wenpai-bad-ink); font-size: var(--wenpai-text-caption); line-height: var(--wenpai-leading-caption); }
@@ -236,7 +236,7 @@ a.scope:hover { color: var(--wenpai-accent); }
 .toggle:focus-visible i { outline: var(--wenpai-focus-width) solid var(--wenpai-focus-color); outline-offset: var(--wenpai-focus-offset); }
 .toggle.off-dis, .toggle[disabled] { opacity: .55; cursor: default; color: var(--wenpai-ink-2); }
 .chk { display: grid; gap: 10px; }
-.chk label { display: flex; align-items: center; gap: var(--wenpai-space-2); }
+.chk label { display: flex; align-items: center; gap: var(--wenpai-space-2); min-height: 24px; } /* The whole row is the target (WCAG 2.5.8). */
 .chk input { width: 16px; height: 16px; accent-color: var(--wenpai-accent); margin: 0; }
 .mode { display: inline-flex; align-items: center; gap: 10px; color: var(--wenpai-ink-2); font-size: var(--wenpai-text-meta); line-height: var(--wenpai-leading-meta); }
 .mode svg { width: 16px; height: 16px; }
@@ -340,7 +340,7 @@ a.scope:hover { color: var(--wenpai-accent); }
 .wenpai-notice-wrap { margin: 0 0 var(--wenpai-space-4); }
 .wenpai-notice-wrap.is-gone { opacity: 0; transition: opacity var(--wenpai-motion-fade) var(--wenpai-motion-ease); }
 .wenpai-app form.is-busy,
-.wenpai-app .is-busy { opacity: 0.65; pointer-events: none; }
+.wenpai-app .is-busy { pointer-events: none; } /* No dimming: pair with aria-busy="true" and an in-progress line (.spin + 「正在…」). */
 .simple-row.is-static .toggle { pointer-events: none; }
 .simple-row.is-action { cursor: pointer; }
 .simple-row.is-action:hover { background: var(--wenpai-line-soft); }
@@ -374,7 +374,7 @@ a.scope:hover { color: var(--wenpai-accent); }
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--wenpai-space-2) var(--wenpai-space-4);
 }
-.chk-grid label { display: flex; align-items: center; gap: var(--wenpai-space-2); font-size: var(--wenpai-text-body); line-height: var(--wenpai-leading-body); }
+.chk-grid label { display: flex; align-items: center; gap: var(--wenpai-space-2); min-height: 24px; font-size: var(--wenpai-text-body); line-height: var(--wenpai-leading-body); }
 .chk-grid input { width: 16px; height: 16px; accent-color: var(--wenpai-accent); margin: 0; flex: none; }
 .rows > div { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-top: 1px solid var(--wenpai-line-soft); }
 .rows > div:first-child { border-top: 0; padding-top: 0; }
@@ -643,3 +643,10 @@ a.scope:hover { color: var(--wenpai-accent); }
   .wenpai-field__state::before,
   .wenpai-field__result::before { forced-color-adjust: none; border: 1px solid CanvasText; }
 }
+.choice-ico .dashicons { width: 20px; height: 20px; font-size: 20px; }
+
+/* Links in running text are underlined, not told apart by color alone (WCAG 1.4.1):
+   paragraphs, lede, field descriptions and hints, notices, table cells, list items.
+   Navigation, tabs and buttons keep their own styles. */
+.wenpai-app :is(p, li, dd, td, .wenpai-lede, .section-desc, .wenpai-field__desc, .wenpai-field__note, .field-help, .hint, .notice) a:not(.btn):not(.wenpai-tab):not(.wenpai-brand):not(.wenpai-head-action) { text-decoration: underline; text-underline-offset: 2px; }
+.wenpai-app :is(nav, .wenpai-tabs, .seg, .foot) a { text-decoration: none; }

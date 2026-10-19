@@ -435,7 +435,7 @@ body.wenpai-ui-page .wenpai-app input[type="number"]::-webkit-inner-spin-button 
 }
 
 .wenpai-app form.is-busy {
-  opacity: 0.65;
+  pointer-events: none;
 }
 
 .next-actions {

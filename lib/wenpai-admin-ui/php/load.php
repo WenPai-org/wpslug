@@ -69,6 +69,13 @@ if ( ! function_exists( 'wenpai_admin_ui_register' ) ) {
 		);
 		$entry['plugin'] = wenpai_admin_ui_owner( $entry['dir'] );
 
+		// The same copy required twice (require instead of require_once) is not a second candidate.
+		foreach ( $GLOBALS['wenpai_admin_ui_candidates'] as $known ) {
+			if ( $known['dir'] === $entry['dir'] ) {
+				return;
+			}
+		}
+
 		if ( empty( $GLOBALS['wenpai_admin_ui_booted'] ) ) {
 			$GLOBALS['wenpai_admin_ui_candidates'][] = $entry;
 			return;
@@ -81,13 +88,13 @@ if ( ! function_exists( 'wenpai_admin_ui_register' ) ) {
 				'plugin'  => '?',
 			);
 			$msg = sprintf(
-				'wenpai-admin-ui %1$s from "%2$s" was registered after plugins_loaded priority 1 and is ignored; %3$s from "%4$s" is active. Require lib/wenpai-admin-ui/php/load.php at the top level of the plugin main file, not inside a hook.',
+				'wenpai-admin-ui %1$s from 「%2$s」 was registered after plugins_loaded priority 1 and is ignored; %3$s from 「%4$s」 is active. Require lib/wenpai-admin-ui/php/load.php at the top level of the plugin main file, not inside a hook.',
 				$entry['version'],
 				$entry['plugin'],
 				isset( $win['version'] ) ? $win['version'] : '?',
 				isset( $win['plugin'] ) ? $win['plugin'] : '?'
 			);
-			_doing_it_wrong( 'wenpai_admin_ui_register', function_exists( 'esc_html' ) ? esc_html( $msg ) : $msg, '0.3.0' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped with esc_html when available; plain developer text otherwise.
+			_doing_it_wrong( 'wenpai_admin_ui_register', $msg, '0.3.0' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- developer log text built from version strings and plugin folder names, no HTML; core escapes it when displaying.
 		}
 	}
 }

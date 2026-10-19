@@ -1368,3 +1368,43 @@ msgstr "暂时无法完成操作，请稍后再试。"
 #: includes/class-wpslug-settings.php
 msgid "Could not finish the action. Please reload the page and try again."
 msgstr "暂时无法完成操作，请刷新页面后再试。"
+
+#: includes/class-wpslug-settings.php
+msgid "Testing"
+msgstr "正在测试"
+
+#: includes/class-wpslug-admin.php
+msgid "Connected."
+msgstr "连接正常。"
+
+#: includes/class-wpslug-admin.php
+msgid "Could not connect to Google Translate. Please check the key."
+msgstr "暂时无法连接 Google 翻译，请检查密钥。"
+
+#: includes/class-wpslug-admin.php
+msgid "Could not connect to Baidu Translate. Please check the key."
+msgstr "暂时无法连接百度翻译，请检查密钥。"
+
+#: includes/class-wpslug-settings.php
+msgid "Enter the API key first."
+msgstr "先填写 API 密钥。"
+
+#: includes/class-wpslug-settings.php
+msgid "Enter the App ID and Secret Key first."
+msgstr "先填写 App ID 和密钥。"
+
+#: includes/class-wpslug-settings.php
+msgid "Automatic file name conversion is disabled. Turn off the switch above to use this."
+msgstr "已禁用自动文件名转换，关掉上面的开关后可用。"
+
+#: includes/class-wpslug-settings.php
+msgid "Active"
+msgstr "已启用"
+
+#: includes/class-wpslug-settings.php
+msgid "Not active"
+msgstr "未启用"
+
+#: includes/class-wpslug-settings.php
+msgid "Could not save because the page has expired. Please reload it and try again."
+msgstr "暂时无法保存，页面已过期，请刷新后再试。"

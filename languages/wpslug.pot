@@ -1362,3 +1362,43 @@ msgstr ""
 #: includes/class-wpslug-settings.php
 msgid "Could not finish the action. Please reload the page and try again."
 msgstr ""
+
+#: includes/class-wpslug-settings.php
+msgid "Testing"
+msgstr ""
+
+#: includes/class-wpslug-admin.php
+msgid "Connected."
+msgstr ""
+
+#: includes/class-wpslug-admin.php
+msgid "Could not connect to Google Translate. Please check the key."
+msgstr ""
+
+#: includes/class-wpslug-admin.php
+msgid "Could not connect to Baidu Translate. Please check the key."
+msgstr ""
+
+#: includes/class-wpslug-settings.php
+msgid "Enter the API key first."
+msgstr ""
+
+#: includes/class-wpslug-settings.php
+msgid "Enter the App ID and Secret Key first."
+msgstr ""
+
+#: includes/class-wpslug-settings.php
+msgid "Automatic file name conversion is disabled. Turn off the switch above to use this."
+msgstr ""
+
+#: includes/class-wpslug-settings.php
+msgid "Active"
+msgstr ""
+
+#: includes/class-wpslug-settings.php
+msgid "Not active"
+msgstr ""
+
+#: includes/class-wpslug-settings.php
+msgid "Could not save because the page has expired. Please reload it and try again."
+msgstr ""

@@ -729,8 +729,8 @@ class WPSlug_Settings
                 ["field" => "pinyin_format", "value" => "first", "not" => true],
             ],
         ];
-        $seo_on = ["field" => "enable_seo_optimization", "value" => true, "reason" => __("Turn on SEO optimization to use this.", "wpslug")];
-        $stop_words_on = ["field" => "remove_stop_words", "value" => true, "reason" => __("Turn on stop word removal to use this.", "wpslug")];
+        $seo_on = ["field" => "enable_seo_optimization", "value" => true, "reason" => __("SEO optimization is off. Turn it on to use this.", "wpslug")];
+        $stop_words_on = ["field" => "remove_stop_words", "value" => true, "reason" => __("Stop word removal is off. Turn it on to use this.", "wpslug")];
         $seo_group = ["mode" => "disable", "rules" => [$not_first_letter, $seo_on]];
         $stop_words_group = ["mode" => "disable", "rules" => [$not_first_letter, $seo_on, $stop_words_on]];
         $media_on = [

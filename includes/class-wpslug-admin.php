@@ -791,7 +791,7 @@ class WPSlug_Admin
                 return new WP_Error("wpslug_missing_key", __("Enter the App ID and Secret Key first.", "wpslug"));
             }
         } else {
-            return new WP_Error("wpslug_invalid_service", __("Invalid service selected.", "wpslug"));
+            return new WP_Error("wpslug_invalid_service", __("Could not run the test. Please choose a translation service first.", "wpslug"));
         }
 
         // The translator falls back to local pinyin when the service fails, so

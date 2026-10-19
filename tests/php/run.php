@@ -770,8 +770,8 @@ check(($seo_tree('smart_punctuation')['mode'] ?? '') === 'disable' && ($seo_tree
 check(($seo_tree('media_conversion_mode')['mode'] ?? '') === 'disable' && ($seo_tree('media_file_prefix')['mode'] ?? '') === 'disable' && ($seo_tree('preserve_media_extension')['mode'] ?? '') === 'disable', 'media fields use kit depends_on mode disable');
 $sp_html = $fw->field_html('smart_punctuation');
 check(strpos($sp_html, 'data-wenpai-depends="') !== false && strpos($sp_html, '&quot;mode&quot;:&quot;disable&quot;') !== false && strpos($sp_html, 'class="wenpai-field__reason"') !== false, 'SEO field prints the kit disable tree and a reason slot');
-check(strpos($sp_html, 'Turn on SEO optimization to use this.') !== false && strpos($sp_html, 'Not available with first-letter pinyin.') !== false, 'SEO reasons: first-letter pinyin, then SEO switch off');
-check(strpos($fw->field_html('stop_words_list'), 'Turn on stop word removal to use this.') !== false, 'stop word fields also wait for stop word removal');
+check(strpos($sp_html, 'SEO optimization is off. Turn it on to use this.') !== false && strpos($sp_html, 'Not available with first-letter pinyin.') !== false, 'SEO reasons: first-letter pinyin, then SEO switch off');
+check(strpos($fw->field_html('stop_words_list'), 'Stop word removal is off. Turn it on to use this.') !== false, 'stop word fields also wait for stop word removal');
 $mp_html = $fw->field_html('media_file_prefix');
 check(strpos($mp_html, 'data-wenpai-depends-on="wpslug_options[disable_file_convert]"') !== false && strpos($mp_html, 'data-wenpai-depends-not') !== false && strpos($mp_html, 'data-wenpai-depends-mode="disable"') !== false && strpos($mp_html, 'data-wenpai-depends-reason="Automatic file name conversion is disabled.') !== false, 'media fields are disabled with a reason while file conversion is off');
 $base_vals = (new WPSlug_Settings())->getOptions();

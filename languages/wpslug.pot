@@ -198,20 +198,17 @@ msgstr ""
 msgid "Converting..."
 msgstr ""
 
-#: includes/class-wpslug-admin.php:638
-msgid "Testing..."
-msgstr ""
 
 #: includes/class-wpslug-admin.php:640
 msgid "Not available with first-letter pinyin. Switch to full pinyin to turn it on."
 msgstr ""
 
 #: includes/class-wpslug-admin.php:644
-msgid "Turn on SEO optimization to use this."
+msgid "SEO optimization is off. Turn it on to use this."
 msgstr ""
 
 #: includes/class-wpslug-admin.php:648
-msgid "Turn on stop word removal to use this."
+msgid "Stop word removal is off. Turn it on to use this."
 msgstr ""
 
 #: includes/class-wpslug-admin.php:652
@@ -297,7 +294,7 @@ msgid "Both Baidu App ID and Secret Key are required for testing."
 msgstr ""
 
 #: includes/class-wpslug-admin.php:828
-msgid "Invalid service selected."
+msgid "Could not run the test. Please choose a translation service first."
 msgstr ""
 
 #: includes/class-wpslug-admin.php:856

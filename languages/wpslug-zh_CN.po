@@ -400,9 +400,6 @@ msgstr "配置 WP Slug"
 msgid "Converting..."
 msgstr "转换中..."
 
-#: includes/class-wpslug-admin.php:638
-msgid "Testing..."
-msgstr "测试中..."
 
 #: includes/class-wpslug-admin.php:652
 #: includes/class-wpslug-admin.php:843
@@ -433,8 +430,8 @@ msgid "Both Baidu App ID and Secret Key are required for testing."
 msgstr "测试需要百度应用 ID 和密钥。"
 
 #: includes/class-wpslug-admin.php:828
-msgid "Invalid service selected."
-msgstr "选择了无效的服务。"
+msgid "Could not run the test. Please choose a translation service first."
+msgstr "暂时无法测试，请先选择翻译服务。"
 
 #: includes/class-wpslug-admin.php:856
 msgid "API connection failed: "
@@ -1269,12 +1266,12 @@ msgid "Not available with first-letter pinyin. Switch to full pinyin to turn it 
 msgstr "首字母格式下不能用，改成完整拼音后可开启。"
 
 #: includes/class-wpslug-admin.php:644
-msgid "Turn on SEO optimization to use this."
-msgstr "开启 SEO 优化后可用。"
+msgid "SEO optimization is off. Turn it on to use this."
+msgstr "SEO 优化未开启，开启后可用。"
 
 #: includes/class-wpslug-admin.php:648
-msgid "Turn on stop word removal to use this."
-msgstr "开启删除停用词后可用。"
+msgid "Stop word removal is off. Turn it on to use this."
+msgstr "删除停用词未开启，开启后可用。"
 
 #: includes/class-wpslug-settings.php:146
 msgid "On"

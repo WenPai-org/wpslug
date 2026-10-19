@@ -24,6 +24,12 @@ Media conversion applies only to newly uploaded filenames. Bulk conversion is an
 
 == Changelog ==
 
+= Unreleased =
+* Changed: settings page renders 19 fields through wenpai-admin-ui 0.2.5 render_field (selects, toggles, seo_max_words, stop_words_list, media_file_prefix), with the hand-written markup kept as fallback.
+* Changed: admin.js selects fields by name instead of id, so kit-generated ids do not break show/hide or Test API.
+* Added: schema labels for toggles and API credential fields.
+* Note: post type / taxonomy multichecks, per-post-type modes and API credential inputs stay hand-written (runtime choices; Test API button layout).
+
 = 1.3.1 =
 * Removed: leftover Yahnis Elsts plugin-update-checker and updatepulse-updater trees from the public repo; runtime stays WenPai updater (updates.wenpai.net).
 * Added: root LICENSE (GPLv2 or later) in repo and release zip.

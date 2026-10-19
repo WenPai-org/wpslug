@@ -8,7 +8,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2026-02-28T15:19:21+08:00\n"
-"PO-Revision-Date: 2026-09-17 02:50+0800\n"
+"PO-Revision-Date: 2026-10-19 15:30+0800\n"
 "Language: zh_CN\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Poedit 3.6\n"
@@ -123,7 +123,7 @@ msgstr "自动转换"
 
 #: templates/admin/page.php:179
 msgid "Automatically convert slugs when saving posts and terms"
-msgstr "保存文章和术语时自动转换别名"
+msgstr "保存文章和分类项时自动转换别名"
 
 #: templates/admin/page.php:196
 msgid "Force Lowercase"
@@ -151,15 +151,15 @@ msgstr "仅首字母（n-h）"
 
 #: includes/class-wpslug-admin.php:287
 msgid "Choose between full pinyin or first letters only. First letter mode creates very concise URLs and automatically disables SEO optimization."
-msgstr "选择完整拼音或仅首字母。首字母模式创建非常简洁的URL并自动禁用SEO优化。"
+msgstr "选择完整拼音或仅首字母。首字母模式创建非常简洁的 URL 并自动禁用 SEO 优化。"
 
 #: includes/class-wpslug-admin.php:294
 msgid "Word Separator"
 msgstr "单词分隔符"
 
 #: includes/class-wpslug-admin.php:298
-msgid "Dash (-)"
-msgstr "破折号（-）"
+msgid "Hyphen (-)"
+msgstr "连字符（-）"
 
 #: includes/class-wpslug-admin.php:301
 msgid "Underscore (_)"
@@ -227,7 +227,7 @@ msgstr "目标语言"
 
 #: includes/class-wpslug-admin.php:412
 msgid "Target language for translation. English is recommended for SEO."
-msgstr "翻译的目标语言。推荐英文以获得更好的SEO效果。"
+msgstr "翻译的目标语言。推荐英文以获得更好的 SEO 效果。"
 
 #: includes/class-wpslug-admin.php:420
 msgid "API Key"
@@ -425,11 +425,11 @@ msgstr "在文章和页面列表中显示别名列以便于参考"
 
 #: includes/class-wpslug-admin.php:827
 msgid "WP Slug Plugin Active"
-msgstr "文派素格（WP Slug ）插件已激活"
+msgstr "文派素格（WP Slug）插件已激活"
 
 #: includes/class-wpslug-admin.php:831
 msgid "Your slugs are automatically converted based on your WP Slug settings."
-msgstr "您的别名根据您的 文派素格（WP Slug ）设置自动转换。"
+msgstr "您的别名根据您的文派素格（WP Slug）设置自动转换。"
 
 #: includes/class-wpslug-admin.php:838
 msgid "Configure WP Slug"
@@ -512,7 +512,7 @@ msgstr "错误"
 #: templates/admin/page.php:309
 #: templates/admin/page.php:357
 msgid "Foreign Language Transliteration"
-msgstr "外语音译"
+msgstr "外文转写"
 
 #: includes/class-wpslug-settings.php:280
 msgid "Basic Character Mapping"
@@ -520,7 +520,7 @@ msgstr "基础字符映射"
 
 #: includes/class-wpslug-settings.php:284
 msgid "iconv Transliteration"
-msgstr "iconv 音译"
+msgstr "iconv 转写"
 
 #: includes/class-wpslug-settings.php:288
 msgid "PHP Intl Extension"
@@ -708,7 +708,7 @@ msgstr "WPMind 未配置。请在 WPMind 设置中进行配置。"
 
 #: wpslug.php:159
 msgid "WP Slug plugin requirements not met. Please check your PHP and WordPress versions."
-msgstr "文派素格（WP Slug ）插件要求未满足。请检查您的 PHP 和 WordPress 版本。"
+msgstr "文派素格（WP Slug）插件要求未满足。请检查您的 PHP 和 WordPress 版本。"
 
 #: wpslug.php:160
 #: wpslug.php:180
@@ -1092,8 +1092,8 @@ msgid "外文转拉丁字母"
 msgstr "外文转拉丁字母"
 
 #: templates/admin/page.php:248
-msgid "重置是危险动作。预览在设置页下面。"
-msgstr "重置是危险动作。预览在设置页下面。"
+msgid "本页可直接预览别名，不写进文章。重置是危险动作，要先勾选确认。"
+msgstr "本页可直接预览别名，不写进文章。重置是危险动作，要先勾选确认。"
 
 #: templates/admin/page.php:258
 msgid "不可恢复。"
@@ -1242,8 +1242,8 @@ msgid "能。用本地拼音。"
 msgstr "能。用本地拼音。"
 
 #: templates/admin/page.php:386
-msgid "翻译或音译失败能保存吗？"
-msgstr "翻译或音译失败能保存吗？"
+msgid "翻译或转写失败能保存吗？"
+msgstr "翻译或转写失败能保存吗？"
 
 #: templates/admin/page.php:387
 msgid "能。退回本地拼音，保存不会中断。"

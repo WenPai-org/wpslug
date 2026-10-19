@@ -101,7 +101,31 @@ class WPSlug_Settings
         }
     }
 
+    public function getFramework()
+    {
+        if (!class_exists("Wenpai_Admin_Settings")) {
+            return null;
+        }
+        $fw = Wenpai_Admin_Settings::get_instance($this->option_name);
+        if (null === $fw) {
+            $fw = Wenpai_Admin_Settings::register($this->option_name, $this->getSchema(), ["group" => "wpslug_settings"]);
+        }
+        return $fw;
+    }
+
     public function validateOptions($options)
+    {
+        if (class_exists("Wenpai_Admin_Settings")) {
+            $fw = Wenpai_Admin_Settings::get_instance($this->option_name);
+            if (null === $fw) {
+                $fw = Wenpai_Admin_Settings::register($this->option_name, $this->getSchema(), ["group" => "wpslug_settings"]);
+            }
+            return $fw->sanitize(is_array($options) ? $options : []);
+        }
+        return $this->validateOptionsLegacy($options);
+    }
+
+    public function validateOptionsLegacy($options)
     {
         if (!is_array($options)) {
             return $this->defaults;
@@ -611,6 +635,82 @@ class WPSlug_Settings
         delete_option("wpslug_conversion_stats");
         delete_option("wpslug_error_log");
         delete_option("wpslug_cache");
+    }
+
+    /**
+     * Declarative schema for Wenpai_Admin_Settings (kit layer 3).
+     * Defaults come from $this->defaults; sanitize reuses WPSlug_Validator.
+     */
+    public function getSchema()
+    {
+        $V = "WPSlug_Validator";
+        $rules = [
+            "conversion_mode" => function ($v) use ($V) { return $V::validateConversionMode($v); },
+            "pinyin_separator" => function ($v) use ($V) { return $V::validateSelect($v, ["-", "_", ""], "-"); },
+            "pinyin_format" => function ($v) use ($V) { return $V::validateSelect($v, ["full", "first"], "full"); },
+            "transliteration_method" => function ($v) use ($V) { return $V::validateTransliterationMethod($v); },
+            "translation_service" => function ($v) use ($V) { return $V::validateTranslationService($v); },
+            "media_conversion_mode" => function ($v) use ($V) { return $V::validateSelect($v, ["normal", "md5", "none"], "normal"); },
+            "translation_source_lang" => function ($v) use ($V) { return $V::validateLanguageCode($v) ?: "auto"; },
+            "translation_target_lang" => function ($v) use ($V) { return $V::validateLanguageCode($v) ?: "en"; },
+            "max_length" => function ($v) use ($V) { return $V::validateInteger($v, 0, 500); },
+            "seo_max_words" => function ($v) use ($V) { return $V::validateInteger($v, 1, 30); },
+            "enabled_post_types" => function ($v) use ($V) { return $V::validatePostTypes($v); },
+            "post_type_modes" => function ($v) use ($V) { return $V::validatePostTypeModes($v); },
+            "enabled_taxonomies" => function ($v) use ($V) { return $V::validateTaxonomies($v); },
+            "stop_words_list" => function ($v) use ($V) { return $V::validateTextarea($v); },
+            "media_file_prefix" => function ($v) use ($V) { return $V::validateString($v, 50); },
+            "google_api_key" => function ($v) use ($V) { return $V::validateApiKey($v); },
+            "baidu_app_id" => function ($v) use ($V) { return $V::validateApiKey($v); },
+            "baidu_secret_key" => function ($v) use ($V) { return $V::validateApiKey($v); },
+        ];
+        $meta = [
+            "preserve_english" => ["label" => __("Preserve English letters in mixed content", "wpslug")],
+            "preserve_numbers" => ["label" => __("Preserve numbers in slugs", "wpslug")],
+            "google_api_key" => ["secret" => true, "label" => __("API Key", "wpslug")],
+            "baidu_app_id" => ["label" => __("App ID", "wpslug")],
+            "baidu_secret_key" => ["secret" => true, "label" => __("Secret Key", "wpslug")],
+            "enable_seo_optimization" => ["label" => __("Enable SEO-friendly slug optimization", "wpslug")],
+            "smart_punctuation" => ["label" => __("Intelligently handle punctuation marks", "wpslug")],
+            "mixed_content_optimization" => ["label" => __("Optimize mixed language and number content", "wpslug")],
+            "remove_stop_words" => ["label" => __("Remove common stop words from slugs", "wpslug")],
+            "disable_file_convert" => ["label" => __("Disable automatic file name conversion for uploaded media", "wpslug")],
+            "preserve_media_extension" => ["label" => __("Always preserve the original file extension", "wpslug")],
+            "show_slug_column" => ["label" => __("Show slug column in post and page lists for easy reference", "wpslug")],
+            "pinyin_format" => ["type" => "select", "label" => __("Pinyin Format", "wpslug"), "desc" => __("Choose between full pinyin or first letters only. First letter mode creates very concise URLs and automatically disables SEO optimization.", "wpslug"), "choices" => ["full" => __("Full Pinyin (ni-hao)", "wpslug"), "first" => __("First Letter Only (n-h)", "wpslug")]],
+            "pinyin_separator" => ["type" => "select", "label" => __("Word Separator", "wpslug"), "desc" => __("Choose the separator between pinyin words.", "wpslug"), "choices" => ["-" => __("Hyphen (-)", "wpslug"), "_" => __("Underscore (_)", "wpslug"), "" => __("No Separator", "wpslug")]],
+            "media_conversion_mode" => ["type" => "select", "label" => __("Media Conversion Mode", "wpslug"), "choices" => ["normal" => __("Normal Conversion (same as content)", "wpslug"), "md5" => __("MD5 Hash (generates unique hash)", "wpslug"), "none" => __("No Conversion (keep original)", "wpslug")]],
+            "transliteration_method" => ["type" => "select", "label" => __("Transliteration Method", "wpslug"), "choices" => $this->getTransliterationMethods()],
+            "translation_service" => ["type" => "select", "label" => __("Translation Service", "wpslug"), "choices" => $this->getTranslationServices()],
+            "translation_source_lang" => ["type" => "select", "label" => __("Source Language", "wpslug"), "choices" => $this->getLanguages()],
+            "translation_target_lang" => ["type" => "select", "label" => __("Target Language", "wpslug"), "choices" => $this->getLanguages()],
+            "stop_words_list" => ["type" => "textarea", "label" => __("Stop Words List", "wpslug"), "desc" => __("Comma-separated list of stop words to remove from slugs.", "wpslug")],
+            "media_file_prefix" => ["label" => __("Media File Prefix", "wpslug"), "desc" => __("Optional prefix to add to all media file names (e.g., \"img-\", \"file-\").", "wpslug")],
+            "seo_max_words" => ["label" => __("Maximum Words", "wpslug"), "min" => 1, "max" => 30],
+        ];
+        $secrets = ["google_api_key", "baidu_secret_key"];
+        $schema = [];
+        foreach ($this->defaults as $key => $default) {
+            if (is_bool($default)) {
+                $type = "toggle";
+                $fn = function ($v) use ($V) { return $V::validateBoolean($v); };
+            } else {
+                $type = is_int($default) ? "number" : (is_array($default) ? "multicheck" : "text");
+                $fn = isset($rules[$key]) ? $rules[$key] : function ($v) use ($V) { return $V::validateString($v); };
+            }
+            $schema[$key] = [
+                "type" => isset($meta[$key]["type"]) ? $meta[$key]["type"] : $type,
+                "default" => $default,
+                "secret" => in_array($key, $secrets, true),
+                "label" => isset($meta[$key]["label"]) ? $meta[$key]["label"] : $key,
+                "desc" => isset($meta[$key]["desc"]) ? $meta[$key]["desc"] : "",
+                "choices" => isset($meta[$key]["choices"]) ? $meta[$key]["choices"] : [],
+                "min" => isset($meta[$key]["min"]) ? $meta[$key]["min"] : null,
+                "max" => isset($meta[$key]["max"]) ? $meta[$key]["max"] : null,
+                "sanitize" => function ($v) use ($fn, $default) { return $fn(null === $v ? $default : $v); },
+            ];
+        }
+        return $schema;
     }
 
     public function getDefaults()

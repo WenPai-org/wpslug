@@ -246,7 +246,7 @@ Wenpai_Admin_Shell::open([
     <div class="wenpai-page-head">
       <div>
         <h1 class="wenpai-h1"><?php esc_html_e("工具", "wpslug"); ?></h1>
-        <p class="wenpai-lede"><?php esc_html_e("重置是危险动作。预览在设置页下面。", "wpslug"); ?></p>
+        <p class="wenpai-lede"><?php esc_html_e("本页可直接预览别名，不写进文章。重置是危险动作，要先勾选确认。", "wpslug"); ?></p>
       </div>
     </div>
     <div class="wenpai-stack">
@@ -384,7 +384,7 @@ Wenpai_Admin_Shell::open([
             <dd><?php esc_html_e("不会。设置页下面输入标题，立刻看到结果。启用关掉时，设置页这份跟着藏；工具页那份还在。", "wpslug"); ?></dd>
             <dt><?php esc_html_e("没装心思能用吗？", "wpslug"); ?></dt>
             <dd><?php esc_html_e("能。用本地拼音。", "wpslug"); ?></dd>
-            <dt><?php esc_html_e("翻译或音译失败能保存吗？", "wpslug"); ?></dt>
+            <dt><?php esc_html_e("翻译或转写失败能保存吗？", "wpslug"); ?></dt>
             <dd><?php esc_html_e("能。退回本地拼音，保存不会中断。", "wpslug"); ?></dd>
             <dt><?php esc_html_e("重置会清掉文章别名吗？", "wpslug"); ?></dt>
             <dd><?php esc_html_e("不会。只清本插件选项。要先勾选确认。", "wpslug"); ?></dd>

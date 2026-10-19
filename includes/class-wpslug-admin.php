@@ -345,7 +345,7 @@ class WPSlug_Admin
             <div class="field-ctl">
                 <select name="wpslug_options[pinyin_separator]">
                     <option value="-" <?php selected($options["pinyin_separator"], "-"); ?>>
-                        <?php esc_html_e("Dash (-)", "wpslug"); ?>
+                        <?php esc_html_e("Hyphen (-)", "wpslug"); ?>
                     </option>
                     <option value="_" <?php selected($options["pinyin_separator"], "_"); ?>>
                         <?php esc_html_e("Underscore (_)", "wpslug"); ?>

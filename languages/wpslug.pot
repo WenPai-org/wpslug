@@ -165,7 +165,7 @@ msgid "Word Separator"
 msgstr ""
 
 #: includes/class-wpslug-admin.php:298
-msgid "Dash (-)"
+msgid "Hyphen (-)"
 msgstr ""
 
 #: includes/class-wpslug-admin.php:301
@@ -1068,7 +1068,7 @@ msgid "Save Changes"
 msgstr ""
 
 #: templates/admin/page.php:248
-msgid "重置是危险动作。预览在设置页下面。"
+msgid "本页可直接预览别名，不写进文章。重置是危险动作，要先勾选确认。"
 msgstr ""
 
 #: templates/admin/page.php:257
@@ -1223,7 +1223,7 @@ msgid "能。用本地拼音。"
 msgstr ""
 
 #: templates/admin/page.php:386
-msgid "翻译或音译失败能保存吗？"
+msgid "翻译或转写失败能保存吗？"
 msgstr ""
 
 #: templates/admin/page.php:387

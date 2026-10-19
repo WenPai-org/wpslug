@@ -25,6 +25,12 @@ define("WPSLUG_PLUGIN_DIR", plugin_dir_path(__FILE__));
 define("WPSLUG_PLUGIN_URL", plugin_dir_url(__FILE__));
 define("WPSLUG_PLUGIN_BASENAME", plugin_basename(__FILE__));
 
+// Admin kit: register this copy at load time, as the kit expects, so its
+// plugins_loaded@1 boot picks the newest copy before anything runs. Required
+// later (inside plugins_loaded@10) the boot hook never fired, so the settings
+// framework, and its secret handling, was missing on options.php saves.
+require_once WPSLUG_PLUGIN_DIR . "lib/wenpai-admin-ui/php/load.php";
+
 function wpslug_brand_name() {
     $name = apply_filters("wpslug_brand_name", "文派素格");
     $name = is_string($name) ? trim($name) : "";

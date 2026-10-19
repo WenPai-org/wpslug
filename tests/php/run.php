@@ -5,6 +5,7 @@ declare(strict_types=1);
 const ABSPATH = __DIR__ . '/';
 const WPSLUG_PLUGIN_DIR = __DIR__ . '/../../';
 const WPSLUG_VERSION = '1.2.4';
+const WPSLUG_PLUGIN_BASENAME = 'wpslug/wpslug.php';
 const DAY_IN_SECONDS = 86400;
 
 $GLOBALS['wpslug_options'] = [];
@@ -92,6 +93,17 @@ class WPSlug_Test_WPDB {
     public function get_var($query) { return null; }
 }
 $GLOBALS['wpdb'] = new WPSlug_Test_WPDB();
+
+class WP_Query {
+    public $posts = [];
+    public function __construct($args = []) {
+        foreach ($GLOBALS["wpslug_posts"] as $id => $post) {
+            if (($post->post_name ?? null) !== ($args["name"] ?? null)) { continue; }
+            if (isset($args["post_type"], $post->post_type) && $post->post_type !== $args["post_type"]) { continue; }
+            $this->posts[] = (int) $id;
+        }
+    }
+}
 
 class WP_Error {
     private $code;

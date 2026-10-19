@@ -134,7 +134,14 @@ Wenpai_Admin_Shell::open([
     <?php endif; ?>
     <form method="post" action="options.php" id="wpslug-settings-form">
       <?php settings_fields("wpslug_settings"); ?>
-      <input type="hidden" name="wpslug_current_tab" value="<?php echo esc_attr($tab); ?>">
+      <?php
+      // Kit per-tab save: this form writes only the simple page's fields or the
+      // open advanced section's fields (schema 'tab'); the other sections are
+      // still in the form for depends_on, but the kit keeps their saved values.
+      if ($wpslug_form_fw = $this->settings->getFramework()) {
+          echo $wpslug_form_fw->tab_input_html("advanced" === $mode ? $section : "simple"); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- kit-escaped hidden inputs.
+      }
+      ?>
         <?php if ("simple" === $mode) : ?>
         <section class="card wpslug-simple">
           <?php

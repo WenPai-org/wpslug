@@ -653,7 +653,8 @@ check(strpos($pt_html, 'name="wpslug_options[enabled_post_types][]" value=""') !
 $pt_saved = $admin030->validateOptions(['enabled_post_types' => ['', 'page', 'bogus', 'post']]);
 check($pt_saved['enabled_post_types'] === ['page', 'post'], 'multiselect saves a plain list of known post types, as before');
 $pt_none = $admin030->validateOptions(['enabled_post_types' => ['']]);
-check($pt_none['enabled_post_types'] === ['post', 'page'], 'unticking every post type falls back to the 1.3.x defaults');
+check($pt_none['enabled_post_types'] === [], 'unticking every post type stores an empty list, which means every post type (as the hint says)');
+check($admin030->validateOptions(['enabled_post_types' => ['bogus']])['enabled_post_types'] === ['post', 'page'] && $admin030->validateOptions(['enabled_taxonomies' => ['']])['enabled_taxonomies'] === [], 'only unknown post types fall back to the defaults; unticked taxonomies also mean all');
 $tax_saved = $admin030->validateOptions(['enabled_taxonomies' => ['', 'post_tag']]);
 check($tax_saved['enabled_taxonomies'] === ['post_tag'], 'taxonomy multiselect keeps the plain list shape');
 
@@ -812,6 +813,149 @@ $page_src = file_get_contents(__DIR__ . '/../../templates/admin/page.php');
 check(strpos($page_src, '"Save Changes"') === false && substr_count($page_src, '"Save Settings"') === 2, 'every settings tab saves with Save Settings');
 check(strpos($page_src, '把本插件的设置恢复为默认值，不可撤销。') !== false, 'reset card subtitle says what is reset');
 check(strpos($fields['enabled_post_types']['desc'], 'If none are selected') !== false && strpos($fields['enabled_taxonomies']['desc'], 'If none are selected') !== false, 'post type and taxonomy hints say what none selected means');
+
+// ---- Per-tab save (kit tab marker + nonce): saving one form never touches another ----
+function wp_verify_nonce($nonce, $action) { return $nonce === 'nonce-' . $action ? 1 : false; }
+function add_settings_error($setting, $code, $message, $type = 'error') { $GLOBALS['wpslug_settings_errors'][] = ['setting' => $setting, 'code' => $code, 'message' => $message, 'type' => $type]; }
+function esc_html_e($text, $domain = null) { echo esc_html__($text, $domain); }
+$tab_map = WPSlug_Settings::fieldTabs();
+$tab_ids = array_values(array_unique($tab_map));
+check($tab_ids === ['simple', 'pinyin', 'translit', 'translate', 'seo', 'media', 'types'], 'every settings form has a kit tab: simple page plus the six advanced sections');
+$untabbed = array_diff(array_keys((new WPSlug_Settings())->getDefaults()), array_keys($tab_map));
+check(array_values($untabbed) === ['max_length'], 'every stored field is in a tab except max_length, which no page shows');
+foreach ($tab_map as $id => $t) {
+    if ($fields[$id]['tab'] !== $t) { check(false, "schema tab of {$id}"); }
+}
+check($fields['wpmind_status']['tab'] === 'translate', 'schema carries each field\'s tab (WPMind status on translate)');
+
+// Each form renders exactly the fields of its tab (else an unrendered checkbox would read as unticked).
+$GLOBALS['wpslug_options'] = array_merge((new WPSlug_Settings())->getDefaults(), ['conversion_mode' => 'translation', 'translation_service' => 'google']);
+$renderers = ['pinyin' => 'renderPinyinSettings', 'translit' => 'renderTransliterationSettings', 'translate' => 'renderTranslationSettings', 'seo' => 'renderSEOSettings', 'media' => 'renderMediaSettings', 'types' => 'renderAdvancedSettings'];
+foreach ($renderers as $t => $method) {
+    $rm = new ReflectionMethod($admin030, $method);
+    $rm->setAccessible(true);
+    ob_start(); $rm->invoke($admin030, $GLOBALS['wpslug_options']); $html = ob_get_clean();
+    preg_match_all('/name="wpslug_options\[([a-z_]+)\]/', $html, $mm);
+    $rendered = array_values(array_unique(array_diff($mm[1], ['__wenpai_clear', 'conversion_mode'])));
+    $expected = array_keys(array_filter($tab_map, function ($x) use ($t) { return $x === $t; }));
+    sort($rendered); sort($expected);
+    check($rendered === $expected, "advanced section {$t} renders exactly the fields of tab {$t} (" . implode(',', array_diff($expected, $rendered)) . ')');
+}
+$page_src = file_get_contents(__DIR__ . '/../../templates/admin/page.php');
+$simple_src = substr($page_src, strpos($page_src, '<?php if ("simple" === $mode) : ?>'), strpos($page_src, '<?php else : ?>', strpos($page_src, '<?php if ("simple" === $mode) : ?>')) - strpos($page_src, '<?php if ("simple" === $mode) : ?>'));
+$simple_missing = array_filter(array_keys(array_filter($tab_map, function ($x) { return $x === 'simple'; })), function ($id) use ($simple_src) { return strpos($simple_src, '"' . $id . '"') === false; });
+check($simple_missing === [], 'simple page renders every field of tab simple (' . implode(',', $simple_missing) . ')');
+check(strpos($page_src, 'wpslug_current_tab') === false && substr_count($page_src, 'tab_input_html(') === 1 && strpos($page_src, 'tab_input_html("advanced" === $mode ? $section : "simple")') !== false, 'the settings form prints the kit tab marker once: simple, or the open advanced section');
+$marker = $fw->tab_input_html('seo');
+check(strpos($marker, 'name="wpslug_options[__wenpai_tab]" value="seo"') !== false && strpos($marker, 'name="wpslug_options[__wenpai_tab_nonce]" value="nonce-wenpai_tab_wpslug_options_seo"') !== false, 'tab marker carries a per-tab nonce');
+
+// Non-default values on every tab, including secrets, multiselects and the matrix.
+$tab_base = array_merge((new WPSlug_Settings())->getDefaults(), [
+    'enable_conversion' => true, 'conversion_mode' => 'translation', 'auto_convert' => false, 'convert_on_publish_only' => false, 'force_lowercase' => false,
+    'pinyin_format' => 'full', 'pinyin_separator' => '_', 'preserve_english' => false, 'preserve_numbers' => false,
+    'transliteration_method' => 'basic',
+    'translation_service' => 'google', 'translation_source_lang' => 'zh', 'translation_target_lang' => 'en', 'google_api_key' => 'G-KEY\\123', 'baidu_app_id' => '2026', 'baidu_secret_key' => 'BAIDU-SECRET',
+    'enable_seo_optimization' => true, 'smart_punctuation' => false, 'mixed_content_optimization' => true, 'remove_stop_words' => true, 'seo_max_words' => 7, 'stop_words_list' => 'the,a',
+    'disable_file_convert' => false, 'media_conversion_mode' => 'md5', 'media_file_prefix' => 'img-', 'preserve_media_extension' => false,
+    'enabled_post_types' => ['post', 'product'], 'post_type_modes' => ['post' => 'seo_slug', 'product' => 'pinyin'], 'enabled_taxonomies' => ['category'], 'show_slug_column' => true,
+    'max_length' => 80,
+]);
+// What the browser posts for a field: toggles as hidden 0 + checked 1, multiselects with the empty sentinel, secrets empty.
+$as_posted = function ($id, $value) use ($fields) {
+    $type = $fields[$id]['type'];
+    if ($type === 'toggle') { return $value ? '1' : '0'; }
+    if ($type === 'multiselect') { return array_merge([''], $value); }
+    if ($type === 'secret') { return ''; }
+    if ($type === 'matrix') { $rows = []; foreach (['post', 'page', 'product'] as $r) { $rows[$r] = $value[$r] ?? 'inherit'; } return $rows; }
+    return is_int($value) ? (string) $value : $value;
+};
+// A different value per field, to see whether a field outside the saved tab moved.
+$other_value = function ($id, $value) use ($fields) {
+    $type = $fields[$id]['type'];
+    if ($type === 'toggle') { return !$value; }
+    if ($type === 'multiselect') { return []; }
+    if ($type === 'matrix') { return []; }
+    if ($type === 'secret') { return 'OTHER-SECRET'; }
+    if ($type === 'number') { return 3; }
+    $choices = $fields[$id]['choices'] instanceof Closure ? call_user_func($fields[$id]['choices'], $fields[$id]) : $fields[$id]['choices'];
+    if (is_array($choices) && $choices !== []) { foreach (array_keys($choices) as $k) { if ((string) $k !== (string) $value) { return (string) $k; } } }
+    return 'other-' . $value;
+};
+$changed_keys = function ($before, $after) { $out = []; foreach ($before as $k => $v) { if (!array_key_exists($k, $after) || $after[$k] !== $v) { $out[] = $k; } } return $out; };
+foreach ($tab_ids as $t) {
+    $own = array_keys(array_filter($tab_map, function ($x) use ($t) { return $x === $t; }));
+    $marker_in = ['__wenpai_tab' => $t, '__wenpai_tab_nonce' => 'nonce-wenpai_tab_wpslug_options_' . $t];
+    // 1) Simple-page style form: only this tab's fields are posted, unchanged.
+    $GLOBALS['wpslug_options'] = $tab_base;
+    $in = $marker_in;
+    foreach ($own as $id) { $in[$id] = $as_posted($id, $tab_base[$id]); }
+    $out = $admin030->validateOptions($in);
+    check($changed_keys($tab_base, $out) === [], "saving tab {$t} unchanged changes nothing anywhere (" . implode(',', $changed_keys($tab_base, $out)) . ')');
+    check(!array_key_exists('__wenpai_tab', $out) && !array_key_exists('__wenpai_tab_nonce', $out), "tab {$t}: the marker is not stored");
+    check(($GLOBALS['wpslug_transients']['wpslug_admin_tab'] ?? '') === $t, "tab {$t}: the saved form is remembered in the wpslug_admin_tab transient");
+    // 2) Advanced-page style form: every section is in the form; other sections post different values.
+    $in = $marker_in;
+    foreach ($tab_base as $id => $v) {
+        if ($id === 'max_length') { continue; }
+        $in[$id] = in_array($id, $own, true) ? $as_posted($id, $v) : $as_posted($id, $other_value($id, $v));
+        if (!in_array($id, $own, true) && $fields[$id]['type'] === 'secret') { $in[$id] = 'OTHER-SECRET'; }
+    }
+    $GLOBALS['wpslug_options'] = $tab_base;
+    $out = $admin030->validateOptions($in);
+    check($changed_keys($tab_base, $out) === [], "saving tab {$t} ignores values posted for every other tab (" . implode(',', $changed_keys($tab_base, $out)) . ')');
+    // 3) Edits on the saved tab land; nothing outside it moves.
+    $in = $marker_in;
+    $edit = [];
+    foreach ($own as $id) {
+        $type = $fields[$id]['type'];
+        if (in_array($type, ['toggle', 'multiselect', 'matrix'], true)) { $edit[$id] = $other_value($id, $tab_base[$id]); }
+        $in[$id] = $as_posted($id, array_key_exists($id, $edit) ? $edit[$id] : $tab_base[$id]);
+    }
+    $GLOBALS['wpslug_options'] = $tab_base;
+    $out = $admin030->validateOptions($in);
+    $outside = array_values(array_diff($changed_keys($tab_base, $out), $own));
+    check($outside === [], "editing tab {$t} leaves every other tab's toggles, multiselects, matrix and secrets as saved (" . implode(',', $outside) . ')');
+    foreach ($edit as $id => $want) {
+        if ($fields[$id]['depends_on'] !== [] && isset($fw->inactive_fields($out)[$id])) { continue; }
+        if ($out[$id] !== $want) { check(false, "tab {$t}: edit of {$id} saved"); }
+    }
+}
+// Explicit cases named in the QA report (N1).
+$GLOBALS['wpslug_options'] = $tab_base;
+$simple_save = $admin030->validateOptions(['__wenpai_tab' => 'simple', '__wenpai_tab_nonce' => 'nonce-wenpai_tab_wpslug_options_simple', 'enable_conversion' => '1', 'conversion_mode' => 'translation', 'auto_convert' => '0', 'convert_on_publish_only' => '0', 'force_lowercase' => '1']);
+check($simple_save['force_lowercase'] === true && $simple_save['show_slug_column'] === true && $simple_save['preserve_media_extension'] === false && $simple_save['remove_stop_words'] === true
+    && $simple_save['enabled_post_types'] === ['post', 'product'] && $simple_save['enabled_taxonomies'] === ['category'] && $simple_save['post_type_modes'] === ['post' => 'seo_slug', 'product' => 'pinyin']
+    && $simple_save['google_api_key'] === 'G-KEY\\123' && $simple_save['baidu_secret_key'] === 'BAIDU-SECRET' && $simple_save['max_length'] === 80, 'simple page save: advanced toggles, multiselects, matrix and secrets are untouched');
+$GLOBALS['wpslug_options'] = $tab_base;
+$seo_save = $admin030->validateOptions(['__wenpai_tab' => 'seo', '__wenpai_tab_nonce' => 'nonce-wenpai_tab_wpslug_options_seo', 'enable_seo_optimization' => '1', 'smart_punctuation' => '1', 'mixed_content_optimization' => '0', 'remove_stop_words' => '1', 'seo_max_words' => '9', 'stop_words_list' => 'the']);
+check($seo_save['smart_punctuation'] === true && $seo_save['mixed_content_optimization'] === false && $seo_save['seo_max_words'] === 9
+    && $changed_keys($tab_base, $seo_save) === ['smart_punctuation', 'mixed_content_optimization', 'seo_max_words', 'stop_words_list'], 'SEO tab save writes only the SEO fields');
+$GLOBALS['wpslug_options'] = $tab_base;
+$types_none = $admin030->validateOptions(['__wenpai_tab' => 'types', '__wenpai_tab_nonce' => 'nonce-wenpai_tab_wpslug_options_types', 'enabled_post_types' => [''], 'enabled_taxonomies' => [''], 'post_type_modes' => ['post' => 'seo_slug', 'page' => 'inherit', 'product' => 'pinyin'], 'show_slug_column' => '1']);
+check($types_none['enabled_post_types'] === [] && $types_none['enabled_taxonomies'] === [] && $changed_keys($tab_base, $types_none) === ['enabled_post_types', 'enabled_taxonomies'], 'unticking every post type and taxonomy on the types tab stores [] (all) and changes nothing else');
+$GLOBALS['wpslug_options'] = $types_none;
+$tpl_settings = new WPSlug_Settings();
+check($tpl_settings->isPostTypeEnabled('product') && $tpl_settings->isPostTypeEnabled('page') && $tpl_settings->isTaxonomyEnabled('product_cat'), 'an empty list really converts every post type and taxonomy');
+
+// Forged, expired or swapped tab nonces write nothing and report tab_expired.
+foreach ([
+    'forged' => ['__wenpai_tab' => 'simple', '__wenpai_tab_nonce' => 'forged'],
+    'expired' => ['__wenpai_tab' => 'seo', '__wenpai_tab_nonce' => ''],
+    'swapped' => ['__wenpai_tab' => 'types', '__wenpai_tab_nonce' => 'nonce-wenpai_tab_wpslug_options_seo'],
+] as $case => $bad) {
+    $GLOBALS['wpslug_options'] = $tab_base;
+    $GLOBALS['wpslug_settings_errors'] = [];
+    $in = $bad + ['enable_conversion' => '0', 'force_lowercase' => '1', 'smart_punctuation' => '1', 'enabled_post_types' => [''], 'post_type_modes' => [], 'google_api_key' => 'NEW', '__wenpai_clear' => ['baidu_secret_key'], 'show_slug_column' => '0'];
+    $out = $admin030->validateOptions($in);
+    $errs = array_values(array_filter($GLOBALS['wpslug_settings_errors'], function ($e) { return $e['code'] === 'wenpai_tab'; }));
+    check($changed_keys($tab_base, $out) === [] && array_keys($out) === array_keys($tab_base), "{$case} tab nonce writes nothing (" . implode(',', $changed_keys($tab_base, $out)) . ')');
+    check(count($errs) === 1 && $errs[0]['message'] === $settings->getFrameworkStrings()['tab_expired'] && $errs[0]['type'] === 'error', "{$case} tab nonce reports the WPSlug tab_expired message");
+}
+// Without a marker (update_option() from code, import, CLI) absent keys keep their saved value.
+$GLOBALS['wpslug_options'] = $tab_base;
+$partial = $admin030->validateOptions(['pinyin_separator' => '-']);
+check($changed_keys($tab_base, $partial) === ['pinyin_separator'], 'a partial array without a tab marker changes only the keys it carries');
+$GLOBALS['wpslug_options'] = $tab_base;
 $kit_keys = array_keys(Wenpai_Admin_Settings::default_strings());
 $our_keys = array_keys($settings->getFrameworkStrings());
 check(array_diff($kit_keys, $our_keys) === [], 'WPSlug translates every kit string (missing: ' . implode(', ', array_diff($kit_keys, $our_keys)) . ')');

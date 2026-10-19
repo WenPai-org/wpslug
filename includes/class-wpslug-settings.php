@@ -851,6 +851,12 @@ class WPSlug_Settings
             "seo_max_words" => ["label" => __("Maximum Words", "wpslug"), "desc" => __("Maximum number of words to keep in slug for SEO optimization.", "wpslug"), "min" => 1, "max" => 30, "depends_on" => $stop_words_group],
             "stop_words_list" => ["type" => "textarea", "label" => __("Stop Words List", "wpslug"), "desc" => __("Comma-separated list of stop words to remove from slugs.", "wpslug"), "depends_on" => $stop_words_group],
         ];
+        // Per-tab save (kit 'tab'): each settings form posts the kit tab marker
+        // (tab_input_html()), so only that form's fields are written and every
+        // other field keeps its saved value. Ids match the simple page and the
+        // advanced sections in WPSlug_Admin. max_length is on no page, so it is
+        // in no tab and is never written from a form.
+        $tabs = self::fieldTabs();
         $schema = [];
         foreach ($this->defaults as $key => $default) {
             $m = isset($meta[$key]) ? $meta[$key] : [];
@@ -870,6 +876,7 @@ class WPSlug_Settings
                 "min" => isset($m["min"]) ? $m["min"] : null,
                 "max" => isset($m["max"]) ? $m["max"] : null,
                 "depends_on" => isset($m["depends_on"]) ? $m["depends_on"] : [],
+                "tab" => isset($tabs[$key]) ? $tabs[$key] : "",
                 // WPSlug validators keep the stored shapes of 1.3.x (see tests).
                 "sanitize" => function ($v) use ($fn, $default) { return $fn(null === $v ? $default : $v); },
             ];
@@ -887,8 +894,37 @@ class WPSlug_Settings
             "label" => __("WenPai XinSi (WPMind)", "wpslug"),
             "depends_on" => ["field" => "translation_service", "value" => "wpmind"],
             "status" => function () use ($settings) { return $settings->getWpmindStatus(); },
+            "tab" => "translate",
         ];
         return $schema;
+    }
+
+    /**
+     * Settings form (kit tab) of every stored field: "simple" for the simple
+     * page, otherwise the advanced section id. Each form renders exactly these
+     * fields (tests/php/run.php checks it), so a ticked-off checkbox on the
+     * saved form really means "empty" and nothing outside it is touched.
+     *
+     * @return array<string, string> Field id => tab id.
+     */
+    public static function fieldTabs()
+    {
+        $map = [
+            "simple" => ["enable_conversion", "conversion_mode", "auto_convert", "convert_on_publish_only", "force_lowercase"],
+            "pinyin" => ["pinyin_format", "pinyin_separator", "preserve_english", "preserve_numbers"],
+            "translit" => ["transliteration_method"],
+            "translate" => ["translation_service", "translation_source_lang", "translation_target_lang", "google_api_key", "baidu_app_id", "baidu_secret_key"],
+            "seo" => ["enable_seo_optimization", "smart_punctuation", "mixed_content_optimization", "remove_stop_words", "seo_max_words", "stop_words_list"],
+            "media" => ["disable_file_convert", "media_conversion_mode", "media_file_prefix", "preserve_media_extension"],
+            "types" => ["enabled_post_types", "post_type_modes", "enabled_taxonomies", "show_slug_column"],
+        ];
+        $out = [];
+        foreach ($map as $tab => $ids) {
+            foreach ($ids as $id) {
+                $out[$id] = $tab;
+            }
+        }
+        return $out;
     }
 
     /**

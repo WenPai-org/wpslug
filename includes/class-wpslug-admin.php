@@ -117,7 +117,9 @@ class WPSlug_Admin
     {
         // phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only admin route.
         if (isset($_GET["page"]) && "wpslug" === sanitize_key(wp_unslash($_GET["page"]))) {
-            echo "<style>.settings-error.notice-success { display: none !important; }</style>";
+            // The kit prints the save receipt, field errors and tab_expired itself
+            // (notices_html()); hide WP core's copies of the same settings errors.
+            echo "<style>.settings-error.notice-success, #setting-error-wenpai_tab { display: none !important; }</style>";
         }
         // phpcs:enable WordPress.Security.NonceVerification.Recommended
     }
@@ -525,32 +527,33 @@ class WPSlug_Admin
         <?php
     }
 
+    /**
+     * Sanitize callback of wpslug_options.
+     *
+     * Settings forms post the kit tab marker (tab_input_html()): the kit then
+     * writes only that form's fields, keeps every other field as saved, and
+     * writes nothing when the marker's nonce is forged or expired (tab_expired).
+     * The input goes to the kit untouched; merging the saved option in first
+     * would hide an unticked checkbox on the saved form.
+     *
+     * Without a marker (update_option() from code, CLI, import, older forms)
+     * keys absent from the input keep their saved value, so a partial array
+     * never turns other toggles off or empties multiselects.
+     *
+     * @param mixed $input Raw value.
+     * @return array
+     */
     public function validateOptions($input)
     {
-        $current_options = $this->settings->getOptions();
         $posted = is_array($input) ? $input : [];
-        // Keys absent from this form keep their saved value.
-        $validated = $this->settings->validateOptions(array_merge($current_options, $posted));
-
-        if (!empty($validated)) {
-            $merged_options = $validated;
-
-            if (
-                // Settings API verifies the options nonce before this sanitize callback.
-                // phpcs:ignore WordPress.Security.NonceVerification.Missing
-                isset($_POST["wpslug_current_tab"]) &&
-                // phpcs:ignore WordPress.Security.NonceVerification.Missing
-                !empty($_POST["wpslug_current_tab"])
-            ) {
-                // phpcs:ignore WordPress.Security.NonceVerification.Missing
-                $tab = sanitize_text_field(wp_unslash($_POST["wpslug_current_tab"]));
-                set_transient("wpslug_admin_tab", $tab, 60);
-            }
-
-            return $merged_options;
+        $fw = $this->fw();
+        $tab_key = $fw ? Wenpai_Admin_Settings::TAB_KEY : "__wenpai_tab";
+        if (isset($posted[$tab_key]) && is_scalar($posted[$tab_key])) {
+            // Remembered for one minute so the page reopens on the saved form.
+            set_transient("wpslug_admin_tab", sanitize_key((string) $posted[$tab_key]), 60);
+            return $this->settings->validateOptions($posted);
         }
-
-        return $input;
+        return $this->settings->validateOptions(array_merge($this->settings->getOptions(), $posted));
     }
 
     public function enqueueScripts($hook)

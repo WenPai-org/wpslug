@@ -53,7 +53,7 @@ function wp_unique_post_slug($slug, $post_id, $status, $type, $parent) {
 }
 function doing_action($hook) { return false; }
 function get_current_screen() { return null; }
-function wp_remote_post($url, $args) { $GLOBALS['wpslug_remote_args'] = $args; if ($GLOBALS['wpslug_remote_failure']) { return new WP_Error('remote_failure', 'provider unavailable'); } return ['response' => ['code' => 200], 'body' => '{"data":{"translations":[{"translatedText":"Hello World"}]}}']; }
+function wp_remote_post($url, $args) { $GLOBALS['wpslug_remote_args'] = $args; if ($GLOBALS['wpslug_remote_failure']) { return new WP_Error('remote_failure', 'provider unavailable'); } return ['response' => ['code' => 200], 'body' => $GLOBALS['wpslug_remote_body'] ?? '{"data":{"translations":[{"translatedText":"Hello World"}]}}']; }
 function wp_remote_retrieve_response_code($response) { return $response['response']['code']; }
 function wp_remote_retrieve_body($response) { return $response['body']; }
 function wp_rand($min, $max) { return $min; }
@@ -77,7 +77,7 @@ function wpmind_pinyin($text, $options = []) {
     }
     return 'wenpai-suge';
 }
-function current_user_can($capability, ...$args) { return true; }
+function current_user_can($capability, ...$args) { return $GLOBALS['wpslug_can'] ?? true; }
 function add_query_arg($key, $value, $url) { return $url . (strpos($url, '?') === false ? '?' : '&') . rawurlencode($key) . '=' . rawurlencode((string) $value); }
 function wp_update_post($data) { $GLOBALS['wpslug_post_updates'][] = $data; if (isset($GLOBALS['wpslug_posts'][$data['ID']])) { $GLOBALS['wpslug_posts'][$data['ID']]->post_name = $data['post_name']; } return $data['ID']; }
 function absint($value) { return abs((int) $value); }
@@ -694,7 +694,10 @@ check(strpos($js030, 'initResetSettings') === false && strpos($js030, 'confirm('
 check(strpos($js030, 'wpslug-debug-checkboxes') === false && strpos($js030, 'wpslug-test-form-data') === false && strpos($js030, 'console.log') === false, 'admin.js has no debug buttons or console logging');
 check(strpos($js030, 'wpslug-when-on') === false && strpos($js030, 'initTranslationServiceToggle') === false && strpos($js030, 'initConversionModeToggle') === false, 'hand-written show/hide JS is gone (kit depends_on)');
 check(strpos($js030, '"checked", false') === false && strpos($js030, 'val("google")') === false, 'admin.js never changes saved values (SEO, translation service)');
-check(strpos($js030, 'seo_first_letter') !== false, 'disabled SEO controls show why');
+check(strpos($js030, 'seo_first_letter') === false && strpos($js030, 'initSEOOptimizationToggle') === false && strpos($js030, 'initMediaSettings') === false && strpos($js030, 'prop("disabled"') === false, 'hand-written SEO and media disable JS is gone (kit depends_on mode disable)');
+check(strpos($js030, 'wpslug-test-api') === false && strpos($js030, 'initApiTesting') === false && strpos($js030, 'wpslug_test_api') === false, 'hand-written Test Connection JS is gone (kit field action)');
+$css030 = file_get_contents(WPSLUG_PLUGIN_DIR . 'assets/admin.css');
+check(strpos($css030, 'wpslug-key-row') === false && strpos($css030, 'wpslug-test-api') === false && strpos($css030, 'wpslug-api-status') === false && strpos($css030, 'wpslug-seo-dependent') === false && strpos($css030, '.field.disabled') === false, 'dead CSS for the replaced hand-written pieces is gone');
 check(strpos($tpl030, 'name="wpslug_options[') === false, 'templates have no hand-written wpslug_options controls');
 $main030 = file_get_contents(WPSLUG_PLUGIN_DIR . 'wpslug.php');
 $load_at = strpos($main030, 'require_once WPSLUG_PLUGIN_DIR . "lib/wenpai-admin-ui/php/load.php";');
@@ -702,14 +705,109 @@ check($load_at !== false && $load_at < strpos($main030, 'class WPSlug'), 'kit lo
 check(strpos($tpl030, 'renderToggle') === false && strpos($tpl030, 'wpslug-when-on') === false, 'old toggle buttons and when-on wrappers are gone');
 
 
-// Design review of #87: Test Connection sits on the key input's line; wording.
-$key_row = new ReflectionMethod($admin030, 'keyFieldWithTest');
-$key_row->setAccessible(true);
-ob_start();
-$key_row->invoke($admin030, 'google_api_key', 'google');
-$key_html = ob_get_clean();
-check(preg_match('~<div class="wpslug-key-row">.*type="password"[^>]*><button type="button" class="btn btn-secondary wpslug-test-api" data-service="google">Test Connection</button></div><p class="wenpai-field__~s', $key_html) === 1, 'Test Connection button shares a row with the Google key input, before the field notes');
-check(strpos($key_html, '__wenpai_clear') !== false && strpos($key_html, 'saved-google-key') === false, 'key row keeps the kit secret state and never echoes the key');
+// ---- Kit 0.3.0 components: field actions, disable-mode depends_on, status ----
+function wp_create_nonce($action) { return 'nonce-' . $action; }
+function register_setting($group, $option, $args = []) { $GLOBALS['wpslug_registered'][$option] = $args; }
+function check_ajax_referer($action, $arg = false, $die = true) { return ($GLOBALS['wpslug_nonce_ok'] ?? true) && $action === 'wpslug_test_api'; }
+class WPSlug_Test_Json extends Exception { public $success; public $data; public $status; public function __construct($success, $data, $status) { parent::__construct('json'); $this->success = $success; $this->data = $data; $this->status = $status; } }
+function wp_send_json_success($data = null, $status = null) { throw new WPSlug_Test_Json(true, $data, $status); }
+function wp_send_json_error($data = null, $status = null) { throw new WPSlug_Test_Json(false, $data, $status); }
+$ajax_call = function ($post) {
+    $_POST = $post;
+    foreach ($GLOBALS['wpslug_hooks']['action']['wp_ajax_wpslug_test_api'] ?? [] as $cb) {
+        try { $cb(); } catch (WPSlug_Test_Json $j) { $_POST = []; return $j; }
+    }
+    $_POST = [];
+    return null;
+};
+
+check(!method_exists($admin030, 'keyFieldWithTest') && !method_exists($admin030, 'ajaxTestApi'), 'hand-written key row and wpslug_test_api handler are gone');
+check(strpos($tpl030, 'wpslug-test-api') === false && strpos($tpl030, 'wpslug-key-row') === false && strpos($tpl030, 'wpslug-seo-dependent') === false && strpos($tpl030, 'wpslug-wpmind-status') === false, 'templates have no hand-written test button, SEO wrappers or WPMind block');
+
+$google_html = $fw->field_html('google_api_key');
+check(preg_match('~<div class="field-ctl-row wenpai-field__row"><input type="password"[^>]*><button type="button" class="btn btn-secondary" hidden data-wenpai-action="wpslug_test_api"~', $google_html) === 1, 'Test Connection is a kit field action on the same row as the Google key input');
+check(strpos($google_html, 'data-wenpai-busy="Testing"') !== false && strpos($google_html, 'Testing…') === false && strpos($google_html, 'Testing...') === false, 'busy text is passed without an ellipsis (the kit appends it)');
+check(strpos($google_html, 'data-wenpai-nonce="nonce-wpslug_test_api"') !== false, 'action button carries a nonce for wpslug_test_api');
+check(strpos($google_html, 'data-wenpai-data="' . esc_attr('{"service":"google"}') . '"') !== false && strpos($google_html, 'data-wenpai-include="' . esc_attr('["wpslug_options[google_api_key]"]') . '"') !== false, 'Google action sends the service and the key field');
+check(strpos($google_html, 'data-wenpai-requires-note="Enter the API key first."') !== false && strpos($google_html, 'saved-google-key') === false, 'Google action is disabled until a key is typed or saved, and never echoes the key');
+$baidu_html = $fw->field_html('baidu_secret_key');
+check(strpos($baidu_html, 'data-wenpai-include="' . esc_attr('["wpslug_options[baidu_app_id]","wpslug_options[baidu_secret_key]"]') . '"') !== false && strpos($baidu_html, esc_attr('{"service":"baidu"}')) !== false, 'Baidu action sends App ID and Secret Key');
+
+$admin030->registerSettings();
+check(count($GLOBALS['wpslug_hooks']['action']['wp_ajax_wpslug_test_api'] ?? []) === 1, 'wp_ajax_wpslug_test_api is registered once, through the kit ajax_action()');
+$GLOBALS['wpslug_nonce_ok'] = false;
+$denied = $ajax_call(['service' => 'google']);
+$GLOBALS['wpslug_nonce_ok'] = true;
+check($denied && !$denied->success && $denied->status === 403, 'Test Connection rejects a bad nonce with 403');
+$GLOBALS['wpslug_can'] = false;
+$denied = $ajax_call(['service' => 'google']);
+unset($GLOBALS['wpslug_can']);
+check($denied && !$denied->success && $denied->status === 403, 'Test Connection requires manage_options');
+$GLOBALS['wpslug_remote_args'] = null;
+$ok = $ajax_call(['service' => 'google', 'wpslug_options' => ['google_api_key' => '']]);
+check($ok && $ok->success && $ok->data['message'] === 'Connected.', 'Google test succeeds with the saved key when the input is empty');
+check(($GLOBALS['wpslug_remote_args']['body']['key'] ?? '') === 'saved-google-key', 'an empty key input tests the saved key (server side only)');
+$ajax_call(['service' => 'google', 'wpslug_options' => ['google_api_key' => 'typed-google-key']]);
+check(($GLOBALS['wpslug_remote_args']['body']['key'] ?? '') === 'typed-google-key', 'a typed, unsaved key is tested without saving it');
+check($GLOBALS['wpslug_options']['google_api_key'] === 'saved-google-key', 'Test Connection does not save the typed key');
+$GLOBALS['wpslug_remote_failure'] = true;
+$bad = $ajax_call(['service' => 'google']);
+check($bad && !$bad->success && $bad->data['message'] === 'Could not connect to Google Translate. Please check the key.', 'Google failure names the service (WP_Error message, not action_failed)');
+$GLOBALS['wpslug_remote_failure'] = false;
+$bad = $ajax_call(['service' => 'baidu']);
+check($bad && !$bad->success && $bad->data['message'] === 'Could not connect to Baidu Translate. Please check the key.', 'Baidu failure (fallback pinyin answer) is reported as a failure that names the service');
+$GLOBALS['wpslug_remote_body'] = '{"trans_result":[{"src":"你好","dst":"Hello"}]}';
+$ok = $ajax_call(['service' => 'baidu']);
+unset($GLOBALS['wpslug_remote_body']);
+check($ok && $ok->success, 'Baidu test succeeds when the service answers');
+$none = $admin030->testApi('google', ['google_api_key' => '']);
+check($none instanceof WP_Error && $none->get_error_message() === 'Enter the API key first.', 'missing Google key is reported with the requires note');
+check($admin030->testApi('bogus') instanceof WP_Error, 'unknown service is rejected');
+
+// Disable-mode depends_on (SEO, media): reason shown, saved value kept.
+$seo_tree = function ($id) use ($fields) { return $fields[$id]['depends_on']; };
+check(($seo_tree('smart_punctuation')['mode'] ?? '') === 'disable' && ($seo_tree('seo_max_words')['mode'] ?? '') === 'disable' && ($seo_tree('enable_seo_optimization')['mode'] ?? '') === 'disable', 'SEO fields use kit depends_on mode disable');
+check(($seo_tree('media_conversion_mode')['mode'] ?? '') === 'disable' && ($seo_tree('media_file_prefix')['mode'] ?? '') === 'disable' && ($seo_tree('preserve_media_extension')['mode'] ?? '') === 'disable', 'media fields use kit depends_on mode disable');
+$sp_html = $fw->field_html('smart_punctuation');
+check(strpos($sp_html, 'data-wenpai-depends="') !== false && strpos($sp_html, '&quot;mode&quot;:&quot;disable&quot;') !== false && strpos($sp_html, 'class="wenpai-field__reason"') !== false, 'SEO field prints the kit disable tree and a reason slot');
+check(strpos($sp_html, 'Turn on SEO optimization to use this.') !== false && strpos($sp_html, 'Not available with first-letter pinyin.') !== false, 'SEO reasons: first-letter pinyin, then SEO switch off');
+check(strpos($fw->field_html('stop_words_list'), 'Turn on stop word removal to use this.') !== false, 'stop word fields also wait for stop word removal');
+$mp_html = $fw->field_html('media_file_prefix');
+check(strpos($mp_html, 'data-wenpai-depends-on="wpslug_options[disable_file_convert]"') !== false && strpos($mp_html, 'data-wenpai-depends-not') !== false && strpos($mp_html, 'data-wenpai-depends-mode="disable"') !== false && strpos($mp_html, 'data-wenpai-depends-reason="Automatic file name conversion is disabled.') !== false, 'media fields are disabled with a reason while file conversion is off');
+$base_vals = (new WPSlug_Settings())->getOptions();
+$off = $fw->inactive_fields(array_merge($base_vals, ['conversion_mode' => 'pinyin', 'pinyin_format' => 'first', 'enable_conversion' => true]));
+check(($off['enable_seo_optimization'] ?? '') === 'disable' && ($off['smart_punctuation'] ?? '') === 'disable', 'first-letter pinyin disables the SEO group, including its switch');
+$off = $fw->inactive_fields(array_merge($base_vals, ['conversion_mode' => 'translation', 'pinyin_format' => 'first', 'enable_conversion' => true, 'enable_seo_optimization' => true]));
+check(!isset($off['enable_seo_optimization']) && !isset($off['smart_punctuation']), 'first-letter format only matters in local pinyin mode');
+$off = $fw->inactive_fields(array_merge($base_vals, ['pinyin_format' => 'full', 'enable_seo_optimization' => false]));
+check(!isset($off['enable_seo_optimization']) && ($off['remove_stop_words'] ?? '') === 'disable' && ($off['stop_words_list'] ?? '') === 'disable', 'SEO switch off disables its dependents but not itself');
+$GLOBALS['wpslug_options']['pinyin_format'] = 'full';
+$GLOBALS['wpslug_options']['smart_punctuation'] = true;
+$GLOBALS['wpslug_options']['media_file_prefix'] = 'img-';
+$kept_seo = $admin030->validateOptions(['enable_seo_optimization' => '0', 'smart_punctuation' => '0']);
+check($kept_seo['enable_seo_optimization'] === false && $kept_seo['smart_punctuation'] === true, 'a disabled SEO field keeps its saved value (the switch hidden 0 does not turn it off)');
+$kept_media = $admin030->validateOptions(['disable_file_convert' => '1', 'media_file_prefix' => '']);
+check($kept_media['disable_file_convert'] === true && $kept_media['media_file_prefix'] === 'img-', 'a disabled media field keeps its saved value');
+$GLOBALS['wpslug_options']['enable_seo_optimization'] = true;
+$mirror = new ReflectionMethod($admin030, 'conversionModeMirror');
+$mirror->setAccessible(true);
+ob_start(); $mirror->invoke($admin030, ['enable_conversion' => true, 'conversion_mode' => 'pinyin']); $mirror_html = ob_get_clean();
+check($mirror_html === '<input type="hidden" name="wpslug_options[conversion_mode]" value="pinyin" disabled data-wpslug-mirror>', 'advanced page mirrors the saved mode in a disabled (never submitted) hidden input for kit JS');
+ob_start(); $mirror->invoke($admin030, ['enable_conversion' => false, 'conversion_mode' => 'pinyin']); $mirror_off = ob_get_clean();
+check(strpos($mirror_off, 'value=""') !== false, 'mirror is empty while the plugin is off, like the server (inactive conversion_mode never matches)');
+
+// Read-only WPMind status field.
+check($fields['wpmind_status']['type'] === 'status', 'WPMind block is the kit status field');
+$ws_html = $fw->field_html('wpmind_status');
+check(strpos($ws_html, 'class="pill ok"') !== false && strpos($ws_html, '>Active<') !== false && strpos($ws_html, 'options-general.php?page=wpmind') !== false && strpos($ws_html, 'aria-labelledby="wenpai-f-wpslug_options-wpmind_status-label wenpai-f-wpslug_options-wpmind_status-pill"') !== false, 'WPMind status: pill, link to its settings, label + pill read together');
+check(strpos($ws_html, 'data-wenpai-depends-value="wpmind"') !== false && strpos($ws_html, 'name=') === false, 'WPMind status follows translation_service and submits nothing');
+$st_off = (new WPSlug_Settings())->getWpmindStatus();
+check($st_off['level'] === 'ok', 'status reflects wpmind_is_available()');
+
+// Saved-option compatibility with main 0391cf6: same keys, no status key stored.
+$saved030 = $admin030->validateOptions([]);
+check(array_keys($saved030) === array_keys((new WPSlug_Settings())->getDefaults()) && !array_key_exists('wpmind_status', $saved030), 'stored option keys are exactly the 1.3.x defaults (status field not stored)');
+
 $page_src = file_get_contents(__DIR__ . '/../../templates/admin/page.php');
 check(strpos($page_src, '"Save Changes"') === false && substr_count($page_src, '"Save Settings"') === 2, 'every settings tab saves with Save Settings');
 check(strpos($page_src, '把本插件的设置恢复为默认值，不可撤销。') !== false, 'reset card subtitle says what is reset');

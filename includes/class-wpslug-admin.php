@@ -21,7 +21,6 @@ class WPSlug_Admin
         add_action("admin_enqueue_scripts", [$this, "enqueueScripts"]);
         add_action("admin_notices", [$this, "showAdminNotices"]);
         add_action("wp_ajax_wpslug_preview", [$this, "ajaxPreview"]);
-        add_action("wp_ajax_wpslug_test_api", [$this, "ajaxTestApi"]);
         add_action("wp_ajax_wpslug_editor_preview", [$this, "ajaxEditorPreview"]);
         add_action("post_submitbox_start", [$this, "addPostMetaBox"]);
         add_action("enqueue_block_editor_assets", [$this, "enqueueBlockEditorAssets"]);
@@ -153,6 +152,14 @@ class WPSlug_Admin
         ]);
 
         add_filter("wp_redirect", [$this, "preventDefaultNotice"], 10, 2);
+
+        // Test Connection (kit field action on the key fields). admin_init runs
+        // on admin-ajax.php before wp_ajax_*; the kit checks the nonce
+        // (_wpnonce, action wpslug_test_api) and manage_options in handle_ajax().
+        $fw = $this->fw();
+        if ($fw) {
+            $fw->ajax_action("wpslug_test_api", [$this, "testApiAction"], ["capability" => "manage_options"]);
+        }
     }
 
     public function preventDefaultNotice($location, $status)
@@ -224,32 +231,6 @@ class WPSlug_Admin
         if ($fw) {
             $fw->render_field($id);
         }
-    }
-
-    /**
-     * A kit secret field with the "Test Connection" button on the same line as
-     * its input (design review of #87). The kit has no field actions yet, so the
-     * button is placed right after the control in the kit's own markup.
-     *
-     * @param string $id      Secret field id.
-     * @param string $service Service passed to wpslug_test_api.
-     */
-    private function keyFieldWithTest($id, $service)
-    {
-        $fw = $this->fw();
-        if (!$fw) {
-            return;
-        }
-        $html   = $fw->field_html($id);
-        $button = '<button type="button" class="btn btn-secondary wpslug-test-api" data-service="' . esc_attr($service) . '">' . esc_html__("Test Connection", "wpslug") . '</button>';
-        $start  = strpos($html, '</label>');
-        $end    = strpos($html, '<p class="wenpai-field__', (false === $start) ? 0 : $start);
-        if (false === $start || false === $end) {
-            echo $html . $button; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- kit-escaped field, escaped button.
-            return;
-        }
-        $start += strlen('</label>');
-        echo substr($html, 0, $start) . '<div class="wpslug-key-row">' . substr($html, $start, $end - $start) . $button . '</div>' . substr($html, $end); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- kit-escaped field, escaped button.
     }
 
     /**
@@ -428,9 +409,9 @@ class WPSlug_Admin
     }
 
     /**
-     * Translation. Key fields follow translation_service through depends_on.
-     * The "Test Connection" buttons and the WPMind status block stay hand-written until
-     * the kit has field actions and a read-only status field.
+     * Translation. Key fields follow translation_service through depends_on;
+     * Test Connection is a kit field action on google_api_key and
+     * baidu_secret_key; WPMind is the kit read-only status field.
      */
     private function renderTranslationSettings($options)
     {
@@ -439,67 +420,55 @@ class WPSlug_Admin
         $this->field("translation_target_lang");
         ?>
         <div class="wpslug-api-sections">
-            <?php $this->keyFieldWithTest("google_api_key", "google"); ?>
+            <?php $this->field("google_api_key"); ?>
             <div class="wpslug-api-actions"<?php echo $this->dependsAttrs(["field" => "translation_service", "value" => "google"]); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
                 <a href="https://cloud.google.com/translate/docs/setup" target="_blank" rel="noopener"><?php esc_html_e("Get API Key", "wpslug"); ?></a>
             </div>
             <?php $this->field("baidu_app_id"); ?>
-            <?php $this->keyFieldWithTest("baidu_secret_key", "baidu"); ?>
+            <?php $this->field("baidu_secret_key"); ?>
             <div class="wpslug-api-actions"<?php echo $this->dependsAttrs(["field" => "translation_service", "value" => "baidu"]); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
                 <a href="https://fanyi-api.baidu.com/doc/21" target="_blank" rel="noopener"><?php esc_html_e("Get API Key", "wpslug"); ?></a>
             </div>
-            <div class="field wpslug-api-section"<?php echo $this->dependsAttrs(["field" => "translation_service", "value" => "wpmind"]); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
-                <div class="field-label"><?php esc_html_e("WenPai XinSi (WPMind)", "wpslug"); ?></div>
-                <div class="field-ctl">
-                    <div class="wpslug-wpmind-status">
-                    <?php if (function_exists("wpmind_is_available") && wpmind_is_available()) : ?>
-                        <p class="hint is-ok"><?php esc_html_e(
-                            "WenPai XinSi (WPMind) is active. Credits and BYOK keys are managed there.",
-                            "wpslug"
-                        ); ?></p>
-                        <p class="hint"><?php esc_html_e(
-                            "Use it for semantic pinyin (XinSi AI) and multi-language translation. If quota is exceeded or the provider fails, WPSlug falls back to local pinyin so saving is not blocked.",
-                            "wpslug"
-                        ); ?></p>
-                        <p class="hint">
-                            <a href="<?php echo esc_url(admin_url("options-general.php?page=wpmind")); ?>">
-                                <?php esc_html_e("Open WenPai XinSi (WPMind) settings", "wpslug"); ?> →
-                            </a>
-                        </p>
-                    <?php else : ?>
-                        <p class="hint is-bad"><?php esc_html_e(
-                            "WenPai XinSi (WPMind) is not active or not configured.",
-                            "wpslug"
-                        ); ?></p>
-                        <p class="hint">
-                            <?php esc_html_e(
-                                "Install WenPai XinSi (WPMind) for semantic pinyin (XinSi AI) and multi-language translation. Until then, local pinyin remains available.",
-                                "wpslug"
-                            ); ?>
-                            <a href="https://wpcy.com/mind/" target="_blank" rel="noopener"><?php esc_html_e("Learn more", "wpslug"); ?></a>
-                        </p>
-                    <?php endif; ?>
-                    </div>
-                </div>
-            </div>
+            <?php $this->field("wpmind_status"); ?>
         </div>
         <?php
     }
 
     /**
-     * SEO. The group is disabled (not hidden) by several conditions, which the
-     * kit's depends_on cannot express yet, so admin.js keeps that part.
+     * SEO. Disabled-with-reason linkage is kit depends_on (mode "disable")
+     * in the schema. conversion_mode is not on the advanced page, so its saved
+     * value is mirrored in a disabled hidden input (never submitted) for kit
+     * JS to read; see conversionModeMirror().
      */
     private function renderSEOSettings($options)
     {
+        $this->conversionModeMirror($options);
         $this->field("enable_seo_optimization");
-        ?>
-        <div class="wpslug-seo-dependent"><?php $this->field("smart_punctuation"); ?></div>
-        <div class="wpslug-seo-dependent"><?php $this->field("mixed_content_optimization"); ?></div>
-        <div class="wpslug-seo-dependent"><?php $this->field("remove_stop_words"); ?></div>
-        <div class="wpslug-seo-dependent wpslug-stopwords-dependent"><?php $this->field("seo_max_words"); ?></div>
-        <div class="wpslug-seo-dependent wpslug-stopwords-dependent"><?php $this->field("stop_words_list"); ?></div>
-        <?php
+        $this->field("smart_punctuation");
+        $this->field("mixed_content_optimization");
+        $this->field("remove_stop_words");
+        $this->field("seo_max_words");
+        $this->field("stop_words_list");
+    }
+
+    /**
+     * Disabled hidden copy of the saved conversion_mode, so kit JS can evaluate
+     * the SEO "first-letter pinyin" condition on the advanced page (kit JS
+     * leaves a field alone when a trigger control is missing). Disabled
+     * controls are not submitted, so nothing is saved from it. When the plugin
+     * is off, conversion_mode is an inactive (hidden) field on the server and
+     * never matches, so the mirror is empty to agree with it.
+     *
+     * @param array $options Saved options.
+     */
+    private function conversionModeMirror($options)
+    {
+        $fw = $this->fw();
+        if (!$fw) {
+            return;
+        }
+        $mode = !empty($options["enable_conversion"]) && isset($options["conversion_mode"]) ? (string) $options["conversion_mode"] : "";
+        echo '<input type="hidden" name="' . esc_attr($fw->field_name("conversion_mode")) . '" value="' . esc_attr($mode) . '" disabled data-wpslug-mirror>';
     }
 
     private function renderMediaSettings($options)
@@ -644,39 +613,13 @@ class WPSlug_Admin
             delete_transient("wpslug_admin_tab");
         }
 
-        $saved = $this->settings->getOptions();
         wp_localize_script("wpslug-admin", "wpslug_ajax", [
             "ajax_url" => admin_url("admin-ajax.php"),
             "nonce" => wp_create_nonce("wpslug_nonce"),
             "current_tab" => $saved_tab ?: "general",
-            // Saved values, for pages that do not carry these controls.
-            "conversion_mode" => (string) $saved["conversion_mode"],
-            "pinyin_format" => (string) $saved["pinyin_format"],
             "strings" => [
                 "preview" => __("Preview", "wpslug"),
                 "converting" => __("Converting...", "wpslug"),
-                "testing" => __("Testing...", "wpslug"),
-                "test_api" => __("Test Connection", "wpslug"),
-                "seo_first_letter" => __(
-                    "Not available with first-letter pinyin. Switch to full pinyin to turn it on.",
-                    "wpslug"
-                ),
-                "seo_off" => __(
-                    "Turn on SEO optimization to use this.",
-                    "wpslug"
-                ),
-                "stop_words_off" => __(
-                    "Turn on stop word removal to use this.",
-                    "wpslug"
-                ),
-                "api_test_success" => __(
-                    "API connection successful!",
-                    "wpslug"
-                ),
-                "api_test_failed" => __(
-                    "API connection failed. Please check your credentials.",
-                    "wpslug"
-                ),
                 "no_text" => __("Please enter some text to preview.", "wpslug"),
                 "conversion_error" => __("Conversion failed. Please check your settings.", "wpslug"),
             ],
@@ -811,71 +754,66 @@ class WPSlug_Admin
         }
     }
 
-    public function ajaxTestApi()
+    /**
+     * Kit action handler for Test Connection (wp_ajax_wpslug_test_api).
+     * Wenpai_Admin_Settings::handle_ajax() has already checked the nonce and
+     * manage_options before this runs.
+     *
+     * @param array $values Posted values of wpslug_options (an empty secret means the saved one).
+     * @return string|WP_Error Success receipt, or an error naming the service.
+     */
+    public function testApiAction($values = [])
     {
-        check_ajax_referer("wpslug_nonce", "nonce");
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce checked in Wenpai_Admin_Settings::handle_ajax().
+        $service = isset($_POST["service"]) ? sanitize_key(wp_unslash($_POST["service"])) : "";
+        return $this->testApi($service, is_array($values) ? $values : []);
+    }
 
-        if (!current_user_can("manage_options")) {
-            wp_send_json_error(["message" => __("You are not allowed to manage WPSlug settings.", "wpslug")], 403);
-        }
-
-        $service = isset($_POST["service"]) ? sanitize_text_field(wp_unslash($_POST["service"])) : "";
-        $options = $this->settings->getOptions();
+    /**
+     * Test one translation service with the given (possibly unsaved) values.
+     *
+     * @param string $service google|baidu.
+     * @param array  $values  Field values over the saved options.
+     * @return string|WP_Error
+     */
+    public function testApi($service, array $values = [])
+    {
+        $options = array_merge($this->settings->getOptions(), $values);
 
         if ($service === "google") {
-            $api_key = trim($options["google_api_key"]);
-            if (empty($api_key)) {
-                wp_send_json_error([
-                    "message" => __(
-                        "Google API key is required for testing.",
-                        "wpslug"
-                    ),
-                ]);
+            $failed = __("Could not connect to Google Translate. Please check the key.", "wpslug");
+            if (trim((string) $options["google_api_key"]) === "") {
+                return new WP_Error("wpslug_missing_key", __("Enter the API key first.", "wpslug"));
             }
         } elseif ($service === "baidu") {
-            $app_id = trim($options["baidu_app_id"]);
-            $secret_key = trim($options["baidu_secret_key"]);
-            if (empty($app_id) || empty($secret_key)) {
-                wp_send_json_error([
-                    "message" => __(
-                        "Both Baidu App ID and Secret Key are required for testing.",
-                        "wpslug"
-                    ),
-                ]);
+            $failed = __("Could not connect to Baidu Translate. Please check the key.", "wpslug");
+            if (trim((string) $options["baidu_app_id"]) === "" || trim((string) $options["baidu_secret_key"]) === "") {
+                return new WP_Error("wpslug_missing_key", __("Enter the App ID and Secret Key first.", "wpslug"));
             }
         } else {
-            wp_send_json_error([
-                "message" => __("Invalid service selected.", "wpslug"),
-            ]);
+            return new WP_Error("wpslug_invalid_service", __("Invalid service selected.", "wpslug"));
         }
 
-        $test_text = "Hello World";
-        $translator = new WPSlug_Translator();
+        // The translator falls back to local pinyin when the service fails, so
+        // a result equal to that fallback means the service did not answer.
+        $probe = "你好";
+        $test_options = array_merge($options, [
+            "translation_service" => $service,
+            "translation_source_lang" => "zh",
+            "translation_target_lang" => "en",
+        ]);
+        $fallback = $this->converter->convert($probe, array_merge($test_options, ["conversion_mode" => "pinyin"]));
 
         try {
-            $result = $translator->translate(
-                $test_text,
-                array_merge($options, ["translation_service" => $service])
-            );
-
-            if (!empty($result) && $result !== $test_text) {
-                wp_send_json_success([
-                    "message" => __("API connection successful!", "wpslug"),
-                ]);
-            } else {
-                wp_send_json_error([
-                    "message" => __(
-                        "API connection failed. Please check your credentials.",
-                        "wpslug"
-                    ),
-                ]);
-            }
+            $result = (new WPSlug_Translator())->translate($probe, $test_options);
         } catch (Exception $e) {
-            wp_send_json_error([
-                "message" =>
-                    __("API connection failed: ", "wpslug") . $e->getMessage(),
-            ]);
+            return new WP_Error("wpslug_test_exception", $failed);
         }
+
+        if (is_string($result) && $result !== "" && $result !== $fallback) {
+            return __("Connected.", "wpslug");
+        }
+        return new WP_Error("wpslug_test_failed", $failed);
     }
 
     public function addPostMetaBox()

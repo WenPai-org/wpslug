@@ -76,45 +76,8 @@
     font-size: 14px;
 }
 
-.wpslug-seo-dependent {
-    opacity: 1;
-    transition: opacity 0.3s ease;
-}
-
-/* Fade the control, not the reason line next to it (contrast). */
-.wpslug-seo-dependent.disabled > .wenpai-field {
-    opacity: 0.5;
-    pointer-events: none;
-}
-
-.wpslug-stopwords-dependent {
-    opacity: 1;
-    transition: opacity 0.3s ease;
-}
-
-/* Fade the control, not the reason line next to it (contrast). */
-.wpslug-stopwords-dependent.disabled > .wenpai-field {
-    opacity: 0.5;
-    pointer-events: none;
-}
-
 .wpslug-api-sections {
     margin-top: 20px;
-}
-
-.wpslug-api-section {
-    background: #f9f9f9;
-    border: 1px solid #e1e1e1;
-    border-radius: 4px;
-    padding: 15px;
-    margin-bottom: 15px;
-}
-
-.wpslug-api-section h4 {
-    margin-top: 0;
-    margin-bottom: 10px;
-    color: #23282d;
-    font-size: 14px;
 }
 
 .wpslug-checkbox-grid {
@@ -275,55 +238,6 @@
     padding-top: 20px;
     border-top: 1px solid #e1e1e1;
     margin-top: 20px;
-}
-
-.wpslug-test-api {
-    margin-left: 10px;
-    min-width: 80px;
-}
-
-.field-ctl-row input[type="password"] {
-    flex: 1 1 auto;
-    width: auto;
-    max-width: none;
-    min-width: 0;
-}
-
-body.wpslug-admin .field.disabled {
-    opacity: 0.5;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-.wpslug-api-status {
-    display: inline-block;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 11px;
-    font-weight: 400;
-    text-transform: uppercase;
-    margin-left: 8px;
-}
-
-.wpslug-api-status.connected {
-    background: #d4edda;
-    color: #155724;
-}
-
-.wpslug-api-status.disconnected {
-    background: #f8d7da;
-    color: #721c24;
 }
 
 .wpslug-slug {
@@ -706,13 +620,6 @@ body.wenpai-ui-page .wenpai-app .wpslug-preview .meta {
 body.wenpai-ui-page .wpslug-api-sections {
     margin-top: 0;
 }
-body.wenpai-ui-page .wpslug-api-section {
-    background: transparent;
-    border: 0;
-    border-radius: 0;
-    padding: 0;
-    margin: 0;
-}
 body.wenpai-ui-page .wenpai-app .simple-row > .r {
     flex: none;
     margin-left: auto;
@@ -738,9 +645,7 @@ body.wenpai-ui-page .wenpai-app .wpslug-api-actions {
     gap: 12px;
     margin-top: 8px;
 }
-body.wenpai-ui-page .wenpai-app .wpslug-seo-dependent > .wenpai-field,
-body.wenpai-ui-page .wenpai-app .wpslug-api-sections > .wenpai-field,
-body.wenpai-ui-page .wenpai-app .wpslug-api-sections > .wpslug-api-section {
+body.wenpai-ui-page .wenpai-app .wpslug-api-sections > .wenpai-field {
     margin-top: var(--wenpai-space-4, 16px);
 }
 body.wenpai-ui-page .wenpai-app .wpslug-simple > .card-foot {
@@ -936,25 +841,4 @@ body.wpslug-admin #wpbody-content > .update-nag {
   body.wpslug-admin #wpbody-content {
     overflow-x: visible;
   }
-}
-
-/* Test Connection sits on the same line as its key input. */
-body.wenpai-ui-page .wenpai-app .wpslug-key-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-body.wenpai-ui-page .wenpai-app .wpslug-key-row > .wenpai-control,
-body.wenpai-ui-page .wenpai-app .wpslug-key-row > input,
-body.wenpai-ui-page .wenpai-app .wpslug-key-row > span {
-    flex: 1 1 auto;
-    min-width: 0;
-}
-body.wenpai-ui-page .wenpai-app .wpslug-key-row > input {
-    width: auto;
-    max-width: none;
-}
-body.wenpai-ui-page .wenpai-app .wpslug-key-row .wpslug-test-api {
-    flex: 0 0 auto;
-    margin-left: 0;
 }

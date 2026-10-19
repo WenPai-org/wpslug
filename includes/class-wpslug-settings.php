@@ -164,6 +164,7 @@ class WPSlug_Settings
             "action_busy" => __("Working", "wpslug"),
             "action_ok" => __("Done.", "wpslug"),
             "action_failed" => __("Could not finish the action. Please try again later.", "wpslug"),
+            "tab_expired" => __("Could not save because the page has expired. Please reload it and try again.", "wpslug"),
             "action_denied" => __("Could not finish the action. Please reload the page and try again.", "wpslug"),
         ];
     }
@@ -718,6 +719,40 @@ class WPSlug_Settings
             "baidu_secret_key" => function ($v) use ($V) { return $V::validateApiKey($v); },
         ];
         $when_on = ["field" => "enable_conversion", "value" => true];
+        // SEO and media groups are disabled (not hidden) with a reason (kit
+        // depends_on mode "disable"). A disabled field keeps its saved value.
+        $not_first_letter = [
+            "relation" => "OR",
+            "reason" => __("Not available with first-letter pinyin. Switch to full pinyin to turn it on.", "wpslug"),
+            "rules" => [
+                ["field" => "conversion_mode", "value" => "pinyin", "not" => true],
+                ["field" => "pinyin_format", "value" => "first", "not" => true],
+            ],
+        ];
+        $seo_on = ["field" => "enable_seo_optimization", "value" => true, "reason" => __("Turn on SEO optimization to use this.", "wpslug")];
+        $stop_words_on = ["field" => "remove_stop_words", "value" => true, "reason" => __("Turn on stop word removal to use this.", "wpslug")];
+        $seo_group = ["mode" => "disable", "rules" => [$not_first_letter, $seo_on]];
+        $stop_words_group = ["mode" => "disable", "rules" => [$not_first_letter, $seo_on, $stop_words_on]];
+        $media_on = [
+            "mode" => "disable",
+            "rules" => [
+                ["field" => "disable_file_convert", "value" => true, "not" => true, "reason" => __("Automatic file name conversion is disabled. Turn off the switch above to use this.", "wpslug")],
+            ],
+        ];
+        // Test Connection: kit field action, handled by WPSlug_Admin::testApiAction().
+        $test_action = function ($service, array $include, $note) {
+            return [
+                "id" => "test",
+                "label" => __("Test Connection", "wpslug"),
+                "ajax" => "wpslug_test_api",
+                // No ellipsis: the kit JS appends it.
+                "busy" => __("Testing", "wpslug"),
+                "include" => $include,
+                "data" => ["service" => $service],
+                "requires" => $include,
+                "requires_note" => $note,
+            ];
+        };
         $settings = $this;
         $post_types = function () {
             return self::objectChoices(get_post_types(["public" => true], "objects"));
@@ -768,6 +803,7 @@ class WPSlug_Settings
                 "label" => __("API Key", "wpslug"),
                 "desc" => __("Enter your Google Translate API key.", "wpslug"),
                 "depends_on" => ["field" => "translation_service", "value" => "google"],
+                "actions" => [$test_action("google", ["google_api_key"], __("Enter the API key first.", "wpslug"))],
             ],
             "baidu_app_id" => [
                 "label" => __("App ID", "wpslug"),
@@ -779,6 +815,7 @@ class WPSlug_Settings
                 "label" => __("Secret Key", "wpslug"),
                 "desc" => __("Enter your Baidu Translate Secret Key.", "wpslug"),
                 "depends_on" => ["field" => "translation_service", "value" => "baidu"],
+                "actions" => [$test_action("baidu", ["baidu_app_id", "baidu_secret_key"], __("Enter the App ID and Secret Key first.", "wpslug"))],
             ],
             "enabled_post_types" => [
                 "type" => "multiselect",
@@ -803,16 +840,16 @@ class WPSlug_Settings
                 "choices" => $taxonomies,
             ],
             "disable_file_convert" => ["label" => __("Disable automatic file name conversion for uploaded media", "wpslug"), "desc" => __("When checked, media files will not be converted automatically.", "wpslug")],
-            "media_conversion_mode" => ["type" => "select", "label" => __("Media Conversion Mode", "wpslug"), "desc" => __("Choose how media file names should be processed. MD5 creates unique hashes for file names.", "wpslug"), "choices" => function () use ($settings) { return $settings->getMediaConversionModes(); }],
-            "media_file_prefix" => ["label" => __("Media File Prefix", "wpslug"), "desc" => __("Optional prefix to add to all media file names (e.g., \"img-\", \"file-\").", "wpslug")],
-            "preserve_media_extension" => ["label" => __("Always preserve the original file extension", "wpslug"), "desc" => __("Ensures file extensions are kept even when using MD5 conversion.", "wpslug")],
+            "media_conversion_mode" => ["type" => "select", "label" => __("Media Conversion Mode", "wpslug"), "desc" => __("Choose how media file names should be processed. MD5 creates unique hashes for file names.", "wpslug"), "choices" => function () use ($settings) { return $settings->getMediaConversionModes(); }, "depends_on" => $media_on],
+            "media_file_prefix" => ["label" => __("Media File Prefix", "wpslug"), "desc" => __("Optional prefix to add to all media file names (e.g., \"img-\", \"file-\").", "wpslug"), "depends_on" => $media_on],
+            "preserve_media_extension" => ["label" => __("Always preserve the original file extension", "wpslug"), "desc" => __("Ensures file extensions are kept even when using MD5 conversion.", "wpslug"), "depends_on" => $media_on],
             "show_slug_column" => ["label" => __("Show slug column in post and page lists for easy reference", "wpslug")],
-            "enable_seo_optimization" => ["label" => __("Enable SEO-friendly slug optimization", "wpslug"), "desc" => __("Apply SEO best practices to generated slugs.", "wpslug")],
-            "smart_punctuation" => ["label" => __("Intelligently handle punctuation marks", "wpslug"), "desc" => __("Convert colons, semicolons, and other punctuation to hyphens or remove them.", "wpslug")],
-            "mixed_content_optimization" => ["label" => __("Optimize mixed language and number content", "wpslug"), "desc" => __("Better handling of content mixing languages with numbers and English text.", "wpslug")],
-            "remove_stop_words" => ["label" => __("Remove common stop words from slugs", "wpslug"), "desc" => __('Remove words like "the", "a", "an", "and", etc. to create cleaner slugs.', "wpslug")],
-            "seo_max_words" => ["label" => __("Maximum Words", "wpslug"), "desc" => __("Maximum number of words to keep in slug for SEO optimization.", "wpslug"), "min" => 1, "max" => 30],
-            "stop_words_list" => ["type" => "textarea", "label" => __("Stop Words List", "wpslug"), "desc" => __("Comma-separated list of stop words to remove from slugs.", "wpslug")],
+            "enable_seo_optimization" => ["label" => __("Enable SEO-friendly slug optimization", "wpslug"), "desc" => __("Apply SEO best practices to generated slugs.", "wpslug"), "depends_on" => ["mode" => "disable", "rules" => [$not_first_letter]]],
+            "smart_punctuation" => ["label" => __("Intelligently handle punctuation marks", "wpslug"), "desc" => __("Convert colons, semicolons, and other punctuation to hyphens or remove them.", "wpslug"), "depends_on" => $seo_group],
+            "mixed_content_optimization" => ["label" => __("Optimize mixed language and number content", "wpslug"), "desc" => __("Better handling of content mixing languages with numbers and English text.", "wpslug"), "depends_on" => $seo_group],
+            "remove_stop_words" => ["label" => __("Remove common stop words from slugs", "wpslug"), "desc" => __('Remove words like "the", "a", "an", "and", etc. to create cleaner slugs.', "wpslug"), "depends_on" => $seo_group],
+            "seo_max_words" => ["label" => __("Maximum Words", "wpslug"), "desc" => __("Maximum number of words to keep in slug for SEO optimization.", "wpslug"), "min" => 1, "max" => 30, "depends_on" => $stop_words_group],
+            "stop_words_list" => ["type" => "textarea", "label" => __("Stop Words List", "wpslug"), "desc" => __("Comma-separated list of stop words to remove from slugs.", "wpslug"), "depends_on" => $stop_words_group],
         ];
         $schema = [];
         foreach ($this->defaults as $key => $default) {
@@ -836,14 +873,57 @@ class WPSlug_Settings
                 // WPSlug validators keep the stored shapes of 1.3.x (see tests).
                 "sanitize" => function ($v) use ($fn, $default) { return $fn(null === $v ? $default : $v); },
             ];
-            foreach (["rows", "row_label", "col_label", "unset_value"] as $extra) {
+            foreach (["rows", "row_label", "col_label", "unset_value", "actions"] as $extra) {
                 if (array_key_exists($extra, $m)) {
                     $field[$extra] = $m[$extra];
                 }
             }
             $schema[$key] = $field;
         }
+        // Read-only (kit "status" type): not submitted and not stored, so the
+        // saved option keeps exactly the keys of $this->defaults.
+        $schema["wpmind_status"] = [
+            "type" => "status",
+            "label" => __("WenPai XinSi (WPMind)", "wpslug"),
+            "depends_on" => ["field" => "translation_service", "value" => "wpmind"],
+            "status" => function () use ($settings) { return $settings->getWpmindStatus(); },
+        ];
         return $schema;
+    }
+
+    /**
+     * WPMind status for the read-only status field on the translation section.
+     *
+     * @return array{level: string, text: string, desc: string[], link: array{url: string, label: string}}
+     */
+    public function getWpmindStatus()
+    {
+        if (function_exists("wpmind_is_available") && wpmind_is_available()) {
+            return [
+                "level" => "ok",
+                "text" => __("Active", "wpslug"),
+                "desc" => [
+                    __("WenPai XinSi (WPMind) is active. Credits and BYOK keys are managed there.", "wpslug"),
+                    __("Use it for semantic pinyin (XinSi AI) and multi-language translation. If quota is exceeded or the provider fails, WPSlug falls back to local pinyin so saving is not blocked.", "wpslug"),
+                ],
+                "link" => [
+                    "url" => function_exists("admin_url") ? admin_url("options-general.php?page=wpmind") : "options-general.php?page=wpmind",
+                    "label" => __("Open WenPai XinSi (WPMind) settings", "wpslug"),
+                ],
+            ];
+        }
+        return [
+            "level" => "warn",
+            "text" => __("Not active", "wpslug"),
+            "desc" => [
+                __("WenPai XinSi (WPMind) is not active or not configured.", "wpslug"),
+                __("Install WenPai XinSi (WPMind) for semantic pinyin (XinSi AI) and multi-language translation. Until then, local pinyin remains available.", "wpslug"),
+            ],
+            "link" => [
+                "url" => "https://wpcy.com/mind/",
+                "label" => __("Learn more", "wpslug"),
+            ],
+        ];
     }
 
     /**

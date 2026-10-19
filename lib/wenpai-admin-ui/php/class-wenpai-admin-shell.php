@@ -25,7 +25,8 @@ if ( ! class_exists( 'Wenpai_Admin_Shell', false ) ) {
 		 * @param array $args {
 		 *     Shell arguments.
 		 *
-		 *     @type string $slug            Product slug (wpslug / wpsss).
+		 *     @type string $slug            Product slug (wpslug / wpsss). Printed as
+		 *                                   data-wenpai-product on .wenpai-app (0.3.0+).
 		 *     @type string $name            Product display name (already translated).
 		 *     @type string $mark_html       Product SVG for .wenpai-mark.
 		 *     @type string $home_url        Brand link. Defaults to first tab url.
@@ -42,6 +43,7 @@ if ( ! class_exists( 'Wenpai_Admin_Shell', false ) ) {
 		 *     @type string $doc_url         Footer doc link.
 		 *     @type string $doc_label       Footer doc label.
 		 *     @type array  $links           Footer links: array of array{ url, label } (0.2.5+).
+		 *     @type string $main_class      Extra classes on main.wenpai-main (0.2.5+), e.g. is-narrow.
 		 * }
 		 */
 		public static function open( $args ) {
@@ -54,7 +56,8 @@ if ( ! class_exists( 'Wenpai_Admin_Shell', false ) ) {
 				$home = $tabs[0]['url'];
 			}
 
-			echo '<div class="wenpai-app">';
+			$slug = isset( $args['slug'] ) && is_string( $args['slug'] ) ? sanitize_key( $args['slug'] ) : '';
+			echo '<div class="wenpai-app"' . ( '' !== $slug ? ' data-wenpai-product="' . esc_attr( $slug ) . '"' : '' ) . '>';
 			echo '<div class="wenpai-top"><div class="wenpai-wrap">';
 			echo '<div class="wenpai-head">';
 			echo '<a class="wenpai-brand" href="' . esc_url( $home ) . '">';

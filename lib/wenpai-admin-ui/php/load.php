@@ -1,10 +1,15 @@
 <?php
 /**
- * Product plugins require this file only.
+ * Product plugins require this file only, at the top level of the plugin
+ * main file, not inside a hook, for example with require_once of
+ * __DIR__ . "/lib/wenpai-admin-ui/php/load.php".
  *
  * Each vendor copy registers itself. plugins_loaded (priority 1) then
- * requires the highest VERSION. Do not require the class-*.php files
- * from the product plugin — that would declare classes from a losing copy.
+ * requires the highest VERSION. A copy registered after that is ignored;
+ * with WP_DEBUG on, _doing_it_wrong names the plugin that registered late.
+ * wenpai_admin_ui_info() tells which copy is active. Do not require the
+ * class-*.php files from the product plugin — that would declare classes
+ * from a losing copy.
  *
  * @package Wenpai_Admin_UI
  */
@@ -13,9 +18,43 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+if ( ! function_exists( 'wenpai_admin_ui_owner' ) ) {
+	/**
+	 * Best guess of the plugin (or theme) that ships a kit copy, from its path.
+	 *
+	 * @param string $dir Kit copy directory.
+	 * @return string Plugin folder (e.g. wpslug), mu-plugins/{name}, theme:{name}, or the path.
+	 */
+	function wenpai_admin_ui_owner( $dir ) {
+		$dir   = str_replace( '\\', '/', (string) $dir );
+		$roots = array();
+		if ( defined( 'WP_PLUGIN_DIR' ) ) {
+			$roots[''] = WP_PLUGIN_DIR;
+		}
+		if ( defined( 'WPMU_PLUGIN_DIR' ) ) {
+			$roots['mu-plugins/'] = WPMU_PLUGIN_DIR;
+		}
+		if ( defined( 'WP_CONTENT_DIR' ) ) {
+			$roots['theme:'] = WP_CONTENT_DIR . '/themes';
+		}
+		foreach ( $roots as $prefix => $root ) {
+			$root = rtrim( str_replace( '\\', '/', (string) $root ), '/' ) . '/';
+			if ( 0 === strpos( $dir, $root ) ) {
+				$rest = explode( '/', substr( $dir, strlen( $root ) ) );
+				return $prefix . $rest[0];
+			}
+		}
+		return $dir;
+	}
+}
+
 if ( ! function_exists( 'wenpai_admin_ui_register' ) ) {
 	/**
 	 * Register this kit copy as a boot candidate.
+	 *
+	 * After boot (plugins_loaded priority 1) a copy can no longer win: it is
+	 * recorded under 'late' in wenpai_admin_ui_info() and, with WP_DEBUG on,
+	 * reported with _doing_it_wrong naming the plugin.
 	 *
 	 * @param string $version SemVer from VERSION file.
 	 * @param string $dir     Absolute path to this kit copy (parent of php/).
@@ -24,10 +63,32 @@ if ( ! function_exists( 'wenpai_admin_ui_register' ) ) {
 		if ( ! isset( $GLOBALS['wenpai_admin_ui_candidates'] ) || ! is_array( $GLOBALS['wenpai_admin_ui_candidates'] ) ) {
 			$GLOBALS['wenpai_admin_ui_candidates'] = array();
 		}
-		$GLOBALS['wenpai_admin_ui_candidates'][] = array(
+		$entry           = array(
 			'version' => (string) $version,
 			'dir'     => rtrim( (string) $dir, '/\\' ),
 		);
+		$entry['plugin'] = wenpai_admin_ui_owner( $entry['dir'] );
+
+		if ( empty( $GLOBALS['wenpai_admin_ui_booted'] ) ) {
+			$GLOBALS['wenpai_admin_ui_candidates'][] = $entry;
+			return;
+		}
+
+		$GLOBALS['wenpai_admin_ui_late'][] = $entry;
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG && function_exists( '_doing_it_wrong' ) ) {
+			$win = isset( $GLOBALS['wenpai_admin_ui_winner'] ) ? $GLOBALS['wenpai_admin_ui_winner'] : array(
+				'version' => '?',
+				'plugin'  => '?',
+			);
+			$msg = sprintf(
+				'wenpai-admin-ui %1$s from "%2$s" was registered after plugins_loaded priority 1 and is ignored; %3$s from "%4$s" is active. Require lib/wenpai-admin-ui/php/load.php at the top level of the plugin main file, not inside a hook.',
+				$entry['version'],
+				$entry['plugin'],
+				isset( $win['version'] ) ? $win['version'] : '?',
+				isset( $win['plugin'] ) ? $win['plugin'] : '?'
+			);
+			_doing_it_wrong( 'wenpai_admin_ui_register', function_exists( 'esc_html' ) ? esc_html( $msg ) : $msg, '0.3.0' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped with esc_html when available; plain developer text otherwise.
+		}
 	}
 }
 
@@ -73,6 +134,27 @@ if ( ! function_exists( 'wenpai_admin_ui_boot' ) ) {
 				require_once $path;
 			}
 		}
+	}
+}
+
+if ( ! function_exists( 'wenpai_admin_ui_info' ) ) {
+	/**
+	 * Which kit copy is active, for debugging and support.
+	 *
+	 * @return array{booted: bool, version: string, dir: string, plugin: string, candidates: array, late: array}
+	 *         version/dir/plugin are '' before boot. Each candidate / late entry is
+	 *         array{version, dir, plugin}.
+	 */
+	function wenpai_admin_ui_info() {
+		$win = isset( $GLOBALS['wenpai_admin_ui_winner'] ) && is_array( $GLOBALS['wenpai_admin_ui_winner'] ) ? $GLOBALS['wenpai_admin_ui_winner'] : array();
+		return array(
+			'booted'     => ! empty( $GLOBALS['wenpai_admin_ui_booted'] ),
+			'version'    => isset( $win['version'] ) ? (string) $win['version'] : '',
+			'dir'        => isset( $win['dir'] ) ? (string) $win['dir'] : '',
+			'plugin'     => isset( $win['plugin'] ) ? (string) $win['plugin'] : '',
+			'candidates' => isset( $GLOBALS['wenpai_admin_ui_candidates'] ) && is_array( $GLOBALS['wenpai_admin_ui_candidates'] ) ? array_values( $GLOBALS['wenpai_admin_ui_candidates'] ) : array(),
+			'late'       => isset( $GLOBALS['wenpai_admin_ui_late'] ) && is_array( $GLOBALS['wenpai_admin_ui_late'] ) ? array_values( $GLOBALS['wenpai_admin_ui_late'] ) : array(),
+		);
 	}
 }
 

@@ -14,9 +14,10 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 	 * One instance per option.
 	 *
 	 * Field schema keys: type, default, label, desc, choices, rows, row_label,
-	 * col_label, unset_value, min, max, secret, sanitize, validate, depends_on.
+	 * col_label, unset_value, min, max, secret, sanitize, validate, depends_on,
+	 * tab, layout, actions, status, render.
 	 * Types: toggle, select, radio, choice, number, text, textarea, multicheck,
-	 * multiselect, matrix, secret, map. See docs/framework/settings.md.
+	 * multiselect, matrix, secret, map, status. See docs/framework/settings.md.
 	 */
 	class Wenpai_Admin_Settings {
 
@@ -24,6 +25,11 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		 * Submitted list of secret field ids to clear: {option}[__wenpai_clear][].
 		 */
 		const CLEAR_KEY = '__wenpai_clear';
+
+		/**
+		 * Submitted tab id: {option}[__wenpai_tab]. Only that tab's fields are written.
+		 */
+		const TAB_KEY = '__wenpai_tab';
 
 		/**
 		 * Instances keyed by option name.
@@ -68,11 +74,26 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		private $errors = array();
 
 		/**
+		 * Matrix rows in error: field id => row keys.
+		 *
+		 * @var array<string, string[]>
+		 */
+		private $error_rows = array();
+
+		/**
+		 * Output of the last sanitize() call, so a second pass over the same
+		 * values (a plugin sanitize_callback wrapping ours) changes nothing.
+		 *
+		 * @var array|null
+		 */
+		private $last_sanitized = null;
+
+		/**
 		 * Create and register a settings instance for one option.
 		 *
 		 * @param string $option Option name.
 		 * @param array  $fields Field schema keyed by field id.
-		 * @param array  $args   Optional. Supports 'group' and 'strings'.
+		 * @param array  $args   Optional. Supports 'group', 'strings', 'layout' (stack|row).
 		 * @return Wenpai_Admin_Settings
 		 */
 		public static function register( $option, array $fields, array $args = array() ) {
@@ -103,13 +124,26 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 			return array(
 				'on'            => '已开启',
 				'off'           => '未开启',
-				'secret_saved'  => '已保存。留空表示不修改，页面上不会再显示。',
-				'secret_empty'  => '还没有保存。',
+				'secret_saved'  => '已保存一个值，出于安全不会显示。留空表示不修改。',
+				'secret_empty'  => '还没有填写。',
 				'secret_clear'  => '清除已保存的值',
-				'saved'         => '已保存。',
+				'saved'         => '设置已保存。',
+				'saving'        => '正在保存…',
+				'partial_saved' => '其余设置已保存。',
 				/* translators: %d: number of fields that were not saved. */
 				'invalid'       => '暂时无法保存 %d 项设置，请按字段下的提示修改。',
+				/* translators: %d: total number of fields with errors. */
+				'invalid_more'  => '等 %d 项',
 				'invalid_value' => '这一项的值无效，已保留原来的设置。',
+				'follow_global' => '跟随全局设置',
+				/* translators: %s: what would be listed, e.g. 文章类型. */
+				'empty_choices' => '还没有可选的%s。',
+				/* translators: 1: hidden tab label, 2: first tab label. */
+				'tab_hidden'    => '当前模式不需要%1$s的设置，已切回%2$s。',
+				'action_busy'   => '正在处理',
+				'action_ok'     => '已完成。',
+				'action_failed' => '暂时无法完成操作，请稍后再试。',
+				'action_denied' => '暂时无法完成操作，请刷新页面后再试。',
 			);
 		}
 
@@ -127,6 +161,7 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 				self::default_strings(),
 				isset( $args['strings'] ) && is_array( $args['strings'] ) ? $args['strings'] : array()
 			);
+			$layout        = isset( $args['layout'] ) && 'row' === $args['layout'] ? 'row' : 'stack';
 			$this->fields  = array();
 			foreach ( $fields as $id => $f ) {
 				$f = wp_parse_args(
@@ -144,13 +179,58 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 						'secret'      => false,
 						'validate'    => null,
 						'depends_on'  => array(),
+						'tab'         => '',
+						'layout'      => $layout,
+						'actions'     => array(),
+						'status'      => null,
+						'render'      => null,
 					)
 				);
 				if ( 'secret' === $f['type'] ) {
 					$f['secret'] = true;
 				}
+				if ( ! empty( $f['secret'] ) && 'secret' !== $f['type'] ) {
+					// A secret is always a password box, so its value never reaches the page source.
+					if ( 'text' !== $f['type'] ) {
+						self::doing_it_wrong( sprintf( 'Field "%s": a secret is always rendered as a password input; type "%s" is ignored.', $id, $f['type'] ) );
+					}
+					$f['type'] = 'secret';
+				}
+				$tree = self::dep_tree( $f['depends_on'] );
+				if ( null !== $tree && 'disable' === $tree['mode'] && ! self::tree_has_reason( $tree ) ) {
+					self::doing_it_wrong( sprintf( 'Field "%s": depends_on mode "disable" needs a "reason" telling the user why and how to enable it.', $id ) );
+				}
 				$this->fields[ $id ] = $f;
 			}
+		}
+
+		/**
+		 * Developer notice, only with WP_DEBUG on.
+		 *
+		 * @param string $message Message (English, developer-facing).
+		 */
+		private static function doing_it_wrong( $message ) {
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG && function_exists( '_doing_it_wrong' ) ) {
+				_doing_it_wrong( 'Wenpai_Admin_Settings::register', esc_html( $message ), '0.3.0' );
+			}
+		}
+
+		/**
+		 * Whether a depends_on tree carries reason copy anywhere.
+		 *
+		 * @param array $node Normalized node.
+		 * @return bool
+		 */
+		private static function tree_has_reason( array $node ) {
+			if ( isset( $node['reason'] ) && '' !== $node['reason'] ) {
+				return true;
+			}
+			foreach ( isset( $node['rules'] ) ? $node['rules'] : array() as $r ) {
+				if ( self::tree_has_reason( $r ) ) {
+					return true;
+				}
+			}
+			return false;
 		}
 
 		/**
@@ -197,12 +277,28 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		}
 
 		/**
-		 * Default value of every field.
+		 * Whether a field stores a value (status fields only display).
+		 *
+		 * @param array $f Field schema.
+		 * @return bool
+		 */
+		private static function stores( array $f ) {
+			return 'status' !== $f['type'];
+		}
+
+		/**
+		 * Default value of every stored field.
 		 *
 		 * @return array
 		 */
 		public function defaults() {
-			return wp_list_pluck( $this->fields, 'default' );
+			$out = array();
+			foreach ( $this->fields as $id => $f ) {
+				if ( self::stores( $f ) ) {
+					$out[ $id ] = $f['default'];
+				}
+			}
+			return $out;
 		}
 
 		/**
@@ -246,10 +342,37 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		}
 
 		/**
+		 * Whether a field belongs to a tab. A field may list several tabs.
+		 *
+		 * @param array  $f   Field schema.
+		 * @param string $tab Tab id.
+		 * @return bool
+		 */
+		private static function in_tab( array $f, $tab ) {
+			return in_array( (string) $tab, array_map( 'strval', (array) $f['tab'] ), true );
+		}
+
+		/**
+		 * Ids of the fields in a tab, in schema order.
+		 *
+		 * @param string $tab Tab id.
+		 * @return string[]
+		 */
+		public function fields_in_tab( $tab ) {
+			$out = array();
+			foreach ( $this->fields as $id => $f ) {
+				if ( self::in_tab( $f, $tab ) ) {
+					$out[] = (string) $id;
+				}
+			}
+			return $out;
+		}
+
+		/**
 		 * Resolve a list that may be given lazily as a Closure (for example post types).
 		 *
 		 * @param mixed $items Array, or a Closure returning one.
-		 * @param array $f    Field schema, passed to the Closure.
+		 * @param array $f     Field schema, passed to the Closure.
 		 * @return array
 		 */
 		private static function resolve( $items, array $f ) {
@@ -263,56 +386,147 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		 * Sanitize callback for the whole option.
 		 *
 		 * Secret fields: an empty value keeps the saved one; ids listed under
-		 * {option}[__wenpai_clear][] are cleared. A 'validate' callback that does
-		 * not return true keeps the saved value and records a field error.
+		 * {option}[__wenpai_clear][] are cleared. When {option}[__wenpai_tab] is
+		 * posted only that tab's fields are sanitized and written; every other
+		 * field keeps its saved value. A 'validate' callback that does not return
+		 * true keeps the saved value and records a field error.
 		 *
 		 * @param mixed $input Raw submitted value.
 		 * @return array
 		 */
 		public function sanitize( $input ) {
-			$input  = is_array( $input ) ? $input : array();
-			$stored = $this->stored();
-			$clear  = isset( $input[ self::CLEAR_KEY ] ) && is_array( $input[ self::CLEAR_KEY ] )
+			$input = is_array( $input ) ? $input : array();
+			if ( null !== $this->last_sanitized && $input === $this->last_sanitized ) {
+				return $input;
+			}
+			$stored  = $this->stored();
+			$clear   = isset( $input[ self::CLEAR_KEY ] ) && is_array( $input[ self::CLEAR_KEY ] )
 				? array_map( 'strval', $input[ self::CLEAR_KEY ] )
 				: array();
-			$out    = array();
+			$tab     = isset( $input[ self::TAB_KEY ] ) && is_scalar( $input[ self::TAB_KEY ] )
+				? sanitize_key( (string) $input[ self::TAB_KEY ] )
+				: null;
+			$out     = array();
+			$prevs   = array();
+			$pending = array();
 			foreach ( $this->fields as $id => $f ) {
+				if ( ! self::stores( $f ) ) {
+					continue;
+				}
 				$raw  = array_key_exists( $id, $input ) ? $input[ $id ] : null;
 				$prev = array_key_exists( $id, $stored ) ? $stored[ $id ] : $f['default'];
+				if ( null !== $tab && ! self::in_tab( $f, $tab ) ) {
+					$out[ $id ] = $prev;
+					continue;
+				}
+				$prevs[ $id ] = $prev;
 				if ( self::is_secret( $f ) ) {
-					if ( in_array( (string) $id, $clear, true ) ) {
-						$out[ $id ] = '';
-						continue;
-					}
-					if ( null === $raw || ( is_scalar( $raw ) && '' === trim( (string) $raw ) ) ) {
-						$out[ $id ] = $prev;
+					$typed = is_scalar( $raw ) && '' !== trim( (string) $raw );
+					if ( ! $typed ) {
+						// A typed new value wins over "clear"; clear only applies to an empty box.
+						$out[ $id ] = in_array( (string) $id, $clear, true ) ? '' : $prev;
 						continue;
 					}
 				}
-				$val = $this->sanitize_field( $f, $raw );
+				$out[ $id ] = $this->sanitize_field( $f, $raw );
 				if ( is_callable( $f['validate'] ) ) {
-					$ok = call_user_func( $f['validate'], $val, $f );
-					if ( true !== $ok ) {
-						$this->add_error( $id, is_string( $ok ) && '' !== $ok ? $ok : $this->strings['invalid_value'] );
-						$val = $prev;
-					}
+					$pending[ $id ] = true;
 				}
-				$out[ $id ] = $val;
 			}
+
+			// depends_on, checked against the values being saved. A hidden field
+			// keeps what was posted without validation; a disabled one keeps the
+			// saved value.
+			foreach ( $this->inactive_fields( $out ) as $id => $mode ) {
+				if ( ! array_key_exists( $id, $prevs ) ) {
+					continue;
+				}
+				unset( $pending[ $id ] );
+				if ( 'disable' === $mode ) {
+					$out[ $id ] = $prevs[ $id ];
+				}
+			}
+
+			foreach ( array_keys( $pending ) as $id ) {
+				$f  = $this->fields[ $id ];
+				$ok = call_user_func( $f['validate'], $out[ $id ], $f );
+				if ( true === $ok ) {
+					continue;
+				}
+				$msg  = $this->strings['invalid_value'];
+				$rows = array();
+				if ( is_string( $ok ) && '' !== $ok ) {
+					$msg = $ok;
+				} elseif ( is_array( $ok ) ) {
+					$msg  = isset( $ok['message'] ) && '' !== (string) $ok['message'] ? (string) $ok['message'] : $msg;
+					$rows = isset( $ok['rows'] ) ? array_map( 'strval', (array) $ok['rows'] ) : array();
+				}
+				$this->add_error( $id, $msg, $rows );
+				$out[ $id ] = $prevs[ $id ];
+			}
+			$this->last_sanitized = $out;
 			return $out;
 		}
 
 		/**
-		 * Record a field error for this request and for the Settings API redirect.
+		 * Fields whose depends_on fails for the given values, with their mode.
+		 * A field that depends on an inactive field is inactive too.
 		 *
-		 * @param string $id      Field id.
-		 * @param string $message Translated message.
+		 * @param array $values Field values.
+		 * @return array<string, string> Field id => 'hide' | 'disable'.
 		 */
-		private function add_error( $id, $message ) {
-			$this->errors[ $id ] = $message;
-			if ( function_exists( 'add_settings_error' ) ) {
-				add_settings_error( $this->option, (string) $id, $message, 'error' );
+		public function inactive_fields( array $values ) {
+			$off = array();
+			for ( $pass = 0; $pass < 5; $pass++ ) {
+				$changed = false;
+				foreach ( $this->fields as $id => $f ) {
+					$tree = self::dep_tree( $f['depends_on'] );
+					if ( null === $tree ) {
+						continue;
+					}
+					$met = $this->node_met( $tree, $values, $off );
+					if ( ! $met && ! isset( $off[ $id ] ) ) {
+						$off[ $id ] = $tree['mode'];
+						$changed    = true;
+					} elseif ( $met && isset( $off[ $id ] ) ) {
+						unset( $off[ $id ] );
+						$changed = true;
+					}
+				}
+				if ( ! $changed ) {
+					break;
+				}
 			}
+			return $off;
+		}
+
+		/**
+		 * Record a field error for this request and for the Settings API redirect.
+		 * Matrix rows in error travel in the error code as "id:row1,row2".
+		 *
+		 * @param string   $id      Field id.
+		 * @param string   $message Translated message.
+		 * @param string[] $rows    Optional matrix rows in error.
+		 */
+		private function add_error( $id, $message, array $rows = array() ) {
+			$this->errors[ $id ] = $message;
+			if ( ! empty( $rows ) ) {
+				$this->error_rows[ $id ] = $rows;
+			}
+			if ( function_exists( 'add_settings_error' ) ) {
+				add_settings_error( $this->option, (string) $id . ( empty( $rows ) ? '' : ':' . implode( ',', $rows ) ), $message, 'error' );
+			}
+		}
+
+		/**
+		 * Matrix rows in error, from this request or the last redirect.
+		 *
+		 * @param string $id Field id.
+		 * @return string[]
+		 */
+		public function error_rows( $id ) {
+			$this->errors();
+			return isset( $this->error_rows[ $id ] ) ? $this->error_rows[ $id ] : array();
 		}
 
 		/**
@@ -324,8 +538,16 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 			$errs = $this->errors;
 			if ( function_exists( 'get_settings_errors' ) ) {
 				foreach ( (array) get_settings_errors( $this->option ) as $e ) {
-					if ( isset( $e['code'], $e['message'] ) && isset( $this->fields[ $e['code'] ] ) && ! isset( $errs[ $e['code'] ] ) ) {
-						$errs[ $e['code'] ] = $e['message'];
+					if ( ! isset( $e['code'], $e['message'] ) ) {
+						continue;
+					}
+					$parts = explode( ':', (string) $e['code'], 2 );
+					$code  = $parts[0];
+					if ( isset( $this->fields[ $code ] ) && ! isset( $errs[ $code ] ) ) {
+						$errs[ $code ] = $e['message'];
+						if ( isset( $parts[1] ) && '' !== $parts[1] ) {
+							$this->error_rows[ $code ] = explode( ',', $parts[1] );
+						}
 					}
 				}
 			}
@@ -464,6 +686,7 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 					unset( $data[ $id ] );
 				}
 			}
+			unset( $data[ self::TAB_KEY ], $data[ self::CLEAR_KEY ] );
 			$clean = $this->sanitize( wp_parse_args( $data, $current ) );
 			foreach ( $this->fields as $id => $f ) {
 				if ( self::is_secret( $f ) ) {
@@ -473,6 +696,8 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 			return update_option( $this->option, $clean );
 		}
 
+		// --- Output ---
+
 		/**
 		 * Echo the markup for one field.
 		 *
@@ -480,6 +705,30 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		 */
 		public function render_field( $id ) {
 			echo $this->field_html( $id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- field_html() escapes every part.
+		}
+
+		/**
+		 * Echo every field of a tab (schema order) plus the hidden tab marker, so
+		 * saving this form writes only these fields.
+		 *
+		 * @param string $tab Tab id.
+		 */
+		public function render_tab( $tab ) {
+			$out = $this->tab_input_html( $tab );
+			foreach ( $this->fields_in_tab( $tab ) as $id ) {
+				$out .= $this->field_html( $id );
+			}
+			echo $out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
+		}
+
+		/**
+		 * Hidden marker for per-tab save. Put it once inside the form.
+		 *
+		 * @param string $tab Tab id.
+		 * @return string
+		 */
+		public function tab_input_html( $tab ) {
+			return '<input type="hidden" name="' . esc_attr( $this->option . '[' . self::TAB_KEY . ']' ) . '" value="' . esc_attr( $tab ) . '">';
 		}
 
 		/**
@@ -495,16 +744,12 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 			}
 			$f   = $this->fields[ $id ];
 			$fid = $this->field_id( $id );
-			$ids = array();
-			if ( ! empty( $args['describedby'] ) ) {
-				$ids[] = (string) $args['describedby'];
-			}
 			$ctl = array(
 				'labelledby'  => isset( $args['labelledby'] ) ? (string) $args['labelledby'] : '',
-				'describedby' => implode( ' ', $ids ),
+				'describedby' => isset( $args['describedby'] ) ? (string) $args['describedby'] : '',
 				'invalid'     => isset( $this->errors()[ $id ] ),
 			);
-			$out = '<span class="wenpai-control" data-wenpai-field="' . esc_attr( $id ) . '"' . $this->depends_attrs( $f ) . '>' . $this->control_html( $id, $f, $fid, $ctl ) . '</span>';
+			$out = '<span class="wenpai-control" data-wenpai-field="' . esc_attr( $id ) . '"' . $this->depends_attrs( $f['depends_on'] ) . '>' . $this->control_html( $id, $f, $fid, $ctl ) . '</span>';
 			echo $out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 		}
 
@@ -529,7 +774,9 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		}
 
 		/**
-		 * Markup for one field: wrapper, label (or legend), control, description, error.
+		 * Markup for one field: wrapper, label (or legend), control, actions,
+		 * description, state, error. Layout 'row' outputs the two-column
+		 * .field > .field-label + .field-ctl structure.
 		 *
 		 * @param string $id Field id.
 		 * @return string Escaped HTML, or '' for an unknown field.
@@ -542,47 +789,87 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 			$fid    = $this->field_id( $id );
 			$errors = $this->errors();
 			$err    = isset( $errors[ $id ] ) ? $errors[ $id ] : '';
-			$group  = in_array( $f['type'], array( 'radio', 'choice', 'multicheck', 'multiselect', 'matrix' ), true );
-			$secret = self::is_secret( $f ) && 'toggle' !== $f['type'];
+			$row    = 'row' === $f['layout'];
+			$group  = in_array( $f['type'], array( 'radio', 'choice', 'multicheck', 'multiselect', 'matrix', 'status' ), true );
+			$secret = self::is_secret( $f );
+			$tree   = self::dep_tree( $f['depends_on'] );
+			$reason = null !== $tree && 'disable' === $tree['mode'];
+			$rows   = 'matrix' === $f['type'] ? $this->error_rows( $id ) : array();
 
 			$described = array();
+			if ( '' !== $err ) {
+				$described[] = $fid . '-error';
+			}
+			if ( $reason ) {
+				$described[] = $fid . '-reason';
+			}
 			if ( '' !== $f['desc'] ) {
 				$described[] = $fid . '-desc';
 			}
 			if ( $secret ) {
 				$described[] = $fid . '-state';
 			}
-			if ( '' !== $err ) {
-				$described[] = $fid . '-error';
+			foreach ( $this->actions( $id, $f ) as $a ) {
+				$described[] = $a['result_id'];
 			}
 			$ctl = array(
-				'labelledby'  => '',
-				'describedby' => $group ? '' : implode( ' ', $described ),
-				'invalid'     => '' !== $err,
+				'labelledby'   => '',
+				'describedby'  => $group ? '' : implode( ' ', $described ),
+				'invalid'      => '' !== $err && 'matrix' !== $f['type'],
+				'invalid_rows' => $rows,
+				'error_id'     => '' !== $err ? $fid . '-error' : '',
 			);
 
-			$cls  = 'wenpai-field wenpai-field--' . $f['type'] . ( '' !== $err ? ' is-invalid' : '' );
-			$html = '<div class="' . esc_attr( $cls ) . '" data-wenpai-field="' . esc_attr( $id ) . '"' . $this->depends_attrs( $f ) . '>';
-			if ( $group ) {
-				$aria  = empty( $described ) ? '' : ' aria-describedby="' . esc_attr( implode( ' ', $described ) ) . '"';
-				$html .= '<fieldset class="wenpai-field__group" id="' . esc_attr( $fid ) . '"' . $aria . '>';
-				$html .= '<legend class="wenpai-field__label">' . esc_html( $f['label'] ) . '</legend>';
-				$html .= $this->control_html( $id, $f, $fid, $ctl );
-				$html .= '</fieldset>';
-			} else {
-				$html .= '<label class="wenpai-field__label" for="' . esc_attr( $fid ) . '">' . esc_html( $f['label'] ) . '</label>';
-				$html .= $this->control_html( $id, $f, $fid, $ctl );
+			$control = $this->control_html( $id, $f, $fid, $ctl );
+			$actions = $this->actions_html( $id, $f );
+			if ( '' !== $actions ) {
+				$control = '<div class="field-ctl-row wenpai-field__row">' . $control . $actions . '</div>';
+			}
+			$after = '';
+			if ( '' !== $err ) {
+				$icon   = class_exists( 'Wenpai_Admin_Icons', false ) ? Wenpai_Admin_Icons::svg( 'info' ) : '';
+				$after .= '<p class="wenpai-field__error" id="' . esc_attr( $fid . '-error' ) . '">' . $icon . '<span>' . esc_html( $err ) . '</span></p>';
+			}
+			if ( $reason ) {
+				$after .= '<p class="wenpai-field__reason" id="' . esc_attr( $fid . '-reason' ) . '" hidden></p>';
 			}
 			if ( '' !== $f['desc'] ) {
-				$html .= '<p class="wenpai-field__desc" id="' . esc_attr( $fid . '-desc' ) . '">' . esc_html( $f['desc'] ) . '</p>';
+				$after .= '<p class="wenpai-field__desc" id="' . esc_attr( $fid . '-desc' ) . '">' . esc_html( $f['desc'] ) . '</p>';
 			}
 			if ( $secret ) {
-				$html .= $this->secret_extra_html( $id, $fid );
+				$after .= $this->secret_extra_html( $id, $fid );
 			}
-			if ( '' !== $err ) {
-				$html .= '<p class="wenpai-field__error" id="' . esc_attr( $fid . '-error' ) . '">' . esc_html( $err ) . '</p>';
+
+			$cls  = 'wenpai-field wenpai-field--' . $f['type'] . ( $row ? ' field wenpai-field--row' : '' ) . ( '' !== $err ? ' is-invalid' : '' );
+			$open = '<div class="' . esc_attr( $cls ) . '" data-wenpai-field="' . esc_attr( $id ) . '"' . $this->depends_attrs( $f['depends_on'] );
+			$aria = empty( $described ) ? '' : ' aria-describedby="' . esc_attr( implode( ' ', $described ) ) . '"';
+
+			if ( $row ) {
+				if ( $group ) {
+					$labelled = $fid . '-label' . ( false !== strpos( $control, 'id="' . $fid . '-pill"' ) ? ' ' . $fid . '-pill' : '' );
+					$html     = $open . ' id="' . esc_attr( $fid ) . '" role="group" aria-labelledby="' . esc_attr( $labelled ) . '"' . $aria . '>';
+					$html    .= '<div class="field-label" id="' . esc_attr( $fid . '-label' ) . '">' . esc_html( $f['label'] ) . '</div>';
+				} else {
+					$html  = $open . '>';
+					$html .= '<div class="field-label"><label class="wenpai-field__label" for="' . esc_attr( $fid ) . '">' . esc_html( $f['label'] ) . '</label></div>';
+				}
+				return $html . '<div class="field-ctl">' . $control . $after . '</div></div>';
 			}
-			return $html . '</div>';
+			if ( 'status' === $f['type'] ) {
+				$labelled = $fid . '-label' . ( false !== strpos( $control, 'id="' . $fid . '-pill"' ) ? ' ' . $fid . '-pill' : '' );
+				$html     = $open . ' role="group" aria-labelledby="' . esc_attr( $labelled ) . '"' . $aria . '>';
+				$html    .= '<span class="wenpai-field__label" id="' . esc_attr( $fid . '-label' ) . '">' . esc_html( $f['label'] ) . '</span>';
+				return $html . $control . $after . '</div>';
+			}
+			if ( $group ) {
+				$html  = $open . '>';
+				$html .= '<fieldset class="wenpai-field__group" id="' . esc_attr( $fid ) . '"' . $aria . '>';
+				$html .= '<legend class="wenpai-field__label">' . esc_html( $f['label'] ) . '</legend>';
+				return $html . $control . '</fieldset>' . $after . '</div>';
+			}
+			$html  = $open . '>';
+			$html .= '<label class="wenpai-field__label" for="' . esc_attr( $fid ) . '">' . esc_html( $f['label'] ) . '</label>';
+			return $html . $control . $after . '</div>';
 		}
 
 		/**
@@ -595,11 +882,86 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		private function secret_extra_html( $id, $fid ) {
 			$stored = $this->stored();
 			$saved  = isset( $stored[ $id ] ) && is_scalar( $stored[ $id ] ) && '' !== (string) $stored[ $id ];
-			$html   = '<p class="wenpai-field__state" id="' . esc_attr( $fid . '-state' ) . '">' . esc_html( $saved ? $this->strings['secret_saved'] : $this->strings['secret_empty'] ) . '</p>';
+			$html   = '<p class="wenpai-field__state ' . ( $saved ? 'is-saved' : 'is-empty' ) . '" id="' . esc_attr( $fid . '-state' ) . '">' . esc_html( $saved ? $this->strings['secret_saved'] : $this->strings['secret_empty'] ) . '</p>';
 			if ( $saved ) {
 				$html .= '<label class="wenpai-field__clear"><input type="checkbox" name="' . esc_attr( $this->option . '[' . self::CLEAR_KEY . '][]' ) . '" value="' . esc_attr( $id ) . '"> ' . esc_html( $this->strings['secret_clear'] ) . '</label>';
 			}
 			return $html;
+		}
+
+		/**
+		 * Normalized action button of a field (at most one, always .btn-secondary).
+		 *
+		 * Schema: 'actions' => array( array( 'id', 'label', 'ajax' (wp_ajax action),
+		 * 'nonce' (defaults to the ajax action), 'include' (field ids sent along,
+		 * defaults to this field), 'busy' (e.g. 正在测试), 'data' (extra static
+		 * params), 'requires' (field ids that must have a value), 'requires_note'
+		 * (why the button is disabled, e.g. 先填写 API 密钥。) ) ).
+		 *
+		 * @param string $id Field id.
+		 * @param array  $f  Field schema.
+		 * @return array<int, array>
+		 */
+		private function actions( $id, array $f ) {
+			foreach ( (array) $f['actions'] as $i => $a ) {
+				if ( ! is_array( $a ) || empty( $a['ajax'] ) || empty( $a['label'] ) ) {
+					continue;
+				}
+				$aid = isset( $a['id'] ) ? sanitize_key( (string) $a['id'] ) : (string) $i;
+				return array(
+					array(
+						'id'            => $aid,
+						'label'         => (string) $a['label'],
+						'ajax'          => (string) $a['ajax'],
+						'nonce'         => isset( $a['nonce'] ) ? (string) $a['nonce'] : (string) $a['ajax'],
+						'include'       => isset( $a['include'] ) ? (array) $a['include'] : array( $id ),
+						'busy'          => isset( $a['busy'] ) ? (string) $a['busy'] : $this->strings['action_busy'],
+						'data'          => isset( $a['data'] ) && is_array( $a['data'] ) ? $a['data'] : array(),
+						'requires'      => isset( $a['requires'] ) ? (array) $a['requires'] : array(),
+						'requires_note' => isset( $a['requires_note'] ) ? (string) $a['requires_note'] : '',
+						'result_id'     => $this->field_id( $id ) . '-act-' . $aid,
+					),
+				);
+			}
+			return array();
+		}
+
+		/**
+		 * The action button followed by its receipt (role=status, filled by kit
+		 * JS). The button carries `hidden` until kit JS runs: without JS there
+		 * is nothing to press.
+		 *
+		 * @param string $id Field id.
+		 * @param array  $f  Field schema.
+		 * @return string
+		 */
+		private function actions_html( $id, array $f ) {
+			$out = '';
+			foreach ( $this->actions( $id, $f ) as $a ) {
+				$names = array();
+				foreach ( $a['include'] as $inc ) {
+					$names[] = $this->field_name( (string) $inc );
+				}
+				$needs = array();
+				foreach ( $a['requires'] as $req ) {
+					$needs[] = $this->field_name( (string) $req );
+				}
+				$out .= '<button type="button" class="btn btn-secondary" hidden'
+					. ' data-wenpai-action="' . esc_attr( $a['ajax'] ) . '"'
+					. ' data-wenpai-nonce="' . esc_attr( function_exists( 'wp_create_nonce' ) ? wp_create_nonce( $a['nonce'] ) : '' ) . '"'
+					. ' data-wenpai-url="' . esc_attr( function_exists( 'admin_url' ) ? admin_url( 'admin-ajax.php' ) : 'admin-ajax.php' ) . '"'
+					. ' data-wenpai-include="' . esc_attr( wp_json_encode( $names ) ) . '"'
+					. ( empty( $a['data'] ) ? '' : ' data-wenpai-data="' . esc_attr( wp_json_encode( $a['data'] ) ) . '"' )
+					. ( empty( $needs ) ? '' : ' data-wenpai-requires="' . esc_attr( wp_json_encode( $needs ) ) . '" data-wenpai-requires-note="' . esc_attr( $a['requires_note'] ) . '"' )
+					. ' data-wenpai-result="' . esc_attr( $a['result_id'] ) . '"'
+					. ' data-wenpai-busy="' . esc_attr( $a['busy'] ) . '"'
+					. ' data-wenpai-ok="' . esc_attr( $this->strings['action_ok'] ) . '"'
+					. ' data-wenpai-fail="' . esc_attr( $this->strings['action_failed'] ) . '"'
+					. ' aria-describedby="' . esc_attr( $a['result_id'] ) . '">'
+					. esc_html( $a['label'] ) . '</button>';
+				$out .= '<p class="wenpai-field__result" id="' . esc_attr( $a['result_id'] ) . '" role="status" aria-live="polite"></p>';
+			}
+			return $out;
 		}
 
 		/**
@@ -623,7 +985,16 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 			}
 			$inv = $ctl['invalid'] ? ' aria-invalid="true"' : '';
 			$out = '';
+			if ( in_array( $f['type'], array( 'radio', 'choice', 'multicheck', 'multiselect', 'matrix' ), true ) ) {
+				$list = self::resolve( 'matrix' === $f['type'] ? $f['rows'] : $f['choices'], $f );
+				if ( empty( $list ) ) {
+					$noun = isset( $f['empty_noun'] ) ? (string) $f['empty_noun'] : $f['label'];
+					return '<p class="wenpai-field__empty">' . esc_html( sprintf( $this->strings['empty_choices'], $noun ) ) . '</p>';
+				}
+			}
 			switch ( $f['type'] ) {
+				case 'status':
+					return $this->status_html( $f, $fid );
 				case 'toggle':
 					return self::switch_html(
 						array(
@@ -653,16 +1024,7 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 					}
 					return $out . '</div>';
 				case 'choice':
-					$out .= '<div class="choice-cards' . ( 2 === count( self::resolve( $f['choices'], $f ) ) ? ' cols-2' : '' ) . '">';
-					foreach ( self::resolve( $f['choices'], $f ) as $k => $c ) {
-						$on   = (string) $v === (string) $k;
-						$desc = is_array( $c ) && isset( $c['desc'] ) ? (string) $c['desc'] : '';
-						$dis  = is_array( $c ) && ! empty( $c['disabled'] );
-						$out .= '<label class="choice' . ( $on ? ' is-on' : '' ) . ( $dis ? ' is-soon' : '' ) . '">';
-						$out .= '<input type="radio" name="' . esc_attr( $name ) . '" value="' . esc_attr( $k ) . '"' . checked( $on, true, false ) . disabled( $dis, true, false ) . $inv . '>';
-						$out .= '<span><span class="t">' . esc_html( self::choice_label( $c ) ) . '</span>' . ( '' !== $desc ? '<span class="d">' . esc_html( $desc ) . '</span>' : '' ) . '</span></label>';
-					}
-					return $out . '</div>';
+					return $this->choice_html( $f, $name, (string) $v, $inv );
 				case 'multiselect':
 					$picked = array_map( 'strval', (array) $v );
 					$out   .= '<div class="chk-grid">';
@@ -672,17 +1034,88 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 					}
 					return $out . '</div>';
 				case 'matrix':
-					return $this->matrix_html( $f, $fid, $name, is_array( $v ) ? $v : array(), $inv );
+					return $this->matrix_html( $f, $fid, $name, is_array( $v ) ? $v : array(), $ctl );
 				case 'number':
 					return '<input type="number" id="' . esc_attr( $fid ) . '" name="' . esc_attr( $name ) . '" value="' . esc_attr( $v ) . '"' . ( isset( $f['min'] ) ? ' min="' . esc_attr( $f['min'] ) . '"' : '' ) . ( isset( $f['max'] ) ? ' max="' . esc_attr( $f['max'] ) . '"' : '' ) . $aria . $inv . '>';
 				case 'textarea':
 					return '<textarea id="' . esc_attr( $fid ) . '" name="' . esc_attr( $name ) . '" rows="4"' . $aria . $inv . '>' . esc_textarea( $v ) . '</textarea>';
+				case 'secret':
+					$saved = is_scalar( $v ) && '' !== (string) $v;
+					return '<input type="password" id="' . esc_attr( $fid ) . '" name="' . esc_attr( $name ) . '" value="" autocomplete="new-password" spellcheck="false"' . ( $saved ? ' data-wenpai-saved' : '' ) . $aria . $inv . '>';
 				default:
-					if ( self::is_secret( $f ) ) {
-						return '<input type="password" id="' . esc_attr( $fid ) . '" name="' . esc_attr( $name ) . '" value="" autocomplete="new-password" spellcheck="false"' . $aria . $inv . '>';
-					}
 					return '<input type="text" id="' . esc_attr( $fid ) . '" name="' . esc_attr( $name ) . '" value="' . esc_attr( is_scalar( $v ) ? $v : '' ) . '" autocomplete="off"' . $aria . $inv . '>';
 			}
+		}
+
+		/**
+		 * Choice cards. A choice may be a label, or array( label, desc, icon
+		 * (kit icon name), icon_html (trusted SVG), hint, disabled, locked ).
+		 *
+		 * @param array  $f    Field schema.
+		 * @param string $name Input name.
+		 * @param string $v    Current value.
+		 * @param string $inv  aria-invalid attribute or ''.
+		 * @return string
+		 */
+		private function choice_html( array $f, $name, $v, $inv ) {
+			$choices = self::resolve( $f['choices'], $f );
+			$out     = '<div class="choice-cards' . ( 2 === count( $choices ) ? ' cols-2' : '' ) . '">';
+			foreach ( $choices as $k => $c ) {
+				$c    = is_array( $c ) ? $c : array( 'label' => (string) $c );
+				$on   = $v === (string) $k;
+				$dis  = ! empty( $c['disabled'] );
+				$icon = '';
+				if ( ! empty( $c['icon_html'] ) ) {
+					$icon = (string) $c['icon_html'];
+				} elseif ( ! empty( $c['icon'] ) && class_exists( 'Wenpai_Admin_Icons', false ) ) {
+					$icon = Wenpai_Admin_Icons::svg( (string) $c['icon'] );
+				}
+				$cls  = 'choice' . ( $on ? ' is-on' : '' ) . ( $dis ? ' is-soon' : '' ) . ( ! empty( $c['locked'] ) ? ' is-locked' : '' );
+				$out .= '<label class="' . esc_attr( $cls ) . '">';
+				$out .= '<input type="radio" name="' . esc_attr( $name ) . '" value="' . esc_attr( $k ) . '"' . checked( $on, true, false ) . disabled( $dis, true, false ) . $inv . '>';
+				$out .= '' !== $icon ? '<span class="choice-ico" aria-hidden="true">' . $icon . '</span>' : '';
+				$out .= '<span><span class="t">' . esc_html( self::choice_label( $c ) ) . '</span>';
+				$out .= isset( $c['desc'] ) && '' !== (string) $c['desc'] ? '<span class="d">' . esc_html( (string) $c['desc'] ) . '</span>' : '';
+				$out .= isset( $c['hint'] ) && '' !== (string) $c['hint'] ? '<span class="hint">' . esc_html( (string) $c['hint'] ) . '</span>' : '';
+				$out .= '</span></label>';
+			}
+			return $out . '</div>';
+		}
+
+		/**
+		 * Read-only status block. Not submitted, not stored.
+		 *
+		 * 'status' => array|Closure returning array( level (ok|warn|bad|''), text,
+		 * desc (string or list), link (array( url, label )) ). Or 'render' =>
+		 * callable returning trusted HTML (the plugin escapes it).
+		 *
+		 * @param array  $f   Field schema.
+		 * @param string $fid Field control id; the pill gets {fid}-pill.
+		 * @return string
+		 */
+		private function status_html( array $f, $fid ) {
+			if ( is_callable( $f['render'] ) ) {
+				return '<div class="wenpai-field__status" data-wenpai-status>' . (string) call_user_func( $f['render'], $f, $this ) . '</div>';
+			}
+			$st    = $f['status'] instanceof Closure ? call_user_func( $f['status'], $f, $this ) : $f['status'];
+			$st    = is_array( $st ) ? $st : array();
+			$level = isset( $st['level'] ) && in_array( $st['level'], array( 'ok', 'warn', 'bad', 'mute' ), true ) ? $st['level'] : 'mute';
+			$out   = '<div class="wenpai-field__status" data-wenpai-status="' . esc_attr( $level ) . '">';
+			if ( ! empty( $st['text'] ) ) {
+				$out .= '<span class="pill ' . esc_attr( $level ) . '" id="' . esc_attr( $fid . '-pill' ) . '">' . esc_html( (string) $st['text'] ) . '</span>';
+			}
+			$link = '';
+			if ( isset( $st['link']['url'], $st['link']['label'] ) ) {
+				$link = ' <a href="' . esc_url( (string) $st['link']['url'] ) . '">' . esc_html( (string) $st['link']['label'] ) . '</a>';
+			}
+			$lines = isset( $st['desc'] ) ? array_values( (array) $st['desc'] ) : array();
+			foreach ( $lines as $i => $line ) {
+				$out .= '<p class="wenpai-field__note">' . esc_html( (string) $line ) . ( count( $lines ) - 1 === $i ? $link : '' ) . '</p>';
+			}
+			if ( empty( $lines ) && '' !== $link ) {
+				$out .= '<p class="wenpai-field__note">' . ltrim( $link ) . '</p>';
+			}
+			return $out . '</div>';
 		}
 
 		/**
@@ -692,12 +1125,20 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		 * @param string $fid  Control id.
 		 * @param string $name Input name.
 		 * @param array  $v    Current map.
-		 * @param string $inv  aria-invalid attribute or ''.
+		 * @param array  $ctl  Control args; 'invalid_rows' gets aria-invalid, only those rows.
 		 * @return string
 		 */
-		private function matrix_html( array $f, $fid, $name, array $v, $inv ) {
+		private function matrix_html( array $f, $fid, $name, array $v, array $ctl ) {
 			$choices = self::resolve( $f['choices'], $f );
+			if ( null !== $f['unset_value'] ) {
+				// The "follow global" option always comes first.
+				$uv    = (string) $f['unset_value'];
+				$label = isset( $choices[ $uv ] ) && '' !== self::choice_label( $choices[ $uv ] ) ? $choices[ $uv ] : $this->strings['follow_global'];
+				unset( $choices[ $uv ] );
+				$choices = array( $uv => $label ) + $choices;
+			}
 			$fall    = null !== $f['unset_value'] ? (string) $f['unset_value'] : (string) key( $choices );
+			$badrows = array_map( 'strval', $ctl['invalid_rows'] );
 			$col     = $fid . '-col';
 			$out     = '<table class="tbl wenpai-matrix"><thead><tr>';
 			$out    .= '<th scope="col">' . esc_html( $f['row_label'] ) . '</th>';
@@ -707,8 +1148,10 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 				$rid  = $fid . '-r-' . sanitize_key( (string) $row );
 				$cur  = isset( $v[ $row ] ) && array_key_exists( (string) $v[ $row ], $choices ) ? (string) $v[ $row ] : $fall;
 				$desc = is_array( $r ) && isset( $r['desc'] ) ? (string) $r['desc'] : '';
-				$out .= '<tr><th scope="row" id="' . esc_attr( $rid ) . '"><span class="t">' . esc_html( self::choice_label( $r ) ) . '</span>' . ( '' !== $desc ? '<span class="d">' . esc_html( $desc ) . '</span>' : '' ) . '</th>';
-				$out .= '<td><select name="' . esc_attr( $name . '[' . $row . ']' ) . '" aria-labelledby="' . esc_attr( $rid . ' ' . $col ) . '"' . $inv . '>';
+				$bad  = in_array( (string) $row, $badrows, true );
+				$inv  = $bad ? ' aria-invalid="true"' . ( '' !== $ctl['error_id'] ? ' aria-describedby="' . esc_attr( $ctl['error_id'] ) . '"' : '' ) : '';
+				$out .= '<tr' . ( $bad ? ' class="is-invalid"' : '' ) . '><th scope="row" id="' . esc_attr( $rid ) . '"><span class="t">' . esc_html( self::choice_label( $r ) ) . '</span>' . ( '' !== $desc ? '<span class="d">' . esc_html( $desc ) . '</span>' : '' ) . '</th>';
+				$out .= '<td data-label="' . esc_attr( $f['col_label'] ) . '"><select name="' . esc_attr( $name . '[' . $row . ']' ) . '" aria-labelledby="' . esc_attr( $rid . ' ' . $col ) . '"' . $inv . '>';
 				foreach ( $choices as $k => $lab ) {
 					$out .= '<option value="' . esc_attr( $k ) . '"' . selected( $cur, (string) $k, false ) . '>' . esc_html( self::choice_label( $lab ) ) . '</option>';
 				}
@@ -736,6 +1179,7 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		 *
 		 * @param array $a {
 		 *     Switch arguments.
+		 *
 		 *     @type string $id          Control id. Required.
 		 *     @type string $name        Input name. Omit for a display-only switch.
 		 *     @type bool   $checked     Current state.
@@ -788,90 +1232,344 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 			return $out . '</span>';
 		}
 
+		// --- depends_on ---
+
 		/**
-		 * Normalize depends_on into a list of conditions.
+		 * Normalize depends_on into a condition tree.
 		 *
-		 * @param array $f Field schema.
-		 * @return array<int, array{field: string, value: string[], not: bool}>
+		 * Accepted: one condition array( field, value, not ); a list (all must
+		 * hold); or a group array( 'mode' => hide|disable, 'relation' => AND|OR,
+		 * 'rules' => array( conditions or nested groups ) ).
+		 *
+		 * @param mixed $dep Schema value.
+		 * @return array|null Group array( mode, relation, rules ) or null.
 		 */
-		private static function conditions( array $f ) {
-			$dep = $f['depends_on'];
+		private static function dep_tree( $dep ) {
 			if ( empty( $dep ) || ! is_array( $dep ) ) {
-				return array();
+				return null;
 			}
-			if ( isset( $dep['field'] ) ) {
-				$dep = array( $dep );
+			$mode = isset( $dep['mode'] ) && 'disable' === $dep['mode'] ? 'disable' : 'hide';
+			$node = self::dep_node( $dep );
+			if ( null === $node ) {
+				return null;
 			}
-			$out = array();
-			foreach ( $dep as $c ) {
-				if ( ! is_array( $c ) || empty( $c['field'] ) ) {
+			if ( ! isset( $node['rules'] ) ) {
+				$node = array(
+					'relation' => 'AND',
+					'rules'    => array( $node ),
+					'reason'   => '',
+				);
+			}
+			$node['mode'] = $mode;
+			return $node;
+		}
+
+		/**
+		 * Normalize one node of a depends_on tree.
+		 *
+		 * @param mixed $n Condition, list or group.
+		 * @return array|null
+		 */
+		private static function dep_node( $n ) {
+			if ( ! is_array( $n ) ) {
+				return null;
+			}
+			if ( isset( $n['field'] ) ) {
+				$vals = array_key_exists( 'value', $n ) ? $n['value'] : true;
+				$norm = array();
+				foreach ( ( is_array( $vals ) ? $vals : array( $vals ) ) as $x ) {
+					$norm[] = is_bool( $x ) ? ( $x ? '1' : '0' ) : (string) $x;
+				}
+				return array(
+					'field'  => (string) $n['field'],
+					'value'  => $norm,
+					'not'    => ! empty( $n['not'] ),
+					'reason' => isset( $n['reason'] ) ? (string) $n['reason'] : '',
+				);
+			}
+			$relation = isset( $n['relation'] ) && 'OR' === strtoupper( (string) $n['relation'] ) ? 'OR' : 'AND';
+			$list     = $n;
+			if ( isset( $n['any'] ) && is_array( $n['any'] ) ) {
+				$relation = 'OR';
+				$list     = $n['any'];
+			} elseif ( isset( $n['all'] ) && is_array( $n['all'] ) ) {
+				$relation = 'AND';
+				$list     = $n['all'];
+			} elseif ( isset( $n['rules'] ) && is_array( $n['rules'] ) ) {
+				$list = $n['rules'];
+			}
+			$rules = array();
+			foreach ( $list as $k => $child ) {
+				if ( in_array( $k, array( 'mode', 'relation', 'reason' ), true ) ) {
 					continue;
 				}
-				$vals = array_key_exists( 'value', $c ) ? $c['value'] : true;
-				$vals = is_array( $vals ) ? $vals : array( $vals );
-				$norm = array();
-				foreach ( $vals as $x ) {
-					if ( is_bool( $x ) ) {
-						$norm[] = $x ? '1' : '0';
-					} else {
-						$norm[] = (string) $x;
-					}
+				$c = self::dep_node( $child );
+				if ( null !== $c ) {
+					$rules[] = $c;
 				}
-				$out[] = array(
-					'field' => (string) $c['field'],
-					'value' => $norm,
-					'not'   => ! empty( $c['not'] ),
+			}
+			if ( empty( $rules ) ) {
+				return null;
+			}
+			return array(
+				'relation' => $relation,
+				'rules'    => $rules,
+				'reason'   => isset( $n['reason'] ) ? (string) $n['reason'] : '',
+			);
+		}
+
+		/**
+		 * Tree with field ids replaced by input names, for the JSON attribute.
+		 *
+		 * @param array $node Normalized node.
+		 * @return array
+		 */
+		private function dep_json( array $node ) {
+			if ( isset( $node['field'] ) ) {
+				$c = array(
+					'on'    => $this->field_name( $node['field'] ),
+					'value' => $node['value'],
+					'not'   => $node['not'],
 				);
+				if ( '' !== $node['reason'] ) {
+					$c['reason'] = $node['reason'];
+				}
+				return $c;
+			}
+			$out = array(
+				'relation' => $node['relation'],
+				'rules'    => array(),
+			);
+			if ( '' !== $node['reason'] ) {
+				$out['reason'] = $node['reason'];
+			}
+			if ( isset( $node['mode'] ) ) {
+				$out = array( 'mode' => $node['mode'] ) + $out;
+			}
+			foreach ( $node['rules'] as $r ) {
+				$out['rules'][] = $this->dep_json( $r );
 			}
 			return $out;
 		}
 
 		/**
-		 * Data attributes for kit JS conditional display. No `hidden` is printed:
-		 * without JS every field shows.
+		 * Data attributes for kit JS. No `hidden` is printed: without JS every
+		 * field shows and is enabled.
 		 *
-		 * One condition: data-wenpai-depends-on, data-wenpai-depends-value (a value,
-		 * or a JSON list for "any of"), data-wenpai-depends-not. Several conditions
-		 * (all must hold): data-wenpai-depends, a JSON list of {on, value, not}.
+		 * One plain condition: data-wenpai-depends-on, data-wenpai-depends-value
+		 * (a value, or a JSON list for "any of"), data-wenpai-depends-not,
+		 * data-wenpai-depends-mode="disable". Anything else: data-wenpai-depends,
+		 * a JSON tree {mode, relation, rules: [{on, value, not} | group]}.
 		 *
-		 * @param array $f Field schema.
+		 * @param mixed $dep Schema depends_on.
 		 * @return string
 		 */
-		private function depends_attrs( array $f ) {
-			$conds = self::conditions( $f );
-			if ( empty( $conds ) ) {
+		private function depends_attrs( $dep ) {
+			$tree = self::dep_tree( $dep );
+			if ( null === $tree ) {
 				return '';
 			}
-			if ( 1 === count( $conds ) ) {
-				$c   = $conds[0];
+			if ( 1 === count( $tree['rules'] ) && isset( $tree['rules'][0]['field'] ) ) {
+				$c   = $tree['rules'][0];
 				$val = 1 === count( $c['value'] ) ? $c['value'][0] : wp_json_encode( $c['value'] );
-				return ' data-wenpai-depends-on="' . esc_attr( $this->field_name( $c['field'] ) ) . '" data-wenpai-depends-value="' . esc_attr( $val ) . '"' . ( $c['not'] ? ' data-wenpai-depends-not' : '' );
+				$why = '' !== $c['reason'] ? $c['reason'] : $tree['reason'];
+				return ' data-wenpai-depends-on="' . esc_attr( $this->field_name( $c['field'] ) ) . '" data-wenpai-depends-value="' . esc_attr( $val ) . '"'
+					. ( $c['not'] ? ' data-wenpai-depends-not' : '' )
+					. ( 'disable' === $tree['mode'] ? ' data-wenpai-depends-mode="disable"' : '' )
+					. ( 'disable' === $tree['mode'] && '' !== $why ? ' data-wenpai-depends-reason="' . esc_attr( $why ) . '"' : '' );
 			}
-			$list = array();
-			foreach ( $conds as $c ) {
-				$list[] = array(
-					'on'    => $this->field_name( $c['field'] ),
-					'value' => $c['value'],
-					'not'   => $c['not'],
-				);
-			}
-			return ' data-wenpai-depends="' . esc_attr( wp_json_encode( $list ) ) . '"';
+			return ' data-wenpai-depends="' . esc_attr( wp_json_encode( $this->dep_json( $tree ) ) ) . '"';
 		}
 
 		/**
-		 * Attributes for a hand-written block that should follow a field, for
-		 * example a preview card that shows only while conversion is on.
+		 * Attributes for a hand-written block, card, section or tab link that
+		 * should follow a field.
+		 *
+		 * With 'server' => true the condition is also checked against saved
+		 * values and ' hidden' is added when it fails. Use this for tabs and
+		 * sections whose trigger is on another page: kit JS leaves an element
+		 * alone when its trigger control is not on the page.
 		 *
 		 * @param array $depends_on Same shape as the schema key.
+		 * @param array $args       Optional. 'server' (bool).
 		 * @return string Leading space included.
 		 */
-		public function depends_on_attrs( array $depends_on ) {
-			return $this->depends_attrs( array( 'depends_on' => $depends_on ) );
+		public function depends_on_attrs( array $depends_on, array $args = array() ) {
+			$out = $this->depends_attrs( $depends_on );
+			if ( ! empty( $args['server'] ) && ! $this->condition_met( $depends_on ) ) {
+				$out .= ' hidden';
+			}
+			return $out;
 		}
 
 		/**
-		 * Kit notice for the settings page: an error summary (role="alert") when
-		 * fields failed validation, otherwise a saved receipt (role="status").
+		 * Evaluate depends_on against saved values (for tabs, sections and
+		 * server-side decisions).
+		 *
+		 * @param array $depends_on Same shape as the schema key.
+		 * @return bool True when there is no condition.
+		 */
+		public function condition_met( array $depends_on ) {
+			$tree = self::dep_tree( $depends_on );
+			return null === $tree ? true : $this->node_met( $tree, $this->all(), $this->inactive_fields( $this->all() ) );
+		}
+
+		/**
+		 * Evaluate one node against values.
+		 *
+		 * @param array $node     Normalized node.
+		 * @param array $values   Field values.
+		 * @param array $inactive Field ids (keys) that are hidden or disabled; they never match.
+		 * @return bool
+		 */
+		private function node_met( array $node, array $values, array $inactive = array() ) {
+			if ( isset( $node['field'] ) ) {
+				if ( ! array_key_exists( $node['field'], $values ) ) {
+					return true;
+				}
+				if ( isset( $inactive[ $node['field'] ] ) ) {
+					return $node['not'];
+				}
+				$have = array();
+				foreach ( ( is_array( $values[ $node['field'] ] ) ? $values[ $node['field'] ] : array( $values[ $node['field'] ] ) ) as $x ) {
+					$have[] = is_bool( $x ) ? ( $x ? '1' : '0' ) : (string) $x;
+				}
+				$match = array() !== array_intersect( $have, $node['value'] );
+				return $node['not'] ? ! $match : $match;
+			}
+			foreach ( $node['rules'] as $r ) {
+				$ok = $this->node_met( $r, $values, $inactive );
+				if ( 'OR' === $node['relation'] && $ok ) {
+					return true;
+				}
+				if ( 'AND' === $node['relation'] && ! $ok ) {
+					return false;
+				}
+			}
+			return 'AND' === $node['relation'];
+		}
+
+		// --- AJAX actions (field buttons, plugin preview cards) ---
+
+		/**
+		 * Register a wp_ajax_{action} handler with nonce and capability checks.
+		 *
+		 * The handler gets ( $values, $settings ): the posted values of this
+		 * option, sanitized per field, where an empty secret means the saved
+		 * one. It returns true, false, a WP_Error, a message string (success),
+		 * or array( 'ok' => bool, 'message' => string, 'data' => mixed ).
+		 *
+		 * @param string   $action  AJAX action; also the nonce action unless 'nonce' is given.
+		 * @param callable $handler Handler.
+		 * @param array    $args    Optional. 'capability' (default manage_options), 'nonce'.
+		 */
+		public function ajax_action( $action, $handler, array $args = array() ) {
+			$cap   = isset( $args['capability'] ) ? (string) $args['capability'] : 'manage_options';
+			$nonce = isset( $args['nonce'] ) ? (string) $args['nonce'] : (string) $action;
+			$self  = $this;
+			add_action(
+				'wp_ajax_' . $action,
+				function () use ( $self, $nonce, $handler, $cap ) {
+					$self->handle_ajax( $nonce, $handler, $cap );
+				}
+			);
+		}
+
+		/**
+		 * Run one AJAX action and send JSON. Public only for ajax_action().
+		 *
+		 * @param string   $nonce   Nonce action.
+		 * @param callable $handler Handler.
+		 * @param string   $cap     Capability.
+		 */
+		public function handle_ajax( $nonce, $handler, $cap ) {
+			if ( ! check_ajax_referer( $nonce, '_wpnonce', false ) || ! current_user_can( $cap ) ) {
+				wp_send_json_error( array( 'message' => $this->strings['action_denied'] ), 403 );
+			}
+			$res = call_user_func( $handler, $this->posted_values(), $this );
+			$out = self::action_result( $res, $this->strings );
+			if ( $out['ok'] ) {
+				wp_send_json_success( $out );
+			}
+			wp_send_json_error( $out );
+		}
+
+		/**
+		 * Normalize a handler result.
+		 *
+		 * @param mixed $res     Handler return value.
+		 * @param array $strings UI strings.
+		 * @return array{ok: bool, message: string, data: mixed}
+		 */
+		public static function action_result( $res, array $strings = array() ) {
+			$strings = array_merge( self::default_strings(), $strings );
+			if ( is_object( $res ) && is_a( $res, 'WP_Error' ) ) {
+				return array(
+					'ok'      => false,
+					'message' => (string) $res->get_error_message(),
+					'data'    => null,
+				);
+			}
+			if ( is_array( $res ) ) {
+				$ok = ! empty( $res['ok'] );
+				return array(
+					'ok'      => $ok,
+					'message' => isset( $res['message'] ) && '' !== (string) $res['message'] ? (string) $res['message'] : ( $ok ? $strings['action_ok'] : $strings['action_failed'] ),
+					'data'    => isset( $res['data'] ) ? $res['data'] : null,
+				);
+			}
+			if ( is_string( $res ) && '' !== $res ) {
+				return array(
+					'ok'      => true,
+					'message' => $res,
+					'data'    => null,
+				);
+			}
+			$ok = true === $res;
+			return array(
+				'ok'      => $ok,
+				'message' => $ok ? $strings['action_ok'] : $strings['action_failed'],
+				'data'    => null,
+			);
+		}
+
+		/**
+		 * Posted values of this option for an AJAX action: fields that were not
+		 * sent keep their saved value; an empty secret means the saved one.
+		 * Nonce is checked by handle_ajax() before this runs.
+		 *
+		 * @param array|null $raw Optional raw values (tests); default $_POST[option].
+		 * @return array
+		 */
+		public function posted_values( $raw = null ) {
+			if ( null === $raw ) {
+				// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- nonce checked in handle_ajax(); each field is sanitized below.
+				$raw = isset( $_POST[ $this->option ] ) && is_array( $_POST[ $this->option ] ) ? wp_unslash( $_POST[ $this->option ] ) : array();
+			}
+			$saved = $this->all();
+			$out   = array();
+			foreach ( $this->fields as $id => $f ) {
+				if ( ! self::stores( $f ) ) {
+					continue;
+				}
+				if ( ! array_key_exists( $id, $raw ) ) {
+					$out[ $id ] = $saved[ $id ];
+					continue;
+				}
+				if ( self::is_secret( $f ) && is_scalar( $raw[ $id ] ) && '' === trim( (string) $raw[ $id ] ) ) {
+					$out[ $id ] = $saved[ $id ];
+					continue;
+				}
+				$out[ $id ] = $this->sanitize_field( $f, $raw[ $id ] );
+			}
+			return $out;
+		}
+
+		/**
+		 * Kit notice for the settings page. One notice only:
+		 * - errors: role="alert" summary with an in-page link per field (at most
+		 *   five, then 「等 N 项」), plus 「其余设置已保存。」 when the rest was saved;
+		 * - otherwise a saved receipt (role="status") that fades after 5 s.
 		 *
 		 * @param bool|null $updated Whether the form was just saved. Null reads
 		 *                           settings-updated from the options.php redirect.
@@ -885,12 +1583,71 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 			$errs = $this->errors();
 			$icon = class_exists( 'Wenpai_Admin_Icons', false ) ? Wenpai_Admin_Icons::svg( 'info' ) : '';
 			if ( ! empty( $errs ) ) {
-				return '<div class="wenpai-notice-wrap"><div class="notice bad" role="alert">' . $icon . '<span>' . esc_html( sprintf( $this->strings['invalid'], count( $errs ) ) ) . '</span></div></div>';
+				$items = '';
+				$n     = 0;
+				foreach ( array_keys( $errs ) as $id ) {
+					if ( ++$n > 5 ) {
+						break;
+					}
+					$label  = isset( $this->fields[ $id ] ) ? $this->fields[ $id ]['label'] : $id;
+					$items .= '<li><a href="#' . esc_attr( $this->field_id( $id ) ) . '">' . esc_html( $label ) . '</a></li>';
+				}
+				if ( count( $errs ) > 5 ) {
+					$items .= '<li>' . esc_html( sprintf( $this->strings['invalid_more'], count( $errs ) ) ) . '</li>';
+				}
+				$html  = '<div class="wenpai-notice-wrap"><div class="notice bad wenpai-error-summary" role="alert">' . $icon . '<div class="wenpai-error-summary__body">';
+				$html .= '<p>' . esc_html( sprintf( $this->strings['invalid'], count( $errs ) ) ) . '</p>';
+				$html .= '<ul class="wenpai-error-links">' . $items . '</ul>';
+				if ( $updated ) {
+					$html .= '<p>' . esc_html( $this->strings['partial_saved'] ) . '</p>';
+				}
+				return $html . '</div></div></div>';
 			}
 			if ( $updated ) {
 				return '<div class="wenpai-notice-wrap" data-wenpai-fade><div class="notice ok" role="status" data-wenpai-announce>' . $icon . '<span>' . esc_html( $this->strings['saved'] ) . '</span></div></div>';
 			}
 			return '';
+		}
+
+		// --- Tabs decided by saved values ---
+
+		/**
+		 * Drop tabs whose 'depends_on' fails against saved values. A hidden tab is
+		 * not output at all (no live JS switching). When the requested tab is
+		 * hidden, fall back to the first visible one with an info notice.
+		 *
+		 * @param array  $tabs    Tab id => label, or id => array( 'label', 'depends_on', ... ).
+		 * @param string $current Requested tab id.
+		 * @return array{tabs: array, current: string, notice: string}
+		 */
+		public function visible_tabs( array $tabs, $current ) {
+			$shown = array();
+			foreach ( $tabs as $tid => $t ) {
+				if ( is_array( $t ) && ! empty( $t['depends_on'] ) && ! $this->condition_met( (array) $t['depends_on'] ) ) {
+					continue;
+				}
+				if ( is_array( $t ) ) {
+					unset( $t['depends_on'] );
+				}
+				$shown[ $tid ] = $t;
+			}
+			$current = (string) $current;
+			$notice  = '';
+			if ( ! isset( $shown[ $current ] ) && ! empty( $shown ) ) {
+				$first = (string) key( $shown );
+				if ( isset( $tabs[ $current ] ) ) {
+					$from   = is_array( $tabs[ $current ] ) ? ( isset( $tabs[ $current ]['label'] ) ? (string) $tabs[ $current ]['label'] : $current ) : (string) $tabs[ $current ];
+					$to     = is_array( $shown[ $first ] ) ? ( isset( $shown[ $first ]['label'] ) ? (string) $shown[ $first ]['label'] : $first ) : (string) $shown[ $first ];
+					$icon   = class_exists( 'Wenpai_Admin_Icons', false ) ? Wenpai_Admin_Icons::svg( 'info' ) : '';
+					$notice = '<div class="wenpai-notice-wrap"><div class="notice info" role="status">' . $icon . '<span>' . esc_html( sprintf( $this->strings['tab_hidden'], $from, $to ) ) . '</span></div></div>';
+				}
+				$current = $first;
+			}
+			return array(
+				'tabs'    => $shown,
+				'current' => $current,
+				'notice'  => $notice,
+			);
 		}
 	}
 }

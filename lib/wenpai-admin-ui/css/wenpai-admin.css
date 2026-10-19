@@ -579,3 +579,67 @@ a.scope:hover { color: var(--wenpai-accent); }
     padding-right: 10px;
   }
 }
+
+/* ---- Settings framework 0.3.0: review fixes and §11–§15 ------------------ */
+/* Secret state: 12px dot, ok when a value is saved, mute when empty. */
+.wenpai-field__state { display: flex; align-items: center; gap: var(--wenpai-space-2); }
+.wenpai-field__state::before { content: ""; flex: none; width: 12px; height: 12px; border-radius: 50%; background: var(--wenpai-mute); }
+.wenpai-field__state.is-saved::before { background: var(--wenpai-ok); }
+.wenpai-field__clear:has(input:disabled) { color: var(--wenpai-ink-3); }
+/* Field error: above the description, with an icon. */
+.wenpai-field__error { display: flex; align-items: flex-start; gap: 6px; }
+.wenpai-field__error svg { flex: none; width: 14px; height: 14px; margin-top: 2px; color: var(--wenpai-bad); }
+.wenpai-field__empty { margin: 0; color: var(--wenpai-ink-3); font-size: var(--wenpai-text-meta); line-height: var(--wenpai-leading-meta); }
+/* Error summary: one notice, links to each field. */
+.wenpai-error-summary__body { display: flex; flex-direction: column; gap: var(--wenpai-space-1); }
+.wenpai-error-summary__body p { margin: 0; }
+.wenpai-error-links { display: flex; flex-wrap: wrap; gap: var(--wenpai-space-1) var(--wenpai-space-4); margin: 0; padding: 0; list-style: none; }
+.wenpai-error-links a { color: inherit; text-decoration: underline; }
+/* Field action: control + .btn-secondary + receipt on one row, wraps under 600px. */
+.field-ctl-row.wenpai-field__row { flex-wrap: wrap; max-width: none; }
+.wenpai-field__row > :first-child { flex: 1 1 var(--wenpai-size-control-max); min-width: 0; max-width: var(--wenpai-size-control-max); }
+.wenpai-field__row > :first-child input { width: 100%; max-width: none; }
+.wenpai-field__row .btn .spin { margin-left: 6px; }
+.wenpai-field__result { display: inline-flex; align-items: center; gap: 6px; margin: 0; font-size: var(--wenpai-text-meta); line-height: var(--wenpai-leading-meta); color: var(--wenpai-ink-2); }
+.wenpai-field__result:empty { display: none; }
+.wenpai-field__result::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--wenpai-mute); }
+.wenpai-field__result.is-ok { color: var(--wenpai-ok-ink); }
+.wenpai-field__result.is-ok::before { background: var(--wenpai-ok); }
+.wenpai-field__result.is-bad { color: var(--wenpai-bad-ink); }
+.wenpai-field__result.is-bad::before { background: var(--wenpai-bad); }
+.wenpai-field__result.is-note { color: var(--wenpai-ink-3); }
+.wenpai-field__result.is-note::before { display: none; }
+/* Disable-style depends_on: dimmed label, reason in ink-3. */
+.wenpai-field.is-disabled .wenpai-field__label,
+.wenpai-field.is-disabled .field-label { color: var(--wenpai-ink-3); }
+.wenpai-app .wenpai-field.is-disabled :is(input, select, textarea):disabled { background: var(--wenpai-mute-soft); color: var(--wenpai-ink-3); cursor: not-allowed; }
+.wenpai-field__reason { margin: 0; color: var(--wenpai-ink-3); font-size: var(--wenpai-text-caption); line-height: var(--wenpai-leading-caption); }
+/* Read-only status: pill + ink-3 note + link. Never an input. */
+.wenpai-field__status { display: flex; flex-direction: column; align-items: flex-start; gap: var(--wenpai-space-1); }
+.wenpai-field__note { margin: 0; color: var(--wenpai-ink-3); font-size: var(--wenpai-text-caption); line-height: var(--wenpai-leading-caption); }
+.pill.mute { background: var(--wenpai-mute-soft); color: var(--wenpai-ink-2); }
+.pill.mute::before { background: var(--wenpai-mute); }
+/* Choice card icon. */
+.choice-ico { display: inline-flex; flex: none; width: 20px; height: 20px; color: var(--wenpai-ink-3); }
+.choice-ico svg { width: 20px; height: 20px; }
+.choice.is-on .choice-ico { color: var(--wenpai-accent); }
+/* Two-column row layout inside a card. */
+.wenpai-field--row.field { margin: 0; }
+.wenpai-field--row .field-ctl { display: flex; flex-direction: column; gap: var(--wenpai-space-2); min-width: 0; }
+.wenpai-field--row .field-label .wenpai-field__label { font-size: inherit; }
+/* Matrix row in error. */
+.wenpai-matrix tr.is-invalid th[scope="row"] .t { color: var(--wenpai-bad-ink); }
+@media (max-width: 600px) {
+  .wenpai-field__row > :first-child { flex-basis: 100%; max-width: none; }
+  /* Matrix stacks: row label on top, select below; column header visually hidden. */
+  .wenpai-matrix thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .wenpai-matrix tr,
+  .wenpai-matrix th[scope="row"],
+  .wenpai-matrix td { display: block; width: 100%; }
+  .wenpai-matrix th[scope="row"] { border-bottom: 0; padding: var(--wenpai-space-3) 0 var(--wenpai-space-1); }
+  .wenpai-matrix td { padding: 0 0 var(--wenpai-space-3); border-bottom: 1px solid var(--wenpai-line-soft); }
+}
+@media (forced-colors: active) {
+  .wenpai-field__state::before,
+  .wenpai-field__result::before { forced-color-adjust: none; border: 1px solid CanvasText; }
+}

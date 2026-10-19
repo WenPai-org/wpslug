@@ -20,13 +20,23 @@ if ( ! class_exists( 'Wenpai_Admin_Loader', false ) ) {
 		const TOKENS_HANDLE = 'wenpai-admin-ui-tokens';
 
 		/**
+		 * Extra admin body classes requested through enqueue( array( 'body' => ... ) ).
+		 *
+		 * @var string[]
+		 */
+		private static $body_classes = array();
+
+		/**
 		 * Register and enqueue the kit stylesheet and script.
 		 *
 		 * @param array $args {
 		 *     Optional. Enqueue arguments.
 		 *
-		 *     @type string $body Body class slug, e.g. wpsss-admin. Used only as a hint.
+		 *     @type string $body Optional body class for the product's own CSS, e.g.
+		 *                        wpsss-admin. Added to the admin body (0.3.0+); a
+		 *                        class the product already adds is not duplicated.
 		 *     @type bool   $full Whether to load the full-page shell CSS (default true).
+		 *                        Adds body.wenpai-ui-page.
 		 * }
 		 */
 		public static function enqueue( $args = array() ) {
@@ -82,6 +92,15 @@ if ( ! class_exists( 'Wenpai_Admin_Loader', false ) ) {
 				wp_enqueue_style( self::STYLE_HANDLE . '-wp' );
 				add_filter( 'admin_body_class', array( __CLASS__, 'body_class' ) );
 			}
+			if ( ! empty( $args['body'] ) && is_string( $args['body'] ) ) {
+				$extra = sanitize_html_class( $args['body'] );
+				if ( '' !== $extra && ! in_array( $extra, self::$body_classes, true ) ) {
+					self::$body_classes[] = $extra;
+				}
+				if ( false === has_filter( 'admin_body_class', array( __CLASS__, 'extra_body_class' ) ) ) {
+					add_filter( 'admin_body_class', array( __CLASS__, 'extra_body_class' ) );
+				}
+			}
 
 			if ( is_readable( $js_file ) && function_exists( 'wp_register_script' ) ) {
 				wp_register_script(
@@ -104,6 +123,21 @@ if ( ! class_exists( 'Wenpai_Admin_Loader', false ) ) {
 		public static function body_class( $classes ) {
 			if ( false === strpos( ' ' . $classes . ' ', ' wenpai-ui-page ' ) ) {
 				$classes .= ' wenpai-ui-page';
+			}
+			return $classes;
+		}
+
+		/**
+		 * Body classes passed as enqueue( array( 'body' => ... ) ).
+		 *
+		 * @param string $classes Space-separated body classes.
+		 * @return string
+		 */
+		public static function extra_body_class( $classes ) {
+			foreach ( self::$body_classes as $c ) {
+				if ( false === strpos( ' ' . $classes . ' ', ' ' . $c . ' ' ) ) {
+					$classes .= ' ' . $c;
+				}
 			}
 			return $classes;
 		}

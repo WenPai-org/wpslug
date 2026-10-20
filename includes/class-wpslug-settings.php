@@ -899,7 +899,7 @@ class WPSlug_Settings
         // saved option keeps exactly the keys of $this->defaults.
         $schema["wpmind_status"] = [
             "type" => "status",
-            "label" => __("WenPai XinSi (WPMind)", "wpslug"),
+            "label" => __("WenPai XinSi", "wpslug"),
             "depends_on" => ["field" => "translation_service", "value" => "wpmind"],
             "status" => function () use ($settings) { return $settings->getWpmindStatus(); },
             "tab" => "translate",
@@ -949,13 +949,13 @@ class WPSlug_Settings
             return [
                 "level" => "ok",
                 "text" => __("Active", "wpslug"),
+                // Pill already says Active; keep one short line (matches overview card tone).
                 "desc" => [
-                    __("WenPai XinSi (WPMind) is active. Credits and BYOK keys are managed there.", "wpslug"),
-                    __("Use it for semantic pinyin (XinSi AI) and multi-language translation. If quota is exceeded or the provider fails, WPSlug falls back to local pinyin so saving is not blocked.", "wpslug"),
+                    __("Credits and keys live in XinSi. Falls back to local pinyin if needed.", "wpslug"),
                 ],
                 "link" => [
                     "url" => function_exists("admin_url") ? admin_url("options-general.php?page=wpmind") : "options-general.php?page=wpmind",
-                    "label" => __("Open WenPai XinSi (WPMind) settings", "wpslug"),
+                    "label" => __("XinSi settings", "wpslug"),
                 ],
             ];
         }
@@ -963,8 +963,7 @@ class WPSlug_Settings
             "level" => "warn",
             "text" => __("Not active", "wpslug"),
             "desc" => [
-                __("WenPai XinSi (WPMind) is not active or not configured.", "wpslug"),
-                __("Install WenPai XinSi (WPMind) for semantic pinyin (XinSi AI) and multi-language translation. Until then, local pinyin remains available.", "wpslug"),
+                __("XinSi is not active. Local pinyin still works.", "wpslug"),
             ],
             "link" => [
                 "url" => "https://wpcy.com/mind/",

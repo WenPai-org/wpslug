@@ -936,7 +936,7 @@ msgid "Comma-separated list of stop words to remove from slugs."
 msgstr ""
 
 #: includes/class-wpslug-settings.php:902
-msgid "WenPai XinSi (WPMind)"
+msgid "WenPai XinSi"
 msgstr ""
 
 #: includes/class-wpslug-settings.php:951
@@ -944,15 +944,13 @@ msgid "Active"
 msgstr ""
 
 #: includes/class-wpslug-settings.php:953
-msgid "WenPai XinSi (WPMind) is active. Credits and BYOK keys are managed there."
+msgid "Credits and keys live in XinSi. Falls back to local pinyin if needed."
 msgstr ""
 
 #: includes/class-wpslug-settings.php:954
-msgid "Use it for semantic pinyin (XinSi AI) and multi-language translation. If quota is exceeded or the provider fails, WPSlug falls back to local pinyin so saving is not blocked."
-msgstr ""
 
 #: includes/class-wpslug-settings.php:958
-msgid "Open WenPai XinSi (WPMind) settings"
+msgid "XinSi settings"
 msgstr ""
 
 #: includes/class-wpslug-settings.php:964
@@ -960,13 +958,11 @@ msgid "Not active"
 msgstr ""
 
 #: includes/class-wpslug-settings.php:966
-msgid "WenPai XinSi (WPMind) is not active or not configured."
+msgid "XinSi is not active. Local pinyin still works."
 msgstr ""
 
 #: includes/class-wpslug-settings.php:967
 #: templates/admin/page.php:166
-msgid "Install WenPai XinSi (WPMind) for semantic pinyin (XinSi AI) and multi-language translation. Until then, local pinyin remains available."
-msgstr ""
 
 #: includes/class-wpslug-settings.php:971
 msgid "Learn more"

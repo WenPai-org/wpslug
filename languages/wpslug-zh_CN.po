@@ -957,40 +957,30 @@ msgid "Comma-separated list of stop words to remove from slugs."
 msgstr "从别名中删除的停用词的逗号分隔列表。"
 
 #: includes/class-wpslug-settings.php:902
-msgid "WenPai XinSi (WPMind)"
-msgstr "文派心思（WPMind）"
+msgid "WenPai XinSi"
+msgstr "文派心思"
 
 #: includes/class-wpslug-settings.php:951
 msgid "Active"
 msgstr "已启用"
 
-#: includes/class-wpslug-settings.php:953
-msgid ""
-"WenPai XinSi (WPMind) is active. Credits and BYOK keys are managed there."
-msgstr "文派心思（WPMind）已启用。积分与自备密钥（BYOK）在心思里管理。"
-
 #: includes/class-wpslug-settings.php:954
-msgid ""
-"Use it for semantic pinyin (XinSi AI) and multi-language translation. If "
-"quota is exceeded or the provider fails, WPSlug falls back to local pinyin "
-"so saving is not blocked."
-msgstr ""
-"用于语义拼音（心思 AI）与多语言翻译。额度不足或上游失败时，文派素格回退本地拼"
-"音，保存不会中断。"
+msgid "Credits and keys live in XinSi. Falls back to local pinyin if needed."
+msgstr "积分与密钥在心思管理；不够时回退本地拼音。"
 
 #: includes/class-wpslug-settings.php:958
-msgid "Open WenPai XinSi (WPMind) settings"
-msgstr "打开文派心思（WPMind）设置"
+msgid "XinSi settings"
+msgstr "打开心思设置"
 
 #: includes/class-wpslug-settings.php:964
 msgid "Not active"
 msgstr "未启用"
 
 #: includes/class-wpslug-settings.php:966
-msgid "WenPai XinSi (WPMind) is not active or not configured."
-msgstr "文派心思（WPMind）未启用或未配置。"
+msgid "XinSi is not active. Local pinyin still works."
+msgstr "文派心思未启用。仍可用本地拼音。"
 
-#: includes/class-wpslug-settings.php:967 templates/admin/page.php:166
+#: templates/admin/page.php:166
 msgid ""
 "Install WenPai XinSi (WPMind) for semantic pinyin (XinSi AI) and multi-"
 "language translation. Until then, local pinyin remains available."

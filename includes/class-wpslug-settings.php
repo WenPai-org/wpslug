@@ -166,6 +166,8 @@ class WPSlug_Settings
             "action_failed" => __("Could not finish the action. Please try again later.", "wpslug"),
             "tab_expired" => __("Could not save because the page has expired. Please reload it and try again.", "wpslug"),
             "action_denied" => __("Could not finish the action. Please reload the page and try again.", "wpslug"),
+            "new_tab" => __("(opens in a new tab)", "wpslug"),
+            "secret_multiline" => __("Could not save the key. Please enter a single-line value.", "wpslug"),
         ];
     }
 
@@ -930,7 +932,10 @@ class WPSlug_Settings
     /**
      * WPMind status for the read-only status field on the translation section.
      *
-     * @return array{level: string, text: string, desc: string[], link: array{url: string, label: string}}
+     * The on-site WPMind settings link opens in the current tab; the off-site
+     * "Learn more" link opens in a new tab.
+     *
+     * @return array{level: string, text: string, desc: string[], link: array{url: string, label: string, target?: string}}
      */
     public function getWpmindStatus()
     {
@@ -958,6 +963,8 @@ class WPSlug_Settings
             "link" => [
                 "url" => "https://wpcy.com/mind/",
                 "label" => __("Learn more", "wpslug"),
+                // Off-site: new tab; the kit adds rel="noopener noreferrer" and a screen-reader note.
+                "target" => "_blank",
             ],
         ];
     }

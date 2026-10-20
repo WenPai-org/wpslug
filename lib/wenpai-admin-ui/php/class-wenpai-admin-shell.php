@@ -44,6 +44,9 @@ if ( ! class_exists( 'Wenpai_Admin_Shell', false ) ) {
 		 *     @type string $doc_label       Footer doc label.
 		 *     @type array  $links           Footer links: array of array{ url, label } (0.2.5+).
 		 *     @type string $main_class      Extra classes on main.wenpai-main (0.2.5+), e.g. is-narrow.
+		 *     @type string $new_tab_label   Screen-reader hint after the feedback and footer links,
+		 *                                   which open in a new tab (0.3.0+). Default 「（在新标签页打开）」;
+		 *                                   '' prints none. Pass it to close() too for the footer.
 		 * }
 		 */
 		public static function open( $args ) {
@@ -101,9 +104,10 @@ if ( ! class_exists( 'Wenpai_Admin_Shell', false ) ) {
 			if ( ! empty( $args['feedback_url'] ) ) {
 				$fl    = isset( $args['feedback_label'] ) ? $args['feedback_label'] : '反馈';
 				$ficon = isset( $args['feedback_icon_html'] ) ? $args['feedback_icon_html'] : '';
-				echo '<a class="btn btn-ghost wenpai-head-action" href="' . esc_url( $args['feedback_url'] ) . '" target="_blank" rel="noopener">';
+				echo '<a class="btn btn-ghost wenpai-head-action" href="' . esc_url( $args['feedback_url'] ) . '" target="_blank" rel="noopener noreferrer">';
 				echo $ficon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- product SVG.
 				echo '<span class="wenpai-head-label">' . esc_html( $fl ) . '</span>';
+				echo self::new_tab_hint( $args ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in new_tab_hint().
 				echo '</a>';
 			}
 			echo '</div>';
@@ -115,7 +119,7 @@ if ( ! class_exists( 'Wenpai_Admin_Shell', false ) ) {
 		/**
 		 * Close main + footer.
 		 *
-		 * @param array $args Same as open(); uses version / doc_url / doc_label.
+		 * @param array $args Same as open(); uses version / doc_url / doc_label / links / new_tab_label.
 		 */
 		public static function close( $args = array() ) {
 			$ver = isset( $args['version'] ) ? $args['version'] : '';
@@ -142,7 +146,7 @@ if ( ! class_exists( 'Wenpai_Admin_Shell', false ) ) {
 					if ( empty( $link['url'] ) ) {
 						continue;
 					}
-					echo '<a href="' . esc_url( $link['url'] ) . '" target="_blank" rel="noopener">' . esc_html( isset( $link['label'] ) ? $link['label'] : '' ) . '</a>';
+					echo '<a href="' . esc_url( $link['url'] ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( isset( $link['label'] ) ? $link['label'] : '' ) . self::new_tab_hint( $args ) . '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in new_tab_hint().
 				}
 				echo '</span>';
 			}
@@ -170,6 +174,17 @@ if ( ! class_exists( 'Wenpai_Admin_Shell', false ) ) {
 				echo '<div class="mode">' . $aside . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- caller HTML.
 			}
 			echo '</div>';
+		}
+
+		/**
+		 * Screen-reader hint after a link that opens in a new tab (0.3.0+).
+		 *
+		 * @param array $args open() / close() args; new_tab_label overrides the text.
+		 * @return string Escaped HTML, or '' when new_tab_label is ''.
+		 */
+		private static function new_tab_hint( $args ) {
+			$label = isset( $args['new_tab_label'] ) ? (string) $args['new_tab_label'] : '（在新标签页打开）';
+			return '' === $label ? '' : '<span class="screen-reader-text">' . esc_html( $label ) . '</span>';
 		}
 	}
 }

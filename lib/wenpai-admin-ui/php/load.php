@@ -11,6 +11,12 @@
  * class-*.php files from the product plugin — that would declare classes
  * from a losing copy.
  *
+ * A copy older than 0.2.5 (e.g. 0.2.3, shipped by wpsss) defines boot() with
+ * only three class files. Whichever load.php is required first wins the
+ * function names, so its boot() loads the winning copy but skips Settings and
+ * Menu. wenpai_admin_ui_complete() (plugins_loaded priority 2) loads whatever
+ * is missing; the old copy cannot define it.
+ *
  * @package Wenpai_Admin_UI
  */
 
@@ -101,6 +107,21 @@ if ( ! function_exists( 'wenpai_admin_ui_register' ) ) {
 
 if ( ! function_exists( 'wenpai_admin_ui_boot' ) ) {
 	/**
+	 * Order kit copies: highest VERSION first. Two copies with the same
+	 * version (e.g. two 0.3.0-dev snapshots) are ordered by directory path,
+	 * so the winner does not depend on plugin load order. Snapshots are not
+	 * compared by content or mtime: ship a real version before release.
+	 *
+	 * @param array $a Candidate ( version, dir ).
+	 * @param array $b Candidate ( version, dir ).
+	 * @return int
+	 */
+	function wenpai_admin_ui_compare( $a, $b ) {
+		$c = version_compare( $b['version'], $a['version'] );
+		return 0 !== $c ? $c : strcmp( $a['dir'], $b['dir'] );
+	}
+
+	/**
 	 * Load the newest candidate. Safe to call more than once.
 	 */
 	function wenpai_admin_ui_boot() {
@@ -116,12 +137,7 @@ if ( ! function_exists( 'wenpai_admin_ui_boot' ) ) {
 			return;
 		}
 
-		usort(
-			$candidates,
-			static function ( $a, $b ) {
-				return version_compare( $b['version'], $a['version'] );
-			}
-		);
+		usort( $candidates, 'wenpai_admin_ui_compare' );
 
 		$winner                            = $candidates[0];
 		$GLOBALS['wenpai_admin_ui_winner'] = $winner;
@@ -184,6 +200,31 @@ wenpai_admin_ui_register(
 	dirname( __DIR__ )
 );
 
+if ( ! function_exists( 'wenpai_admin_ui_complete' ) ) {
+	/**
+	 * Load class files a pre-0.2.5 boot() leaves out (0.3.0+).
+	 *
+	 * An older copy's boot() only requires Loader, Shell and Icons, and its
+	 * function names win when that copy is required first (network-activated
+	 * plugins load before regular ones). This runs right after boot and
+	 * requires the rest from the winning copy, so a 0.3.0 winner still gets
+	 * Settings and Menu.
+	 */
+	function wenpai_admin_ui_complete() {
+		if ( empty( $GLOBALS['wenpai_admin_ui_winner']['dir'] ) ) {
+			return;
+		}
+		$dir = $GLOBALS['wenpai_admin_ui_winner']['dir'] . '/php/';
+		foreach ( array( 'class-wenpai-admin-menu.php', 'class-wenpai-admin-settings.php' ) as $file ) {
+			$path = $dir . $file;
+			if ( is_readable( $path ) ) {
+				require_once $path;
+			}
+		}
+	}
+}
+
 if ( function_exists( 'add_action' ) ) {
 	add_action( 'plugins_loaded', 'wenpai_admin_ui_boot', 1 );
+	add_action( 'plugins_loaded', 'wenpai_admin_ui_complete', 2 );
 }

@@ -37,6 +37,17 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		const TAB_NONCE_KEY = '__wenpai_tab_nonce';
 
 		/**
+		 * Posted list of secret field ids where kit JS caught a multi-line paste.
+		 */
+		const MULTILINE_KEY = '__wenpai_multiline';
+
+		/**
+		 * Settings error code that tags an options.php save of this option, so the
+		 * redirect can be recognised and core's duplicate 「Settings saved.」 dropped.
+		 */
+		const SAVED_CODE = 'wenpai_saved';
+
+		/**
 		 * Instances keyed by option name.
 		 *
 		 * @var array<string, Wenpai_Admin_Settings>
@@ -94,11 +105,33 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		private $last_sanitized = null;
 
 		/**
+		 * Whether the "tabbed schema, no tab marker" notice was given this request.
+		 *
+		 * @var bool
+		 */
+		private $warned_marker = false;
+
+		/**
 		 * Form-level error of this request (e.g. an expired tab marker).
 		 *
 		 * @var string
 		 */
 		private $form_error = '';
+
+		/**
+		 * Settings errors of this option taken out of core's list on the page
+		 * that shows them (see claim_core_notices()); null until claimed.
+		 *
+		 * @var array|null
+		 */
+		private $claimed = null;
+
+		/**
+		 * True while import() runs sanitize(): no tab-marker notice there.
+		 *
+		 * @var bool
+		 */
+		private $importing = false;
 
 		/**
 		 * Create and register a settings instance for one option.
@@ -113,6 +146,12 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 			self::$registry[ $option ] = $inst;
 			if ( function_exists( 'add_action' ) ) {
 				add_action( 'admin_init', array( $inst, 'register_setting' ) );
+				// in_admin_header runs before options-head.php's settings_errors() and before every
+				// admin_notices callback (admin-header.php), so neither core nor a plugin calling
+				// settings_errors() there prints this option's entries; the page shows one kit notice.
+				add_action( 'in_admin_header', array( $inst, 'claim_core_notices' ), 0 );
+				// Fallback for screens that print notices without in_admin_header; no-op once claimed.
+				add_action( 'all_admin_notices', array( $inst, 'claim_core_notices' ), PHP_INT_MAX );
 			}
 			return $inst;
 		}
@@ -134,31 +173,35 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		 */
 		public static function default_strings() {
 			return array(
-				'on'            => '已开启',
-				'off'           => '未开启',
-				'secret_saved'  => '已保存一个值，出于安全不会显示。留空表示不修改。',
-				'secret_empty'  => '还没有填写。',
-				'secret_clear'  => '清除已保存的值',
-				'saved'         => '设置已保存。',
-				'saving'        => '正在保存…',
-				'partial_saved' => '其余设置已保存。',
+				'on'               => '已开启',
+				'off'              => '未开启',
+				'secret_saved'     => '已保存一个值，出于安全不会显示。留空表示不修改。',
+				'secret_empty'     => '还没有填写。',
+				'secret_clear'     => '清除已保存的值',
+				'saved'            => '设置已保存。',
+				'saving'           => '正在保存…',
+				'partial_saved'    => '其余设置已保存。',
 				/* translators: %d: number of fields that were not saved. */
-				'invalid'       => '暂时无法保存 %d 项设置，请按字段下的提示修改。',
+				'invalid'          => '暂时无法保存 %d 项设置，请按字段下的提示修改。',
 				/* translators: %d: total number of fields with errors. */
-				'invalid_more'  => '等 %d 项',
-				'invalid_value' => '这一项的值无效，已保留原来的设置。',
-				'follow_global' => '跟随全局设置',
+				'invalid_more'     => '等 %d 项',
+				'invalid_value'    => '这一项的值无效，已保留原来的设置。',
+				'follow_global'    => '跟随全局设置',
 				/* translators: %s: what would be listed, e.g. 文章类型. */
-				'empty_choices' => '还没有可选的%s。',
+				'empty_choices'    => '还没有可选的%s。',
 				/* translators: 1: hidden tab label, 2: first tab label. */
-				'tab_hidden'    => '当前模式不需要%1$s的设置，已切回%2$s。',
+				'tab_hidden'       => '当前模式不需要%1$s的设置，已切回%2$s。',
 				// In-progress copy without the trailing 「…」: kit JS appends it.
-				'action_busy'   => '正在处理',
-				'action_ok'     => '已完成。',
+				'action_busy'      => '正在处理',
+				'action_ok'        => '已完成。',
 				// Global fallback only. A handler names the service in its WP_Error message.
-				'action_failed' => '暂时无法完成操作，请稍后再试。',
-				'tab_expired'   => '暂时无法保存，页面已过期，请刷新后再试。',
-				'action_denied' => '暂时无法完成操作，请刷新页面后再试。',
+				'action_failed'    => '暂时无法完成操作，请稍后再试。',
+				'tab_expired'      => '暂时无法保存，页面已过期，请刷新后再试。',
+				'action_denied'    => '暂时无法完成操作，请刷新页面后再试。',
+				// Screen-reader hint after a status link with target=_blank.
+				'new_tab'          => '（在新标签页打开）',
+				// A secret can only be one line (password inputs drop line breaks).
+				'secret_multiline' => '暂时无法保存密钥，请填写单行的值。',
 			);
 		}
 
@@ -207,13 +250,13 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 				if ( ! empty( $f['secret'] ) && 'secret' !== $f['type'] ) {
 					// A secret is always a password box, so its value never reaches the page source.
 					if ( 'text' !== $f['type'] ) {
-						self::doing_it_wrong( sprintf( 'Field "%s": a secret is always rendered as a password input; type "%s" is ignored.', $id, $f['type'] ) );
+						self::doing_it_wrong( sprintf( 'Field 「%s」: a secret is always rendered as a password input; type 「%s」 is ignored.', $id, $f['type'] ) );
 					}
 					$f['type'] = 'secret';
 				}
 				$tree = self::dep_tree( $f['depends_on'] );
 				if ( null !== $tree && 'disable' === $tree['mode'] && ! self::tree_has_reason( $tree ) ) {
-					self::doing_it_wrong( sprintf( 'Field "%s": depends_on mode "disable" needs a "reason" telling the user why and how to enable it.', $id ) );
+					self::doing_it_wrong( sprintf( 'Field 「%s」: depends_on mode 「disable」 needs a 「reason」 telling the user why and how to enable it.', $id ) );
 				}
 				$this->fields[ $id ] = $f;
 			}
@@ -231,7 +274,7 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 			if ( ! function_exists( 'wp_kses' ) ) {
 				return esc_html( $html );
 			}
-			$svg     = array(
+			$svg = array(
 				'svg'      => array(
 					'class'           => true,
 					'viewbox'         => true,
@@ -263,10 +306,15 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 					'stroke-linejoin' => true,
 				),
 				'circle'   => array(
-					'cx'   => true,
-					'cy'   => true,
-					'r'    => true,
-					'fill' => true,
+					'cx' => true,
+					'cy' => true,
+					'r'  => true,
+				),
+				'ellipse'  => array(
+					'cx' => true,
+					'cy' => true,
+					'rx' => true,
+					'ry' => true,
 				),
 				'rect'     => array(
 					'x'      => true,
@@ -275,7 +323,6 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 					'height' => true,
 					'rx'     => true,
 					'ry'     => true,
-					'fill'   => true,
 				),
 				'line'     => array(
 					'x1' => true,
@@ -287,6 +334,22 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 				'polygon'  => array( 'points' => true ),
 				'title'    => array(),
 			);
+			// Paint attributes on every shape. defs, clipPath, mask and use are not supported.
+			$paint = array(
+				'fill'            => true,
+				'fill-opacity'    => true,
+				'fill-rule'       => true,
+				'opacity'         => true,
+				'stroke'          => true,
+				'stroke-width'    => true,
+				'stroke-opacity'  => true,
+				'stroke-linecap'  => true,
+				'stroke-linejoin' => true,
+				'transform'       => true,
+			);
+			foreach ( array( 'svg', 'g', 'path', 'circle', 'ellipse', 'rect', 'line', 'polyline', 'polygon' ) as $tag ) {
+				$svg[ $tag ] = array_merge( $svg[ $tag ], $paint );
+			}
 			$allowed = 'svg' === $context ? $svg : array_merge( wp_kses_allowed_html( 'post' ), $svg );
 			return wp_kses( $html, $allowed );
 		}
@@ -294,11 +357,12 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		/**
 		 * Developer notice, only with WP_DEBUG on.
 		 *
-		 * @param string $message Message (English, developer-facing).
+		 * @param string $message  Message (English, developer-facing, plain text; core escapes it when displaying).
+		 * @param string $where   Function to name.
 		 */
-		private static function doing_it_wrong( $message ) {
+		private static function doing_it_wrong( $message, $where = 'Wenpai_Admin_Settings::register' ) {
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG && function_exists( '_doing_it_wrong' ) ) {
-				_doing_it_wrong( 'Wenpai_Admin_Settings::register', esc_html( $message ), '0.3.0' );
+				_doing_it_wrong( $where, $message, '0.3.0' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- plain developer text from field ids; core escapes it when displaying.
 			}
 		}
 
@@ -398,6 +462,20 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		 */
 		private static function is_checkbox_like( array $f ) {
 			return in_array( $f['type'], array( 'toggle', 'multicheck', 'multiselect' ), true ) && ! self::is_secret( $f );
+		}
+
+		/**
+		 * Whether any field declares a tab.
+		 *
+		 * @return bool
+		 */
+		private function has_tabs() {
+			foreach ( $this->fields as $f ) {
+				if ( array() !== array_filter( array_map( 'strval', (array) $f['tab'] ), 'strlen' ) ) {
+					return true;
+				}
+			}
+			return false;
 		}
 
 		/**
@@ -513,7 +591,9 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		 * {option}[__wenpai_clear][] are cleared. When {option}[__wenpai_tab] is
 		 * posted only that tab's fields are sanitized and written; every other
 		 * field keeps its saved value. A 'validate' callback that does not return
-		 * true keeps the saved value and records a field error.
+		 * true keeps the saved value and records a field error. A field whose
+		 * depends_on fails for the values being saved (hide or disable mode)
+		 * keeps its saved value; its sanitize and validate never run.
 		 *
 		 * @param mixed $input Raw submitted value.
 		 * @return array
@@ -545,9 +625,17 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 				$this->last_sanitized = $kept;
 				return $kept;
 			}
-			$out     = array();
-			$prevs   = array();
-			$pending = array();
+			$multi = isset( $input[ self::MULTILINE_KEY ] ) && is_array( $input[ self::MULTILINE_KEY ] )
+				? array_map( 'strval', $input[ self::MULTILINE_KEY ] )
+				: array();
+			if ( null === $tab && ! $this->importing && ! $this->warned_marker && $this->has_tabs() ) {
+				$this->warned_marker = true;
+				self::doing_it_wrong( sprintf( 'Option 「%s」 declares tabs but the saved form has no kit tab marker, so every unsubmitted toggle, multicheck and multiselect is saved as unchecked. Output render_tab() or tab_input_html() inside each tab form.', $this->option ), 'Wenpai_Admin_Settings::sanitize' );
+			}
+			$out      = array();
+			$prevs    = array();
+			$pending  = array();
+			$deferred = array();
 			foreach ( $this->fields as $id => $f ) {
 				if ( ! self::stores( $f ) ) {
 					continue;
@@ -559,10 +647,29 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 					continue;
 				}
 				$prevs[ $id ] = $prev;
+				$tree         = self::dep_tree( $f['depends_on'] );
+				if ( null !== $tree ) {
+					// Decided below, before any sanitize runs: a disabled or hidden field gets its stored value,
+					// never sanitize( null ) or sanitize( what was posted ).
+					$deferred[ $id ] = $raw;
+					$out[ $id ]      = $prev;
+					continue;
+				}
+				if ( null === $raw && self::is_secret( $f ) && in_array( (string) $id, $clear, true ) ) {
+					// Clear without the (empty) password input in the request: still a clear.
+					$out[ $id ] = '';
+					continue;
+				}
 				if ( null === $raw && ! self::is_checkbox_like( $f ) ) {
 					// Not on the submitted page (text, select, number, matrix …): keep it.
 					// An unchecked checkbox is different: it sends nothing, see is_checkbox_like().
 					$out[ $id ] = $prev;
+					continue;
+				}
+				if ( self::is_secret( $f ) && ( in_array( (string) $id, $multi, true ) || ( is_string( $raw ) && preg_match( '/[\r\n]/', $raw ) ) ) ) {
+					// Multi-line value (kit JS flags a pasted one, as the browser would fold it into spaces): refuse, keep the stored one.
+					$out[ $id ] = $prev;
+					$this->add_error( $id, $this->strings['secret_multiline'] );
 					continue;
 				}
 				if ( self::is_secret( $f ) ) {
@@ -579,17 +686,50 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 				}
 			}
 
-			// depends_on, checked against the values being saved. A hidden field
-			// keeps what was posted without validation; a disabled one keeps the
-			// saved value.
-			foreach ( $this->inactive_fields( $out ) as $id => $mode ) {
+			// Fields with depends_on: settle which are active for the values being
+			// saved (stored values stand in for the undecided ones), then sanitize
+			// only those. A disabled or hidden field keeps its stored value without
+			// its sanitize callback ever running (no side effects, e.g. remote checks).
+			// Decide in dependency order: a field waits until every depends_on
+			// field it depends on is decided, so sanitize runs at most once and
+			// only for fields that end up enabled. Cycles keep the stored value.
+			$decided = array();
+			$total   = count( $deferred );
+			for ( $pass = 0; $pass <= $total; $pass++ ) {
+				if ( count( $decided ) >= $total ) {
+					break;
+				}
+				$off = $this->inactive_fields( $out );
+				foreach ( $deferred as $id => $raw ) {
+					if ( isset( $decided[ $id ] ) ) {
+						continue;
+					}
+					$wait = false;
+					foreach ( $this->upstream( $id ) as $trigger ) {
+						if ( isset( $deferred[ $trigger ] ) && ! isset( $decided[ $trigger ] ) ) {
+							$wait = true;
+						}
+					}
+					if ( $wait ) {
+						continue;
+					}
+					$decided[ $id ] = true;
+					if ( ! isset( $off[ $id ] ) ) {
+						$out[ $id ] = $this->sanitize_deferred( $id, $raw, $prevs[ $id ], $clear, $multi, $pending );
+						$off        = $this->inactive_fields( $out );
+					}
+				}
+			}
+
+			// depends_on, checked against the values being saved: a disabled or
+			// hidden field always keeps the saved value, silently (not validated,
+			// not in the error summary). Backstop for the loop above.
+			foreach ( array_keys( $this->inactive_fields( $out ) ) as $id ) {
 				if ( ! array_key_exists( $id, $prevs ) ) {
 					continue;
 				}
 				unset( $pending[ $id ] );
-				if ( 'disable' === $mode ) {
-					$out[ $id ] = $prevs[ $id ];
-				}
+				$out[ $id ] = $prevs[ $id ];
 			}
 
 			foreach ( array_keys( $pending ) as $id ) {
@@ -609,8 +749,100 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 				$this->add_error( $id, $msg, $rows );
 				$out[ $id ] = $prevs[ $id ];
 			}
+			if ( empty( $this->errors ) && $this->saving_from_options_php() && function_exists( 'add_settings_error' ) ) {
+				// Tags the options.php redirect as this option's, so claim_core_notices() knows the page;
+				// it also keeps core from adding its own general/settings_updated.
+				add_settings_error( $this->option, self::SAVED_CODE, $this->strings['saved'], 'success' );
+			}
 			$this->last_sanitized = $out;
 			return $out;
+		}
+
+		/**
+		 * Whether this request is options.php saving this option's group.
+		 *
+		 * @return bool
+		 */
+		private function saving_from_options_php() {
+			return isset( $GLOBALS['pagenow'], $GLOBALS['option_page'] )
+				&& 'options.php' === $GLOBALS['pagenow']
+				&& $this->group === $GLOBALS['option_page'];
+		}
+
+		/**
+		 * Field ids a depends_on tree looks at.
+		 *
+		 * @param array|null $node Normalized node.
+		 * @return string[]
+		 */
+		private static function dep_fields( $node ) {
+			if ( null === $node ) {
+				return array();
+			}
+			if ( isset( $node['field'] ) ) {
+				return array( $node['field'] );
+			}
+			$out = array();
+			foreach ( $node['rules'] as $r ) {
+				$out = array_merge( $out, self::dep_fields( $r ) );
+			}
+			return $out;
+		}
+
+		/**
+		 * Every field a field's depends_on reaches, directly or through other
+		 * fields' depends_on (a hide-mode field in between counts too).
+		 *
+		 * @param string $id Field id.
+		 * @return string[]
+		 */
+		private function upstream( $id ) {
+			$seen  = array();
+			$queue = array( $id );
+			while ( $queue ) {
+				$cur = array_shift( $queue );
+				if ( ! isset( $this->fields[ $cur ] ) ) {
+					continue;
+				}
+				foreach ( self::dep_fields( self::dep_tree( $this->fields[ $cur ]['depends_on'] ) ) as $up ) {
+					if ( ! isset( $seen[ $up ] ) && $up !== $id ) {
+						$seen[ $up ] = true;
+						$queue[]     = $up;
+					}
+				}
+			}
+			return array_keys( $seen );
+		}
+
+		/**
+		 * Sanitize an enabled disable-mode field the same way as any other field.
+		 *
+		 * @param string $id      Field id.
+		 * @param mixed  $raw     Posted value or null.
+		 * @param mixed  $prev    Stored value.
+		 * @param array  $clear   Secret ids to clear.
+		 * @param array  $multi   Secret ids flagged multi-line by kit JS.
+		 * @param array  $pending Field ids waiting for validate (by reference).
+		 * @return mixed
+		 */
+		private function sanitize_deferred( $id, $raw, $prev, array $clear, array $multi, array &$pending ) {
+			$f = $this->fields[ $id ];
+			if ( null === $raw && ! self::is_checkbox_like( $f ) ) {
+				return self::is_secret( $f ) && in_array( (string) $id, $clear, true ) ? '' : $prev;
+			}
+			if ( self::is_secret( $f ) ) {
+				if ( in_array( (string) $id, $multi, true ) || ( is_string( $raw ) && preg_match( '/[\r\n]/', $raw ) ) ) {
+					$this->add_error( $id, $this->strings['secret_multiline'] );
+					return $prev;
+				}
+				if ( ! is_scalar( $raw ) || '' === trim( (string) $raw ) ) {
+					return in_array( (string) $id, $clear, true ) ? '' : $prev;
+				}
+			}
+			if ( is_callable( $f['validate'] ) ) {
+				$pending[ $id ] = true;
+			}
+			return $this->sanitize_field( $f, $raw );
 		}
 
 		/**
@@ -681,22 +913,76 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		 */
 		public function errors() {
 			$errs = $this->errors;
-			if ( function_exists( 'get_settings_errors' ) ) {
-				foreach ( (array) get_settings_errors( $this->option ) as $e ) {
-					if ( ! isset( $e['code'], $e['message'] ) ) {
-						continue;
-					}
-					$parts = explode( ':', (string) $e['code'], 2 );
-					$code  = $parts[0];
-					if ( isset( $this->fields[ $code ] ) && ! isset( $errs[ $code ] ) ) {
-						$errs[ $code ] = $e['message'];
-						if ( isset( $parts[1] ) && '' !== $parts[1] ) {
-							$this->error_rows[ $code ] = explode( ',', $parts[1] );
-						}
+			foreach ( $this->own_settings_errors() as $e ) {
+				if ( ! isset( $e['code'], $e['message'] ) || self::SAVED_CODE === $e['code'] ) {
+					continue;
+				}
+				$parts = explode( ':', (string) $e['code'], 2 );
+				$code  = $parts[0];
+				if ( isset( $this->fields[ $code ] ) && ! isset( $errs[ $code ] ) ) {
+					$errs[ $code ] = $e['message'];
+					if ( isset( $parts[1] ) && '' !== $parts[1] ) {
+						$this->error_rows[ $code ] = explode( ',', $parts[1] );
 					}
 				}
 			}
 			return $errs;
+		}
+
+		/**
+		 * This option's settings errors: the ones claimed from core on this page
+		 * plus any still in core's list (this request, or before the claim).
+		 *
+		 * @return array[]
+		 */
+		private function own_settings_errors() {
+			$list = null !== $this->claimed ? $this->claimed : array();
+			if ( function_exists( 'get_settings_errors' ) ) {
+				$list = array_merge( $list, (array) get_settings_errors( $this->option ) );
+			}
+			return $list;
+		}
+
+		/**
+		 * One kit notice per page (in_admin_header, priority 0; all_admin_notices fallback).
+		 *
+		 * After options.php saves this option it redirects back with its
+		 * settings errors in a transient; core then prints them again through
+		 * settings_errors() on Settings submenu pages (options-head.php), and a
+		 * plugin page may call settings_errors() itself. This takes this
+		 * option's entries (field errors, the tab marker error, the saved tag)
+		 * into the instance, where errors() and notices_html() read them, and
+		 * removes them plus core's success general/settings_updated from the
+		 * global list, so core prints nothing for this save. A general
+		 * settings_updated of another type (core's error) is kept. Pages that
+		 * did not just save this option are left alone.
+		 */
+		public function claim_core_notices() {
+			if ( null !== $this->claimed || ! function_exists( 'get_settings_errors' ) ) {
+				return;
+			}
+			$mine = array();
+			// get_settings_errors() also merges (and deletes) the options.php transient.
+			foreach ( (array) get_settings_errors() as $e ) {
+				if ( isset( $e['setting'] ) && $this->option === $e['setting'] ) {
+					$mine[] = $e;
+				}
+			}
+			if ( empty( $mine ) ) {
+				return;
+			}
+			$this->claimed = $mine;
+			$keep          = array();
+			foreach ( (array) ( isset( $GLOBALS['wp_settings_errors'] ) ? $GLOBALS['wp_settings_errors'] : array() ) as $e ) {
+				$setting = isset( $e['setting'] ) ? $e['setting'] : '';
+				$code    = isset( $e['code'] ) ? $e['code'] : '';
+				$type    = isset( $e['type'] ) ? $e['type'] : '';
+				if ( $this->option === $setting || ( 'general' === $setting && 'settings_updated' === $code && in_array( $type, array( 'success', 'updated' ), true ) ) ) {
+					continue;
+				}
+				$keep[] = $e;
+			}
+			$GLOBALS['wp_settings_errors'] = $keep; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- core's own settings errors list; only this option's entries and its duplicate 「Settings saved.」 are removed.
 		}
 
 		/**
@@ -832,7 +1118,12 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 				}
 			}
 			unset( $data[ self::TAB_KEY ], $data[ self::CLEAR_KEY ] );
-			$clean = $this->sanitize( wp_parse_args( $data, $current ) );
+			$this->importing = true;
+			try {
+				$clean = $this->sanitize( wp_parse_args( $data, $current ) );
+			} finally {
+				$this->importing = false;
+			}
 			foreach ( $this->fields as $id => $f ) {
 				if ( self::is_secret( $f ) ) {
 					$clean[ $id ] = $current[ $id ];
@@ -883,6 +1174,73 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		}
 
 		/**
+		 * Evaluate a depends_on tree and name the reason of the first failing
+		 * condition. Only the field's own conditions are looked at: a trigger
+		 * that is itself hidden or disabled simply counts as unmet, and the
+		 * reason stays this field's own (「开启 B 后可用」), not the upstream one.
+		 *
+		 * @param array $node     Normalized node.
+		 * @param array $values   Values.
+		 * @param array $inactive Inactive field ids (keys).
+		 * @return array{0: bool, 1: string} Result and reason.
+		 */
+		private function eval_reason( array $node, array $values, array $inactive ) {
+			if ( isset( $node['field'] ) ) {
+				$ok = $this->node_met( $node, $values, $inactive );
+				return array( $ok, $ok ? '' : $node['reason'] );
+			}
+			$reason = '';
+			foreach ( $node['rules'] as $r ) {
+				list( $ok, $why ) = $this->eval_reason( $r, $values, $inactive );
+				if ( 'OR' === $node['relation'] && $ok ) {
+					return array( true, '' );
+				}
+				if ( 'AND' === $node['relation'] && ! $ok ) {
+					return array( false, '' !== $why ? $why : $node['reason'] );
+				}
+				if ( '' === $reason ) {
+					$reason = $why;
+				}
+			}
+			return 'AND' === $node['relation'] ? array( true, '' ) : array( false, '' !== $reason ? $reason : $node['reason'] );
+		}
+
+		/**
+		 * Initial depends_on state from saved values, the same decision the
+		 * server makes on save. Printed so the page is right without JS and
+		 * before JS runs.
+		 *
+		 * @param mixed $dep Schema depends_on.
+		 * @return array{mode: string, reason: string}|null Set only when the condition fails.
+		 */
+		private function server_off( $dep ) {
+			$tree = self::dep_tree( $dep );
+			if ( null === $tree ) {
+				return null;
+			}
+			$values           = $this->all();
+			list( $ok, $why ) = $this->eval_reason( $tree, $values, $this->inactive_fields( $values ) );
+			if ( $ok ) {
+				return null;
+			}
+			return array(
+				'mode'   => $tree['mode'],
+				'reason' => '' !== $why ? $why : $tree['reason'],
+			);
+		}
+
+		/**
+		 * Disable every form control in a block of field HTML, hidden companions
+		 * included, so a field disabled by depends_on submits nothing.
+		 *
+		 * @param string $html Field HTML.
+		 * @return string
+		 */
+		private static function disable_controls( $html ) {
+			return (string) preg_replace( '/<(input|select|textarea|button)\b(?![^>]*\sdisabled(?=[\s>=\/]))/', '<$1 disabled data-wenpai-dep-dis', $html );
+		}
+
+		/**
 		 * Echo only the control of one field, for layouts that draw their own
 		 * label (simple-row). Pass 'labelledby' with the id of that label.
 		 *
@@ -893,14 +1251,23 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 			if ( ! isset( $this->fields[ $id ] ) ) {
 				return;
 			}
-			$f   = $this->fields[ $id ];
-			$fid = $this->field_id( $id );
-			$ctl = array(
+			$f     = $this->fields[ $id ];
+			$fid   = $this->field_id( $id );
+			$ctl   = array(
 				'labelledby'  => isset( $args['labelledby'] ) ? (string) $args['labelledby'] : '',
 				'describedby' => isset( $args['describedby'] ) ? (string) $args['describedby'] : '',
 				'invalid'     => isset( $this->errors()[ $id ] ),
 			);
-			$out = '<span class="wenpai-control" data-wenpai-field="' . esc_attr( $id ) . '"' . $this->depends_attrs( $f['depends_on'] ) . '>' . $this->control_html( $id, $f, $fid, $ctl ) . '</span>';
+			$off   = $this->server_off( $f['depends_on'] );
+			$inner = $this->control_html( $id, $f, $fid, $ctl );
+			$attrs = $this->depends_attrs( $f['depends_on'] );
+			if ( null !== $off && 'disable' === $off['mode'] ) {
+				$inner  = self::disable_controls( $inner );
+				$attrs .= ' data-wenpai-dep-disabled';
+			} elseif ( null !== $off ) {
+				$attrs .= ' hidden inert data-wenpai-dep-hidden';
+			}
+			$out = '<span class="wenpai-control" data-wenpai-field="' . esc_attr( $id ) . '"' . $attrs . '>' . $inner . '</span>';
 			echo $out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts.
 		}
 
@@ -946,6 +1313,7 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 			$tree   = self::dep_tree( $f['depends_on'] );
 			$reason = null !== $tree && 'disable' === $tree['mode'];
 			$rows   = 'matrix' === $f['type'] ? $this->error_rows( $id ) : array();
+			$off    = $this->server_off( $f['depends_on'] );
 
 			$described = array();
 			if ( '' !== $err ) {
@@ -982,7 +1350,8 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 				$after .= '<p class="wenpai-field__error" id="' . esc_attr( $fid . '-error' ) . '">' . $icon . '<span>' . esc_html( $err ) . '</span></p>';
 			}
 			if ( $reason ) {
-				$after .= '<p class="wenpai-field__reason" id="' . esc_attr( $fid . '-reason' ) . '" hidden></p>';
+				$why    = null !== $off ? $off['reason'] : '';
+				$after .= '<p class="wenpai-field__reason" id="' . esc_attr( $fid . '-reason' ) . '"' . ( '' === $why ? ' hidden' : '' ) . '>' . esc_html( $why ) . '</p>';
 			}
 			if ( '' !== $f['desc'] ) {
 				$after .= '<p class="wenpai-field__desc" id="' . esc_attr( $fid . '-desc' ) . '">' . esc_html( $f['desc'] ) . '</p>';
@@ -991,8 +1360,17 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 				$after .= $this->secret_extra_html( $id, $fid );
 			}
 
-			$cls  = 'wenpai-field wenpai-field--' . $f['type'] . ( $row ? ' field wenpai-field--row' : '' ) . ( '' !== $err ? ' is-invalid' : '' );
-			$open = '<div class="' . esc_attr( $cls ) . '" data-wenpai-field="' . esc_attr( $id ) . '"' . $this->depends_attrs( $f['depends_on'] );
+			$state = '';
+			if ( null !== $off && 'disable' === $off['mode'] ) {
+				// Disabled from saved values, controls included (hidden companions too), so nothing is submitted.
+				$control = self::disable_controls( $control );
+				$after   = self::disable_controls( $after );
+				$state   = ' data-wenpai-dep-disabled';
+			} elseif ( null !== $off ) {
+				$state = ' hidden inert data-wenpai-dep-hidden';
+			}
+			$cls  = 'wenpai-field wenpai-field--' . $f['type'] . ( $row ? ' field wenpai-field--row' : '' ) . ( '' !== $err ? ' is-invalid' : '' ) . ( '' !== $state && null !== $off && 'disable' === $off['mode'] ? ' is-disabled' : '' );
+			$open = '<div class="' . esc_attr( $cls ) . '" data-wenpai-field="' . esc_attr( $id ) . '"' . $this->depends_attrs( $f['depends_on'] ) . $state;
 			$aria = empty( $described ) ? '' : ' aria-describedby="' . esc_attr( implode( ' ', $described ) ) . '"';
 
 			if ( $row ) {
@@ -1199,7 +1577,7 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 					return '<textarea id="' . esc_attr( $fid ) . '" name="' . esc_attr( $name ) . '" rows="4"' . $aria . $inv . '>' . esc_textarea( $v ) . '</textarea>';
 				case 'secret':
 					$saved = is_scalar( $v ) && '' !== (string) $v;
-					return '<input type="password" id="' . esc_attr( $fid ) . '" name="' . esc_attr( $name ) . '" value="" autocomplete="new-password" spellcheck="false"' . ( $saved ? ' data-wenpai-saved' : '' ) . $aria . $inv . '>';
+					return '<input type="password" id="' . esc_attr( $fid ) . '" name="' . esc_attr( $name ) . '" value="" autocomplete="new-password" spellcheck="false" data-wenpai-secret="' . esc_attr( $id ) . '" data-wenpai-multiline="' . esc_attr( $this->strings['secret_multiline'] ) . '"' . ( $saved ? ' data-wenpai-saved' : '' ) . $aria . $inv . '>';
 				default:
 					return '<input type="text" id="' . esc_attr( $fid ) . '" name="' . esc_attr( $name ) . '" value="' . esc_attr( is_scalar( $v ) ? $v : '' ) . '" autocomplete="off"' . $aria . $inv . '>';
 			}
@@ -1270,7 +1648,19 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 			}
 			$link = '';
 			if ( isset( $st['link']['url'], $st['link']['label'] ) ) {
-				$link = ' <a href="' . esc_url( (string) $st['link']['url'] ) . '">' . esc_html( (string) $st['link']['label'] ) . '</a>';
+				$target = isset( $st['link']['target'] ) ? trim( (string) $st['link']['target'] ) : '';
+				// Keywords (_blank, _self, ...) compare and print lowercase; frame names keep their case.
+				if ( in_array( strtolower( $target ), array( '_blank', '_self', '_parent', '_top' ), true ) ) {
+					$target = strtolower( $target );
+				}
+				$blank = '_blank' === $target;
+				$rel   = self::link_rel( isset( $st['link']['rel'] ) ? $st['link']['rel'] : null, $blank );
+				$link  = ' <a href="' . esc_url( (string) $st['link']['url'] ) . '"'
+					. ( '' !== $target ? ' target="' . esc_attr( $target ) . '"' : '' )
+					. ( '' !== $rel ? ' rel="' . esc_attr( $rel ) . '"' : '' ) . '>'
+					. esc_html( (string) $st['link']['label'] )
+					. ( $blank ? '<span class="screen-reader-text">' . esc_html( $this->strings['new_tab'] ) . '</span>' : '' )
+					. '</a>';
 			}
 			$lines = isset( $st['desc'] ) ? array_values( (array) $st['desc'] ) : array();
 			foreach ( $lines as $i => $line ) {
@@ -1280,6 +1670,32 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 				$out .= '<p class="wenpai-field__note">' . ltrim( $link ) . '</p>';
 			}
 			return $out . '</div>';
+		}
+
+		/**
+		 * The rel attribute of a status link. Each token keeps only [a-z-]; duplicates go. With
+		 * target=_blank, noopener is always there; no rel given means
+		 * 「noopener noreferrer」.
+		 *
+		 * @param mixed $rel   Caller rel (string or list) or null.
+		 * @param bool  $blank Whether the link opens a new tab.
+		 * @return string
+		 */
+		private static function link_rel( $rel, $blank ) {
+			if ( null === $rel ) {
+				return $blank ? 'noopener noreferrer' : '';
+			}
+			$words = array();
+			foreach ( preg_split( '/\s+/', strtolower( implode( ' ', array_map( 'strval', (array) $rel ) ) ) ) as $w ) {
+				$w = (string) preg_replace( '/[^a-z-]/', '', $w );
+				if ( '' !== $w && ! in_array( $w, $words, true ) ) {
+					$words[] = $w;
+				}
+			}
+			if ( $blank && ! in_array( 'noopener', $words, true ) ) {
+				$words[] = 'noopener';
+			}
+			return implode( ' ', $words );
 		}
 
 		/**
@@ -1498,6 +1914,10 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 				if ( '' !== $node['reason'] ) {
 					$c['reason'] = $node['reason'];
 				}
+				$saved = $this->saved_flag( $node );
+				if ( null !== $saved ) {
+					$c['saved'] = $saved;
+				}
 				return $c;
 			}
 			$out = array(
@@ -1517,8 +1937,28 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		}
 
 		/**
-		 * Data attributes for kit JS. No `hidden` is printed: without JS every
-		 * field shows and is enabled.
+		 * Result of one condition against saved values, for kit JS to use when
+		 * the trigger's control is not on the page. Only a boolean is emitted,
+		 * never a value; conditions on secret fields emit nothing.
+		 *
+		 * @param array $node Normalized condition.
+		 * @return bool|null
+		 */
+		private function saved_flag( array $node ) {
+			if ( ! isset( $this->fields[ $node['field'] ] ) || self::is_secret( $this->fields[ $node['field'] ] ) ) {
+				return null;
+			}
+			$values = $this->all();
+			return $this->node_met( $node, $values, $this->inactive_fields( $values ) );
+		}
+
+		/**
+		 * Data attributes for kit JS. The initial state (hidden / disabled) is
+		 * printed by the caller from saved values, see server_off().
+		 *
+		 * Each condition also carries `saved` (data-wenpai-depends-saved="1|0"
+		 * in the plain form): its result against saved values, used by kit JS
+		 * when the trigger control is not on the page.
 		 *
 		 * One plain condition: data-wenpai-depends-on, data-wenpai-depends-value
 		 * (a value, or a JSON list for "any of"), data-wenpai-depends-not,
@@ -1540,7 +1980,8 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 				return ' data-wenpai-depends-on="' . esc_attr( $this->field_name( $c['field'] ) ) . '" data-wenpai-depends-value="' . esc_attr( $val ) . '"'
 					. ( $c['not'] ? ' data-wenpai-depends-not' : '' )
 					. ( 'disable' === $tree['mode'] ? ' data-wenpai-depends-mode="disable"' : '' )
-					. ( 'disable' === $tree['mode'] && '' !== $why ? ' data-wenpai-depends-reason="' . esc_attr( $why ) . '"' : '' );
+					. ( 'disable' === $tree['mode'] && '' !== $why ? ' data-wenpai-depends-reason="' . esc_attr( $why ) . '"' : '' )
+					. ( null !== $this->saved_flag( $c ) ? ' data-wenpai-depends-saved="' . ( $this->saved_flag( $c ) ? '1' : '0' ) . '"' : '' );
 			}
 			return ' data-wenpai-depends="' . esc_attr( wp_json_encode( $this->dep_json( $tree ) ) ) . '"';
 		}
@@ -1549,19 +1990,20 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		 * Attributes for a hand-written block, card, section or tab link that
 		 * should follow a field.
 		 *
-		 * With 'server' => true the condition is also checked against saved
-		 * values and ' hidden' is added when it fails. Use this for tabs and
-		 * sections whose trigger is on another page: kit JS leaves an element
-		 * alone when its trigger control is not on the page.
+		 * The condition is checked against saved values and ' hidden inert
+		 * data-wenpai-dep-hidden' is added when it fails, so the block is right
+		 * without JS. Hand-written blocks only get hide mode on the server; put
+		 * fields with mode=disable through render_field().
 		 *
 		 * @param array $depends_on Same shape as the schema key.
-		 * @param array $args       Optional. 'server' (bool).
+		 * @param array $args       Optional. 'server' (bool, kept for 0.3.0-dev callers; always on now).
 		 * @return string Leading space included.
 		 */
 		public function depends_on_attrs( array $depends_on, array $args = array() ) {
 			$out = $this->depends_attrs( $depends_on );
-			if ( ! empty( $args['server'] ) && ! $this->condition_met( $depends_on ) ) {
-				$out .= ' hidden';
+			unset( $args );
+			if ( ! $this->condition_met( $depends_on ) ) {
+				$out .= ' hidden inert data-wenpai-dep-hidden';
 			}
 			return $out;
 		}
@@ -1592,7 +2034,8 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 					return true;
 				}
 				if ( isset( $inactive[ $node['field'] ] ) ) {
-					return $node['not'];
+					// A hidden or disabled trigger never satisfies a condition, `not` included (spec §12).
+					return false;
 				}
 				$have = array();
 				foreach ( ( is_array( $values[ $node['field'] ] ) ? $values[ $node['field'] ] : array( $values[ $node['field'] ] ) ) as $x ) {
@@ -1663,15 +2106,34 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		 *
 		 * @param mixed $res     Handler return value.
 		 * @param array $strings UI strings.
-		 * @return array{ok: bool, message: string, data: mixed}
+		 * A WP_Error sends only its code and message to the page by default. Its
+		 * data stays on the server (it may hold an HTTP response body, keys or
+		 * signed URLs), except what the handler puts under the 'public' key
+		 * ( new WP_Error( 'quota', $msg, array( 'public' => array( 'retry' => 60 ) ) ) )
+		 * or what the 'wenpai_admin_ui_action_error_data' filter returns.
+		 *
+		 * @return array{ok: bool, message: string, code: string, data: mixed}
 		 */
 		public static function action_result( $res, array $strings = array() ) {
 			$strings = array_merge( self::default_strings(), $strings );
 			if ( is_object( $res ) && is_a( $res, 'WP_Error' ) ) {
+				$msg    = (string) $res->get_error_message();
+				$raw    = $res->get_error_data();
+				$public = is_array( $raw ) && array_key_exists( 'public', $raw ) ? $raw['public'] : null;
+				if ( function_exists( 'apply_filters' ) ) {
+					/**
+					 * Error data of a failed field action that may go to the page.
+					 *
+					 * @param mixed    $public Default: the 'public' key of the error data, else null.
+					 * @param WP_Error $res    The handler's error.
+					 */
+					$public = apply_filters( 'wenpai_admin_ui_action_error_data', $public, $res );
+				}
 				return array(
 					'ok'      => false,
-					'message' => (string) $res->get_error_message(),
-					'data'    => null,
+					'message' => '' !== $msg ? $msg : $strings['action_failed'],
+					'code'    => (string) $res->get_error_code(),
+					'data'    => self::json_safe( $public ),
 				);
 			}
 			if ( is_array( $res ) ) {
@@ -1679,6 +2141,7 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 				return array(
 					'ok'      => $ok,
 					'message' => isset( $res['message'] ) && '' !== (string) $res['message'] ? (string) $res['message'] : ( $ok ? $strings['action_ok'] : $strings['action_failed'] ),
+					'code'    => isset( $res['code'] ) && is_scalar( $res['code'] ) ? (string) $res['code'] : '',
 					'data'    => isset( $res['data'] ) ? $res['data'] : null,
 				);
 			}
@@ -1686,6 +2149,7 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 				return array(
 					'ok'      => true,
 					'message' => $res,
+					'code'    => '',
 					'data'    => null,
 				);
 			}
@@ -1693,8 +2157,34 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 			return array(
 				'ok'      => $ok,
 				'message' => $ok ? $strings['action_ok'] : $strings['action_failed'],
+				'code'    => '',
 				'data'    => null,
 			);
+		}
+
+		/**
+		 * WP_Error data for the JSON response: scalars and arrays of them only.
+		 * Objects (a WP_HTTP response, a resource) are dropped, so internals do
+		 * not leak to the page.
+		 *
+		 * @param mixed $data Error data.
+		 * @param int   $depth Recursion guard.
+		 * @return mixed
+		 */
+		private static function json_safe( $data, $depth = 0 ) {
+			if ( null === $data || is_scalar( $data ) ) {
+				return $data;
+			}
+			if ( ! is_array( $data ) || $depth > 4 ) {
+				return null;
+			}
+			$out = array();
+			foreach ( $data as $k => $v ) {
+				if ( null === $v || is_scalar( $v ) || is_array( $v ) ) {
+					$out[ $k ] = self::json_safe( $v, $depth + 1 );
+				}
+			}
+			return $out;
 		}
 
 		/**
@@ -1730,7 +2220,8 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		}
 
 		/**
-		 * Kit notice for the settings page. One notice only:
+		 * Kit notice for the settings page. One notice only, also on Settings
+		 * submenu pages: claim_core_notices() keeps core from repeating it.
 		 * - errors: role="alert" summary with an in-page link per field (at most
 		 *   five, then 「等 N 项」), plus 「其余设置已保存。」 when the rest was saved;
 		 * - otherwise a saved receipt (role="status") that fades after 5 s.
@@ -1747,8 +2238,8 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 			$errs = $this->errors();
 			$icon = class_exists( 'Wenpai_Admin_Icons', false ) ? Wenpai_Admin_Icons::svg( 'info' ) : '';
 			$form = $this->form_error;
-			if ( '' === $form && function_exists( 'get_settings_errors' ) ) {
-				foreach ( (array) get_settings_errors( $this->option ) as $e ) {
+			if ( '' === $form ) {
+				foreach ( $this->own_settings_errors() as $e ) {
 					if ( isset( $e['code'], $e['message'] ) && 'wenpai_tab' === $e['code'] ) {
 						$form = (string) $e['message'];
 					}
@@ -1779,7 +2270,8 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 				return $html . '</div></div></div>';
 			}
 			if ( $updated ) {
-				return '<div class="wenpai-notice-wrap" data-wenpai-fade><div class="notice ok" role="status" data-wenpai-announce>' . $icon . '<span>' . esc_html( $this->strings['saved'] ) . '</span></div></div>';
+				// data-wenpai-fade sits on the notice: core moves .notice out of a plain .wrap container.
+				return '<div class="wenpai-notice-wrap"><div class="notice ok" role="status" data-wenpai-announce data-wenpai-fade>' . $icon . '<span>' . esc_html( $this->strings['saved'] ) . '</span></div></div>';
 			}
 			return '';
 		}

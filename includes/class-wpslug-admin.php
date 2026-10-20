@@ -41,7 +41,6 @@ class WPSlug_Admin
         add_action("admin_notices", [$this, "bulkActionNotice"]);
         add_action("load-options-permalink.php", [$this, "addPermalinkNotice"]);
 
-        add_action("admin_head", [$this, "hideDefaultNotices"]);
         add_filter("admin_body_class", [$this, "bodyClass"]);
         add_action("admin_post_wpslug_reset", [$this, "handleReset"]);
         add_filter(
@@ -111,17 +110,6 @@ class WPSlug_Admin
         }
         // phpcs:enable
         return $classes;
-    }
-
-    public function hideDefaultNotices()
-    {
-        // phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only admin route.
-        if (isset($_GET["page"]) && "wpslug" === sanitize_key(wp_unslash($_GET["page"]))) {
-            // The kit prints the save receipt, field errors and tab_expired itself
-            // (notices_html()); hide WP core's copies of the same settings errors.
-            echo "<style>.settings-error.notice-success, #setting-error-wenpai_tab { display: none !important; }</style>";
-        }
-        // phpcs:enable WordPress.Security.NonceVerification.Recommended
     }
 
     public function addAdminMenu()
@@ -438,39 +426,18 @@ class WPSlug_Admin
 
     /**
      * SEO. Disabled-with-reason linkage is kit depends_on (mode "disable")
-     * in the schema. conversion_mode is not on the advanced page, so its saved
-     * value is mirrored in a disabled hidden input (never submitted) for kit
-     * JS to read; see conversionModeMirror().
+     * in the schema. conversion_mode is on the simple page, not here: the kit
+     * prints the condition's result against saved values (initial disabled
+     * state and data-wenpai-depends-saved), so no mirror control is needed.
      */
     private function renderSEOSettings($options)
     {
-        $this->conversionModeMirror($options);
         $this->field("enable_seo_optimization");
         $this->field("smart_punctuation");
         $this->field("mixed_content_optimization");
         $this->field("remove_stop_words");
         $this->field("seo_max_words");
         $this->field("stop_words_list");
-    }
-
-    /**
-     * Disabled hidden copy of the saved conversion_mode, so kit JS can evaluate
-     * the SEO "first-letter pinyin" condition on the advanced page (kit JS
-     * leaves a field alone when a trigger control is missing). Disabled
-     * controls are not submitted, so nothing is saved from it. When the plugin
-     * is off, conversion_mode is an inactive (hidden) field on the server and
-     * never matches, so the mirror is empty to agree with it.
-     *
-     * @param array $options Saved options.
-     */
-    private function conversionModeMirror($options)
-    {
-        $fw = $this->fw();
-        if (!$fw) {
-            return;
-        }
-        $mode = !empty($options["enable_conversion"]) && isset($options["conversion_mode"]) ? (string) $options["conversion_mode"] : "";
-        echo '<input type="hidden" name="' . esc_attr($fw->field_name("conversion_mode")) . '" value="' . esc_attr($mode) . '" disabled data-wpslug-mirror>';
     }
 
     private function renderMediaSettings($options)

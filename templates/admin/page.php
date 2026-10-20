@@ -47,6 +47,7 @@ Wenpai_Admin_Shell::open([
     "feedback_label" => __("反馈", "wpslug"),
     "feedback_icon_html" => $wpslug_icon("feedback"),
     "main_class" => "help" === $tab ? "wpslug-help" : "",
+    "new_tab_label" => __("(opens in a new tab)", "wpslug"),
 ]);
 ?>
     <?php
@@ -409,4 +410,5 @@ wp slug doctor</code></pre>
 Wenpai_Admin_Shell::close([
     "version" => wpslug_plugin_name() . " " . WPSLUG_VERSION,
     "links" => [["url" => "https://wpcy.com/slug", "label" => __("文档", "wpslug")], ["url" => "https://wpcy.com/support", "label" => __("支持", "wpslug")]],
+    "new_tab_label" => __("(opens in a new tab)", "wpslug"),
 ]);

@@ -168,11 +168,14 @@ a.scope:hover { color: var(--wenpai-accent); }
 
 /* 开关（0.3 统一写法）：原生 checkbox[role=switch]，没有 JS 也能用。 */
 .wenpai-switch { position: relative; display: inline-flex; align-items: center; gap: 10px; min-height: 24px; font-size: var(--wenpai-text-body); line-height: var(--wenpai-leading-meta); color: var(--wenpai-ink); }
-.wenpai-app .wenpai-switch .wenpai-switch__input { position: absolute; top: 50%; left: 0; width: 36px; height: 24px; margin: -12px 0 0; padding: 0; opacity: 0; cursor: pointer; z-index: var(--wenpai-z-raised); }
+.wenpai-app .wenpai-switch .wenpai-switch__input { position: absolute; top: 50%; inset-inline-start: 0; width: 36px; height: 24px; margin: -12px 0 0; padding: 0; opacity: 0; cursor: pointer; z-index: var(--wenpai-z-raised); }
 .wenpai-switch__track { display: inline-block; width: 36px; height: 20px; border-radius: var(--wenpai-radius-lg); background: var(--wenpai-track-off); position: relative; flex: none; transition: background var(--wenpai-motion-base) var(--wenpai-motion-ease); }
-.wenpai-switch__track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--wenpai-card); transition: left var(--wenpai-motion-base) var(--wenpai-motion-ease); }
+/* Logical offsets: in RTL the hit area sits on the track and the knob runs right to left. */
+.wenpai-switch__track::after { content: ""; position: absolute; top: 2px; inset-inline-start: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--wenpai-card); transition: inset-inline-start var(--wenpai-motion-base) var(--wenpai-motion-ease); }
 .wenpai-switch__input:checked + .wenpai-switch__track { background: var(--wenpai-accent); }
-.wenpai-switch__input:checked + .wenpai-switch__track::after { left: 18px; }
+.wenpai-switch__input:checked + .wenpai-switch__track::after { inset-inline-start: 18px; }
+/* Screen-reader-only text (e.g. 「（在新标签页打开）」); same as core .screen-reader-text, for pages outside wp-admin too. */
+.wenpai-app .screen-reader-text { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
 .wenpai-switch__input:hover:not(:disabled) + .wenpai-switch__track { background: var(--wenpai-control-line-hover); }
 .wenpai-switch__input:checked:hover:not(:disabled) + .wenpai-switch__track { background: var(--wenpai-accent-hover); }
 .wenpai-switch__input:focus-visible + .wenpai-switch__track { outline: var(--wenpai-focus-width) solid var(--wenpai-focus-color); outline-offset: var(--wenpai-focus-offset); }
@@ -338,7 +341,8 @@ a.scope:hover { color: var(--wenpai-accent); }
 .field-ctl-row .btn { flex: none; height: var(--wenpai-size-control); }
 .wenpai-actions { display: inline-flex; align-items: center; gap: var(--wenpai-space-2); }
 .wenpai-notice-wrap { margin: 0 0 var(--wenpai-space-4); }
-.wenpai-notice-wrap.is-gone { opacity: 0; transition: opacity var(--wenpai-motion-fade) var(--wenpai-motion-ease); }
+.wenpai-notice-wrap.is-gone,
+.notice[data-wenpai-fade].is-gone { opacity: 0; transition: opacity var(--wenpai-motion-fade) var(--wenpai-motion-ease); }
 .wenpai-app form.is-busy,
 .wenpai-app .is-busy { pointer-events: none; } /* No dimming: pair with aria-busy="true" and an in-progress line (.spin + 「正在…」). */
 .simple-row.is-static .toggle { pointer-events: none; }
@@ -455,7 +459,8 @@ a.scope:hover { color: var(--wenpai-accent); }
 }
 .empty .btn { margin-top: 14px; }
 @media (prefers-reduced-motion: reduce) {
-  .wenpai-notice-wrap.is-gone { transition: none; opacity: 1; }
+  .wenpai-notice-wrap.is-gone,
+  .notice[data-wenpai-fade].is-gone { transition: none; opacity: 1; }
   .toggle i, .toggle i::after, .wenpai-switch__track, .wenpai-switch__track::after, .choice { transition: none; }
   .spin { animation: none; border-top-color: var(--wenpai-line); }
 }

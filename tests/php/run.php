@@ -1054,4 +1054,16 @@ $panel_off = $admin030->validateOptions(['__wenpai_tab' => 'types', '__wenpai_ta
 check($panel_off['show_editor_panel'] === false, 'unticking the toggle stores bool false');
 check((new WPSlug_Settings())->validateOptionsLegacy(['show_editor_panel' => 'true'])['show_editor_panel'] === true && (new WPSlug_Settings())->validateOptionsLegacy([])['show_editor_panel'] === false, 'legacy validation also casts show_editor_panel to bool, default off');
 $GLOBALS['wpslug_options'] = $tab_base;
+// ---- 「获取 API 密钥」 off-site links: new tab with noopener noreferrer and a screen-reader note ----
+$GLOBALS['wpslug_options'] = array_merge($tab_base, ['translation_service' => 'google']);
+$tr_m = new ReflectionMethod($admin030, 'renderTranslationSettings');
+$tr_m->setAccessible(true);
+ob_start(); $tr_m->invoke($admin030, $GLOBALS['wpslug_options']); $tr_html = ob_get_clean();
+$get_key_links = [];
+preg_match_all('#<a href="(https://(?:cloud\.google\.com|fanyi-api\.baidu\.com)[^"]*)"([^>]*)>(.*?)</a>#s', $tr_html, $gk, PREG_SET_ORDER);
+check(count($gk) === 2, 'translation tab has the Google and Baidu Get API Key links');
+foreach ($gk as $g) {
+    check(strpos($g[2], 'target="_blank"') !== false && strpos($g[2], 'rel="noopener noreferrer"') !== false && strpos($g[3], '<span class="screen-reader-text">(opens in a new tab)</span>') !== false, 'Get API Key link ' . $g[1] . ' opens in a new tab with noopener noreferrer and the translated new-tab note');
+}
+$GLOBALS['wpslug_options'] = $tab_base;
 echo "PASS: {$tests} assertions\n";

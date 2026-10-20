@@ -138,7 +138,7 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 		 *
 		 * @param string $option Option name.
 		 * @param array  $fields Field schema keyed by field id.
-		 * @param array  $args   Optional. Supports 'group', 'strings', 'layout' (stack|row).
+		 * @param array  $args   Optional. Supports 'group', 'strings', 'layout' (row|stack, default row).
 		 * @return Wenpai_Admin_Settings
 		 */
 		public static function register( $option, array $fields, array $args = array() ) {
@@ -219,8 +219,9 @@ if ( ! class_exists( 'Wenpai_Admin_Settings' ) ) {
 				self::default_strings(),
 				isset( $args['strings'] ) && is_array( $args['strings'] ) ? $args['strings'] : array()
 			);
-			$layout        = isset( $args['layout'] ) && 'row' === $args['layout'] ? 'row' : 'stack';
-			$this->fields  = array();
+			// 0.3.1: row (label left, control right; stacks under 1100px) is the default again, as in 0.2.x. 'stack' opts out.
+			$layout       = isset( $args['layout'] ) && 'stack' === $args['layout'] ? 'stack' : 'row';
+			$this->fields = array();
 			foreach ( $fields as $id => $f ) {
 				$f = wp_parse_args(
 					$f,

@@ -409,18 +409,16 @@ class WPSlug_Admin
         $this->field("translation_source_lang");
         $this->field("translation_target_lang");
         ?>
-        <div class="wpslug-api-sections">
-            <?php $this->field("google_api_key"); ?>
-            <div class="wpslug-api-actions"<?php echo $this->dependsAttrs(["field" => "translation_service", "value" => "google"]); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
-                <a href="https://cloud.google.com/translate/docs/setup" target="_blank" rel="noopener noreferrer"><?php esc_html_e("Get API Key", "wpslug"); ?><span class="screen-reader-text"><?php esc_html_e("(opens in a new tab)", "wpslug"); ?></span></a>
-            </div>
-            <?php $this->field("baidu_app_id"); ?>
-            <?php $this->field("baidu_secret_key"); ?>
-            <div class="wpslug-api-actions"<?php echo $this->dependsAttrs(["field" => "translation_service", "value" => "baidu"]); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
-                <a href="https://fanyi-api.baidu.com/doc/21" target="_blank" rel="noopener noreferrer"><?php esc_html_e("Get API Key", "wpslug"); ?><span class="screen-reader-text"><?php esc_html_e("(opens in a new tab)", "wpslug"); ?></span></a>
-            </div>
-            <?php $this->field("wpmind_status"); ?>
+        <?php $this->field("google_api_key"); ?>
+        <div class="wpslug-api-actions"<?php echo $this->dependsAttrs(["field" => "translation_service", "value" => "google"]); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+            <a href="https://cloud.google.com/translate/docs/setup" target="_blank" rel="noopener noreferrer"><?php esc_html_e("Get API Key", "wpslug"); ?><span class="screen-reader-text"><?php esc_html_e("(opens in a new tab)", "wpslug"); ?></span></a>
         </div>
+        <?php $this->field("baidu_app_id"); ?>
+        <?php $this->field("baidu_secret_key"); ?>
+        <div class="wpslug-api-actions"<?php echo $this->dependsAttrs(["field" => "translation_service", "value" => "baidu"]); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+            <a href="https://fanyi-api.baidu.com/doc/21" target="_blank" rel="noopener noreferrer"><?php esc_html_e("Get API Key", "wpslug"); ?><span class="screen-reader-text"><?php esc_html_e("(opens in a new tab)", "wpslug"); ?></span></a>
+        </div>
+        <?php $this->field("wpmind_status"); ?>
         <?php
     }
 

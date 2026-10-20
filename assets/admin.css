@@ -842,3 +842,15 @@ body.wpslug-admin #wpbody-content > .update-nag {
     overflow-x: visible;
   }
 }
+
+/* After removing .wpslug-api-sections wrapper: keep key links under the control column on wide screens. */
+body.wenpai-ui-page .wenpai-app .wpslug-api-actions {
+    margin-left: calc(var(--wenpai-size-label-col, 280px) + var(--wenpai-space-5, 20px));
+    margin-top: 0;
+    margin-bottom: var(--wenpai-space-2, 8px);
+}
+@media (max-width: 960px) {
+    body.wenpai-ui-page .wenpai-app .wpslug-api-actions {
+        margin-left: 0;
+    }
+}

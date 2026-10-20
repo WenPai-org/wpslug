@@ -38,7 +38,7 @@
 .wenpai-tab svg { width: 18px; height: 18px; margin-right: var(--wenpai-space-2); }
 .wenpai-tab:hover { color: var(--wenpai-ink); }
 .wenpai-tab.is-active { color: var(--wenpai-accent); border-bottom-color: var(--wenpai-accent); }
-.wenpai-tab:focus-visible { outline: var(--wenpai-focus-width) solid var(--wenpai-focus-color); outline-offset: calc(-1 * var(--wenpai-focus-width)); }
+.wenpai-tab:focus-visible { outline: var(--wenpai-focus-width) solid var(--wenpai-focus-color); outline-offset: calc(-1 * var(--wenpai-focus-width)); } /* §17 inset so scrolled tabs keep a full focus ring */
 .wenpai-main { padding: var(--wenpai-space-8) var(--wenpai-space-8) var(--wenpai-space-12); }
 .wenpai-page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--wenpai-space-6); gap: var(--wenpai-space-4); }
 .wenpai-h1 { font-size: var(--wenpai-text-h1); line-height: var(--wenpai-leading-h1); font-weight: var(--wenpai-weight-regular); margin: 0; }
@@ -198,7 +198,7 @@ a.scope:hover { color: var(--wenpai-accent); }
 .section-desc { color: var(--wenpai-ink-2); font-size: var(--wenpai-text-meta); line-height: var(--wenpai-leading-meta); margin: 0 0 10px; }
 .choice-group { font-size: var(--wenpai-text-caption); font-weight: var(--wenpai-weight-regular); color: var(--wenpai-ink-3); margin: var(--wenpai-space-4) 0 10px; }
 .choice-group:first-of-type { margin-top: var(--wenpai-space-1); }
-.field { display: grid; grid-template-columns: var(--wenpai-size-label-col) minmax(0, 1fr); gap: var(--wenpai-space-7); padding: 22px 0; border-top: 1px solid var(--wenpai-line-soft); }
+.field { display: grid; align-items: start; grid-template-columns: var(--wenpai-size-label-col) minmax(0, 1fr); gap: var(--wenpai-space-7); padding: 22px 0; border-top: 1px solid var(--wenpai-line-soft); }
 .field:first-of-type { border-top: 0; padding-top: 14px; }
 .field-label { display: flex; align-items: center; gap: var(--wenpai-space-2); font-weight: var(--wenpai-weight-regular); font-size: var(--wenpai-text-body); }
 .field-label svg { width: 18px; height: 18px; color: var(--wenpai-ink-3); flex: none; }
@@ -470,13 +470,12 @@ a.scope:hover { color: var(--wenpai-accent); }
 @media (max-width: 1100px) {
   .wenpai-grid-2 { grid-template-columns: 1fr; }
   .wenpai-grid-3 { grid-template-columns: 1fr; }
-  .field { grid-template-columns: 1fr; gap: var(--wenpai-space-2); }
   .choice-cards { grid-template-columns: 1fr; }
   .choice-cards.cols-2 { grid-template-columns: 1fr; }
   .chk-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 782px) {
-  /* 账本 harvest.html：品牌与帮助/反馈同一行，页签单独第二行；帮助/反馈只留图标。
+  /* 改进记录 improvements.html：品牌与帮助/反馈同一行，页签单独第二行；帮助/反馈只留图标。
    * 0.2.5 在 ≤600 把 .wenpai-head-right 折成整行（三行页眉），WPSlug / 智储都在产品 CSS 里盖掉；0.3 收进 kit。 */
   .wenpai-head {
     height: auto;
@@ -511,8 +510,9 @@ a.scope:hover { color: var(--wenpai-accent); }
     white-space: nowrap;
     border: 0;
   }
-  .wenpai-tabs { order: 3; flex: 1 0 100%; width: 100%; min-width: 0; height: 44px; }
-  .wenpai-tab { flex: 1 1 0; justify-content: center; padding: 0 6px; min-width: 0; }
+  /* §17: 窄屏页签横向滚动；焦点内描边已在 .wenpai-tab:focus-visible；两端 2px 避免焦点框贴边被裁。 */
+  .wenpai-tabs { order: 3; flex: 1 0 100%; width: 100%; min-width: 0; height: 44px; overflow-x: auto; overflow-y: hidden; padding-inline: 2px; scrollbar-width: thin; }
+  .wenpai-tab { flex: 0 0 auto; justify-content: center; padding: 0 10px; min-width: max-content; }
   .wenpai-tab svg { margin-right: var(--wenpai-space-1); }
   .wenpai-page-head { flex-wrap: wrap; align-items: flex-start; }
   .chk-grid { grid-template-columns: 1fr; }
@@ -600,9 +600,9 @@ a.scope:hover { color: var(--wenpai-accent); }
 .wenpai-error-summary__body p { margin: 0; }
 .wenpai-error-links { display: flex; flex-wrap: wrap; gap: var(--wenpai-space-1) var(--wenpai-space-4); margin: 0; padding: 0; list-style: none; }
 .wenpai-error-links a { color: inherit; text-decoration: underline; }
-/* Field action: control + .btn-secondary + receipt on one row, wraps under 600px. */
-.field-ctl-row.wenpai-field__row { flex-wrap: wrap; max-width: none; }
-.wenpai-field__row > :first-child { flex: 1 1 var(--wenpai-size-control-max); min-width: 0; max-width: var(--wenpai-size-control-max); }
+/* Field action: control + .btn-secondary on one row at every width (wpslug 1.3.1 baseline); the input shrinks. */
+.field-ctl-row.wenpai-field__row { flex-wrap: nowrap; max-width: var(--wenpai-size-control-max); }
+.wenpai-field__row > :first-child { flex: 1 1 auto; min-width: 0; max-width: none; }
 .wenpai-field__row > :first-child input { width: 100%; max-width: none; }
 .wenpai-field__row .btn .spin { margin-left: 6px; }
 .wenpai-field__result { display: inline-flex; align-items: center; gap: 6px; margin: 0; font-size: var(--wenpai-text-meta); line-height: var(--wenpai-leading-meta); color: var(--wenpai-ink-2); }
@@ -630,12 +630,11 @@ a.scope:hover { color: var(--wenpai-accent); }
 .choice.is-on .choice-ico { color: var(--wenpai-accent); }
 /* Two-column row layout inside a card. */
 .wenpai-field--row.field { margin: 0; }
-.wenpai-field--row .field-ctl { display: flex; flex-direction: column; gap: var(--wenpai-space-2); min-width: 0; }
+.wenpai-field--row .field-ctl { display: flex; flex-direction: column; gap: var(--wenpai-space-2); min-width: 0; padding-bottom: var(--wenpai-space-3); }
 .wenpai-field--row .field-label .wenpai-field__label { font-size: inherit; }
 /* Matrix row in error. */
 .wenpai-matrix tr.is-invalid th[scope="row"] .t { color: var(--wenpai-bad-ink); }
 @media (max-width: 600px) {
-  .wenpai-field__row > :first-child { flex-basis: 100%; max-width: none; }
   /* Matrix stacks: row label on top, select below; column header visually hidden. */
   .wenpai-matrix thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .wenpai-matrix tr,
@@ -655,3 +654,9 @@ a.scope:hover { color: var(--wenpai-accent); }
    Navigation, tabs and buttons keep their own styles. */
 .wenpai-app :is(p, li, dd, td, .wenpai-lede, .section-desc, .wenpai-field__desc, .wenpai-field__note, .field-help, .hint, .notice) a:not(.btn):not(.wenpai-tab):not(.wenpai-brand):not(.wenpai-head-action) { text-decoration: underline; text-underline-offset: 2px; }
 .wenpai-app :is(nav, .wenpai-tabs, .seg, .foot) a { text-decoration: none; }
+
+/* 0.3.1: 字段两栏在 ≤960 才单列（用户 2026-10-20 确认），单列时控件撑满整行。 */
+@media (max-width: 960px) {
+  .field { grid-template-columns: 1fr; gap: var(--wenpai-space-2); }
+  .wenpai-app .field { --wenpai-size-control-max: none; }
+}

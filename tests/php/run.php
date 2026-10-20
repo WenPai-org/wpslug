@@ -998,7 +998,7 @@ check(strpos($ws_off, 'href="https://wpcy.com/mind/" target="_blank" rel="noopen
 // Kit 0.3.0 claims core's settings_errors() on its pages (S7/S8), so WPSlug no longer hides core notices itself.
 check(!method_exists($admin030, 'hideDefaultNotices'), 'WPSlug no longer injects CSS to hide core settings notices (kit 0.3.0 claims them)');
 check(substr_count($main030, 'lib/wenpai-admin-ui/php/load.php') === 1, 'kit load.php is required exactly once, at plugin load time');
-check(trim(file_get_contents(WPSLUG_PLUGIN_DIR . 'lib/wenpai-admin-ui/VERSION')) === '0.3.0', 'vendored kit is the 0.3.0 release');
+check(trim(file_get_contents(WPSLUG_PLUGIN_DIR . 'lib/wenpai-admin-ui/VERSION')) === '0.3.1', 'vendored kit is the 0.3.1 release');
 check(strpos(file_get_contents(WPSLUG_PLUGIN_DIR . 'lib/wenpai-admin-ui/php/load.php'), "add_action( 'plugins_loaded', 'wenpai_admin_ui_complete', 2 )") !== false, 'vendored load.php completes Menu/Settings after an older copy boots (kit #24)');
 // Action results carry the WP_Error code for kit JS (data-wenpai-code / wenpai:action).
 $res = Wenpai_Admin_Settings::action_result($admin030->testApi('bogus'));

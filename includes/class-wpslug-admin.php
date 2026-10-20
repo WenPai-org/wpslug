@@ -454,6 +454,7 @@ class WPSlug_Admin
         $this->field("post_type_modes");
         $this->field("enabled_taxonomies");
         $this->field("show_slug_column");
+        $this->field("show_editor_panel");
     }
 
 
@@ -553,6 +554,11 @@ class WPSlug_Admin
      */
     public function enqueueBlockEditorAssets()
     {
+        // Setting "show_editor_panel" (default off): when off, register and
+        // enqueue nothing, so the panel's script and style never load.
+        if (!$this->settings->getOption("show_editor_panel")) {
+            return;
+        }
         $this->enqueueEditorAssets(true);
     }
 

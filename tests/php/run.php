@@ -1017,4 +1017,41 @@ check(strpos($editor_js, 'isSecondary') === false && strpos($editor_js, 'isPrima
 check(substr_count($editor_js, 'variant: "secondary",' . "\n" . '                __next40pxDefaultSize: true,') === 2, 'both preview buttons are secondary at the 40px core size');
 check(preg_match('/className: "wpslug-block-actions",\s+justify: "flex-start",\s+align: "center",\s+gap: 2,\s+wrap: true,/', $editor_js) === 1, 'preview buttons sit in a core Flex row: centered, 8px gap, wraps in a narrow sidebar');
 check(strpos($editor_css, '.components-button + .components-button') === false, 'no margin hack between sidebar buttons (it pushed the second one down)');
+// ---- Setting show_editor_panel: block editor panel is opt-in (default off) ----
+if (!defined('WPSLUG_PLUGIN_URL')) { define('WPSLUG_PLUGIN_URL', 'https://example.test/wp-content/plugins/wpslug/'); }
+if (!function_exists('wp_enqueue_script')) {
+    function wp_register_script($handle, ...$args) { $GLOBALS['wpslug_assets']['register_script'][] = $handle; return true; }
+    function wp_register_style($handle, ...$args) { $GLOBALS['wpslug_assets']['register_style'][] = $handle; return true; }
+    function wp_enqueue_script($handle, $src = '', $deps = [], $ver = false, $in_footer = false) { $GLOBALS['wpslug_assets']['script'][$handle] = $deps; }
+    function wp_enqueue_style($handle, $src = '', $deps = [], $ver = false) { $GLOBALS['wpslug_assets']['style'][$handle] = $src; }
+    function wp_localize_script($handle, $name, $data) { $GLOBALS['wpslug_assets']['localize'][$handle] = $name; return true; }
+}
+$panel_settings = new WPSlug_Settings();
+check($panel_settings->getDefaults()['show_editor_panel'] === false, 'show_editor_panel defaults to off for new installs');
+$GLOBALS['wpslug_options'] = $tab_base;
+unset($GLOBALS['wpslug_options']['show_editor_panel']);
+check((new WPSlug_Settings())->getOptions()['show_editor_panel'] === false, 'existing installs without the key read show_editor_panel as off');
+check($fields['show_editor_panel']['type'] === 'toggle' && $fields['show_editor_panel']['tab'] === 'types' && $fields['show_editor_panel']['default'] === false, 'show_editor_panel is a kit toggle on the post types & display section');
+$GLOBALS['wpslug_assets'] = [];
+$panel_admin = new WPSlug_Admin();
+$panel_admin->enqueueBlockEditorAssets();
+check($GLOBALS['wpslug_assets'] === [], 'panel off: enqueue_block_editor_assets registers, enqueues and localizes nothing');
+$GLOBALS['wpslug_options']['show_editor_panel'] = true;
+$GLOBALS['wpslug_assets'] = [];
+$panel_admin->enqueueBlockEditorAssets();
+check(isset($GLOBALS['wpslug_assets']['script']['wpslug-editor'], $GLOBALS['wpslug_assets']['style']['wpslug-editor']) && in_array('wp-edit-post', $GLOBALS['wpslug_assets']['script']['wpslug-editor'], true) && ($GLOBALS['wpslug_assets']['localize']['wpslug-editor'] ?? '') === 'wpslugEditor', 'panel on: the block editor script, style and strings are enqueued');
+$GLOBALS['wpslug_options']['enable_conversion'] = false;
+$GLOBALS['wpslug_assets'] = [];
+$panel_admin->enqueueBlockEditorAssets();
+check($GLOBALS['wpslug_assets'] === [], 'panel on but plugin disabled: still nothing enqueued');
+$sp = $fields['show_editor_panel']['sanitize'];
+check($sp('1') === true && $sp('0') === false && $sp('') === false && $sp(null) === false && $sp(true) === true && $sp('yes') === false && $sp(['1']) === false, 'show_editor_panel sanitizes to a strict bool');
+$GLOBALS['wpslug_options'] = $tab_base;
+$panel_on = $admin030->validateOptions(['__wenpai_tab' => 'types', '__wenpai_tab_nonce' => 'nonce-wenpai_tab_wpslug_options_types', 'enabled_post_types' => ['post'], 'enabled_taxonomies' => ['category'], 'post_type_modes' => [], 'show_slug_column' => '1', 'show_editor_panel' => '1']);
+check($panel_on['show_editor_panel'] === true, 'saving the types section with the toggle ticked stores bool true');
+$GLOBALS['wpslug_options'] = array_merge($tab_base, ['show_editor_panel' => true]);
+$panel_off = $admin030->validateOptions(['__wenpai_tab' => 'types', '__wenpai_tab_nonce' => 'nonce-wenpai_tab_wpslug_options_types', 'enabled_post_types' => ['post'], 'enabled_taxonomies' => ['category'], 'post_type_modes' => [], 'show_slug_column' => '1', 'show_editor_panel' => '0']);
+check($panel_off['show_editor_panel'] === false, 'unticking the toggle stores bool false');
+check((new WPSlug_Settings())->validateOptionsLegacy(['show_editor_panel' => 'true'])['show_editor_panel'] === true && (new WPSlug_Settings())->validateOptionsLegacy([])['show_editor_panel'] === false, 'legacy validation also casts show_editor_panel to bool, default off');
+$GLOBALS['wpslug_options'] = $tab_base;
 echo "PASS: {$tests} assertions\n";

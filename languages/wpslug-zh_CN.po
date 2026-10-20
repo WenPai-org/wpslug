@@ -1,8 +1,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPSlug 1.2.3\n"
-"Report-Msgid-Bugs-To: https://wpcy.com/support\n"
-"POT-Creation-Date: 2026-10-19T10:37:24+00:00\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wpslug-"
+"settings-030\n"
+"POT-Creation-Date: 2026-10-20T03:12:38+00:00\n"
 "PO-Revision-Date: 2026-10-19 18:50+0800\n"
 "Last-Translator: WenPai Translation Team\n"
 "Language-Team: Chinese (Simplified)\n"
@@ -22,7 +23,7 @@ msgstr ""
 "X-Poedit-WPHeader: wpslug.php\n"
 
 #. Plugin Name of the plugin
-#: wpslug.php includes/class-wpslug-admin.php:671
+#: wpslug.php includes/class-wpslug-admin.php:662
 msgid "WPSlug"
 msgstr "文派素格"
 
@@ -44,235 +45,235 @@ msgstr "具有中文拼音支持和 SEO 优化的高级别名管理插件。"
 msgid "WPCY.COM"
 msgstr "WPCY.COM"
 
-#: includes/class-wpslug-admin.php:57 includes/class-wpslug-admin.php:309
+#: includes/class-wpslug-admin.php:56 includes/class-wpslug-admin.php:294
 msgid "You do not have sufficient permissions to access this page."
 msgstr "您没有足够的权限访问此页面。"
 
-#: includes/class-wpslug-admin.php:85 templates/admin/page.php:40
-#: templates/admin/page.php:115
+#: includes/class-wpslug-admin.php:84 templates/admin/page.php:40
+#: templates/admin/page.php:116
 msgid "设置"
 msgstr "设置"
 
-#: includes/class-wpslug-admin.php:135 includes/class-wpslug-admin.php:143
-#: includes/class-wpslug-admin.php:296 includes/class-wpslug-core.php:427
+#: includes/class-wpslug-admin.php:120 includes/class-wpslug-admin.php:128
+#: includes/class-wpslug-admin.php:281 includes/class-wpslug-core.php:427
 msgid "Slug"
 msgstr "别名"
 
-#: includes/class-wpslug-admin.php:136 includes/class-wpslug-admin.php:142
+#: includes/class-wpslug-admin.php:121 includes/class-wpslug-admin.php:127
 msgid "WPSlug Settings"
 msgstr "文派别名设置"
 
-#: includes/class-wpslug-admin.php:197
+#: includes/class-wpslug-admin.php:182
 msgid ""
 "WPMind quota or budget was exceeded while generating a slug. WPSlug fell "
 "back to local pinyin so the save was not blocked."
 msgstr "生成别名时 WPMind 额度或预算不足。文派素格已回退本地拼音，保存未中断。"
 
 #. translators: %s: WPMind settings URL.
-#: includes/class-wpslug-admin.php:204
+#: includes/class-wpslug-admin.php:189
 #, php-format
 msgid "Top up credits or switch to your own API key in %s."
 msgstr "请在 %s 充值积分，或改填自己的 API 密钥。"
 
-#: includes/class-wpslug-admin.php:209
+#: includes/class-wpslug-admin.php:194
 msgid "WPMind settings"
 msgstr "WPMind 设置"
 
-#: includes/class-wpslug-admin.php:286 includes/class-wpslug-admin.php:606
+#: includes/class-wpslug-admin.php:271 includes/class-wpslug-admin.php:597
 msgid "Preview"
 msgstr "预览"
 
-#: includes/class-wpslug-admin.php:287
+#: includes/class-wpslug-admin.php:272
 msgid "Test your conversion settings with live preview."
 msgstr "通过实时预览测试您的转换设置。"
 
-#: includes/class-wpslug-admin.php:292
+#: includes/class-wpslug-admin.php:277
 msgid "原文"
 msgstr "原文"
 
-#: includes/class-wpslug-admin.php:293
+#: includes/class-wpslug-admin.php:278
 msgid "Enter text to preview conversion..."
 msgstr "输入文本以预览转换..."
 
-#: includes/class-wpslug-admin.php:300
+#: includes/class-wpslug-admin.php:285
 msgid "不写进文章。输入后直接显示。"
 msgstr "不写进文章。输入后直接显示。"
 
-#: includes/class-wpslug-admin.php:331
+#: includes/class-wpslug-admin.php:316
 msgid "Pinyin"
 msgstr "拼音"
 
-#: includes/class-wpslug-admin.php:333
+#: includes/class-wpslug-admin.php:318
 msgid "Configure Chinese characters to Pinyin romanization."
 msgstr "配置中文字符转换到拼音。"
 
-#: includes/class-wpslug-admin.php:336
+#: includes/class-wpslug-admin.php:321
 msgid "Transliteration"
 msgstr "转写"
 
-#: includes/class-wpslug-admin.php:338
+#: includes/class-wpslug-admin.php:323
 msgid "Convert foreign scripts (Cyrillic, Arabic, Greek) to Latin alphabet."
 msgstr "将外文字符（西里尔、阿拉伯、希腊）转换为拉丁字母。"
 
-#: includes/class-wpslug-admin.php:341
+#: includes/class-wpslug-admin.php:326
 msgid "Translation"
 msgstr "翻译"
 
-#: includes/class-wpslug-admin.php:343
+#: includes/class-wpslug-admin.php:328
 msgid "Use online translation services to convert text to English slugs."
 msgstr "使用在线翻译服务将文本转换为英文别名。"
 
-#: includes/class-wpslug-admin.php:346
+#: includes/class-wpslug-admin.php:331
 msgid "SEO Optimization"
 msgstr "SEO 优化"
 
-#: includes/class-wpslug-admin.php:348
+#: includes/class-wpslug-admin.php:333
 msgid ""
 "Optimize slugs for better search engine performance and user experience."
 msgstr "优化别名以获得更好的搜索引擎性能和用户体验。"
 
-#: includes/class-wpslug-admin.php:351
+#: includes/class-wpslug-admin.php:336
 msgid "Media Files"
 msgstr "媒体文件"
 
-#: includes/class-wpslug-admin.php:353
+#: includes/class-wpslug-admin.php:338
 msgid "Configure how media file names are handled during upload."
 msgstr "配置上传期间如何处理媒体文件名。"
 
-#: includes/class-wpslug-admin.php:356
+#: includes/class-wpslug-admin.php:341
 msgid "Content Types"
 msgstr "内容类型"
 
-#: includes/class-wpslug-admin.php:358
+#: includes/class-wpslug-admin.php:343
 msgid "哪些文章类型和分类法参与转换。"
 msgstr "哪些文章类型和分类法参与转换。"
 
-#: includes/class-wpslug-admin.php:430 includes/class-wpslug-admin.php:435
+#: includes/class-wpslug-admin.php:415 includes/class-wpslug-admin.php:420
 msgid "Get API Key"
 msgstr "获取 API 密钥"
 
-#: includes/class-wpslug-admin.php:494
+#: includes/class-wpslug-admin.php:480
 msgid "WP Slug Plugin Active"
 msgstr "文派素格（WP Slug）插件已激活"
 
-#: includes/class-wpslug-admin.php:498
+#: includes/class-wpslug-admin.php:484
 msgid "Your slugs are automatically converted based on your WP Slug settings."
 msgstr "您的别名根据您的文派素格（WP Slug）设置自动转换。"
 
-#: includes/class-wpslug-admin.php:505
+#: includes/class-wpslug-admin.php:491
 msgid "Configure WP Slug"
 msgstr "配置 WP Slug"
 
-#: includes/class-wpslug-admin.php:607
+#: includes/class-wpslug-admin.php:598
 msgid "Converting..."
 msgstr "转换中..."
 
-#: includes/class-wpslug-admin.php:608 includes/class-wpslug-admin.php:716
+#: includes/class-wpslug-admin.php:599 includes/class-wpslug-admin.php:707
 msgid "Please enter some text to preview."
 msgstr "请输入一些文本以预览。"
 
-#: includes/class-wpslug-admin.php:609 includes/class-wpslug-admin.php:734
+#: includes/class-wpslug-admin.php:600 includes/class-wpslug-admin.php:725
 msgid "Conversion failed. Please check your settings."
 msgstr "转换失败。请检查您的设置。"
 
-#: includes/class-wpslug-admin.php:672 includes/class-wpslug-admin.php:842
+#: includes/class-wpslug-admin.php:663 includes/class-wpslug-admin.php:833
 msgid "用 AI 生成"
 msgstr "用 AI 生成"
 
-#: includes/class-wpslug-admin.php:673 includes/class-wpslug-admin.php:845
+#: includes/class-wpslug-admin.php:664 includes/class-wpslug-admin.php:836
 msgid "用语义拼音"
 msgstr "用语义拼音"
 
-#: includes/class-wpslug-admin.php:674 includes/class-wpslug-admin.php:855
+#: includes/class-wpslug-admin.php:665 includes/class-wpslug-admin.php:846
 msgid "应用到固定链接"
 msgstr "应用到固定链接"
 
-#: includes/class-wpslug-admin.php:675
+#: includes/class-wpslug-admin.php:666
 msgid "生成中…"
 msgstr "生成中…"
 
-#: includes/class-wpslug-admin.php:676 includes/class-wpslug-admin.php:908
+#: includes/class-wpslug-admin.php:667 includes/class-wpslug-admin.php:899
 msgid "请先填写标题。"
 msgstr "请先填写标题。"
 
-#: includes/class-wpslug-admin.php:677 includes/class-wpslug-admin.php:849
+#: includes/class-wpslug-admin.php:668 includes/class-wpslug-admin.php:840
 msgid "预览"
 msgstr "预览"
 
-#: includes/class-wpslug-admin.php:678
+#: includes/class-wpslug-admin.php:669
 msgid "已写入固定链接，保存后生效。"
 msgstr "已写入固定链接，保存后生效。"
 
-#: includes/class-wpslug-admin.php:679 includes/class-wpslug-admin.php:924
-#: includes/class-wpslug-admin.php:940
+#: includes/class-wpslug-admin.php:670 includes/class-wpslug-admin.php:915
+#: includes/class-wpslug-admin.php:931
 msgid "生成失败，已可改用本地拼音或稍后重试。"
 msgstr "生成失败，已可改用本地拼音或稍后重试。"
 
-#: includes/class-wpslug-admin.php:680 includes/class-wpslug-admin.php:834
+#: includes/class-wpslug-admin.php:671 includes/class-wpslug-admin.php:825
 msgid "未启用 WPMind 时将回退本地拼音。"
 msgstr "未启用 WPMind 时将回退本地拼音。"
 
-#: includes/class-wpslug-admin.php:684 includes/class-wpslug-admin.php:829
+#: includes/class-wpslug-admin.php:675 includes/class-wpslug-admin.php:820
 msgid "先预览，确认后再写入。不会在自动保存时静默覆盖。"
 msgstr "先预览，确认后再写入。不会在自动保存时静默覆盖。"
 
-#: includes/class-wpslug-admin.php:697
+#: includes/class-wpslug-admin.php:688
 msgid "You are not allowed to manage WPSlug settings."
 msgstr "你没有权限管理文派素格设置。"
 
-#: includes/class-wpslug-admin.php:769
+#: includes/class-wpslug-admin.php:760
 msgid "Could not connect to Google Translate. Please check the key."
 msgstr "暂时无法连接 Google 翻译，请检查密钥。"
 
-#: includes/class-wpslug-admin.php:771 includes/class-wpslug-settings.php:808
+#: includes/class-wpslug-admin.php:762 includes/class-wpslug-settings.php:813
 msgid "Enter the API key first."
 msgstr "先填写 API 密钥。"
 
-#: includes/class-wpslug-admin.php:774
+#: includes/class-wpslug-admin.php:765
 msgid "Could not connect to Baidu Translate. Please check the key."
 msgstr "暂时无法连接百度翻译，请检查密钥。"
 
-#: includes/class-wpslug-admin.php:776 includes/class-wpslug-settings.php:820
+#: includes/class-wpslug-admin.php:767 includes/class-wpslug-settings.php:825
 msgid "Enter the App ID and Secret Key first."
 msgstr "先填写 App ID 和密钥。"
 
-#: includes/class-wpslug-admin.php:779
+#: includes/class-wpslug-admin.php:770
 msgid "Could not run the test. Please choose a translation service first."
 msgstr "暂时无法测试，请先选择翻译服务。"
 
-#: includes/class-wpslug-admin.php:799
+#: includes/class-wpslug-admin.php:790
 msgid "Connected."
 msgstr "连接正常。"
 
-#: includes/class-wpslug-admin.php:827
+#: includes/class-wpslug-admin.php:818
 msgid "WPSlug 预览"
 msgstr "文派素格预览"
 
-#: includes/class-wpslug-admin.php:861
+#: includes/class-wpslug-admin.php:852
 msgid "Disable automatic slug conversion for this post"
 msgstr "禁用此文章的自动别名转换"
 
-#: includes/class-wpslug-admin.php:891
+#: includes/class-wpslug-admin.php:882
 msgid "无权编辑此文章。"
 msgstr "无权编辑此文章。"
 
-#: includes/class-wpslug-admin.php:901
+#: includes/class-wpslug-admin.php:892
 msgid "无权生成 slug 预览。"
 msgstr "无权生成别名预览。"
 
 #. translators: %s: active conversion mode label.
-#: includes/class-wpslug-admin.php:958
+#: includes/class-wpslug-admin.php:949
 #, php-format
 msgid "Convert Slugs (%s)"
 msgstr "转换别名（%s）"
 
 #. translators: %d: number of converted slugs.
-#: includes/class-wpslug-admin.php:1024
+#: includes/class-wpslug-admin.php:1015
 #, php-format
 msgid "Successfully converted %d slug(s)."
 msgstr "成功转换了 %d 个别名。"
 
-#: includes/class-wpslug-admin.php:1027
+#: includes/class-wpslug-admin.php:1018
 msgid ""
 "Bulk Convert is an explicit migration: it rewrites selected posts now and "
 "may consume WPMind quota when AI modes are active."
@@ -337,496 +338,497 @@ msgstr "不适用"
 msgid "Error"
 msgstr "错误"
 
-#: includes/class-wpslug-settings.php:146
+#: includes/class-wpslug-settings.php:150
 msgid "On"
 msgstr "已开启"
 
-#: includes/class-wpslug-settings.php:147
+#: includes/class-wpslug-settings.php:151
 msgid "Off"
 msgstr "未开启"
 
-#: includes/class-wpslug-settings.php:148
+#: includes/class-wpslug-settings.php:152
 msgid "A value is saved and is not shown for security. Leave empty to keep it."
 msgstr "已保存一个值，出于安全不会显示。留空表示不修改。"
 
-#: includes/class-wpslug-settings.php:149
+#: includes/class-wpslug-settings.php:153
 msgid "Not filled in yet."
 msgstr "还没有填写。"
 
-#: includes/class-wpslug-settings.php:150
+#: includes/class-wpslug-settings.php:154
 msgid "Clear the saved value"
 msgstr "清除已保存的值"
 
-#: includes/class-wpslug-settings.php:151 templates/admin/page.php:19
+#: includes/class-wpslug-settings.php:155 templates/admin/page.php:19
 msgid "Settings saved."
 msgstr "设置已保存。"
 
 #. translators: %d: number of settings that were not saved.
-#: includes/class-wpslug-settings.php:153
+#: includes/class-wpslug-settings.php:157
 #, php-format
 msgid "Could not save %d settings. Please follow the hint under each field."
 msgstr "暂时无法保存 %d 项设置，请按字段下的提示修改。"
 
-#: includes/class-wpslug-settings.php:154
+#: includes/class-wpslug-settings.php:158
 msgid "This value is not valid. The previous setting was kept."
 msgstr "这一项的值无效，已保留原来的设置。"
 
-#: includes/class-wpslug-settings.php:155
+#: includes/class-wpslug-settings.php:159
 msgid "Saving…"
 msgstr "正在保存…"
 
-#: includes/class-wpslug-settings.php:156
+#: includes/class-wpslug-settings.php:160
 msgid "The other settings were saved."
 msgstr "其余设置已保存。"
 
 #. translators: %d: total number of fields with errors.
-#: includes/class-wpslug-settings.php:158
+#: includes/class-wpslug-settings.php:162
 #, php-format
 msgid "and %d more"
 msgstr "等 %d 项"
 
-#: includes/class-wpslug-settings.php:159
+#: includes/class-wpslug-settings.php:163
 msgid "Follow the global setting"
 msgstr "跟随全局设置"
 
 #. translators: %s: what would be listed, e.g. post types.
-#: includes/class-wpslug-settings.php:161
+#: includes/class-wpslug-settings.php:165
 #, php-format
 msgid "No %s to choose from yet."
 msgstr "还没有可选的%s。"
 
 #. translators: 1: hidden tab label, 2: first tab label.
-#: includes/class-wpslug-settings.php:163
+#: includes/class-wpslug-settings.php:167
 #, php-format
 msgid ""
 "The current mode does not use the %1$s settings, so you are back on %2$s."
 msgstr "当前模式不需要%1$s的设置，已切回%2$s。"
 
-#: includes/class-wpslug-settings.php:164
+#: includes/class-wpslug-settings.php:168
 msgid "Working"
 msgstr "正在处理"
 
-#: includes/class-wpslug-settings.php:165
+#: includes/class-wpslug-settings.php:169
 msgid "Done."
 msgstr "已完成。"
 
-#: includes/class-wpslug-settings.php:166
+#: includes/class-wpslug-settings.php:170
 msgid "Could not finish the action. Please try again later."
 msgstr "暂时无法完成操作，请稍后再试。"
 
-#: includes/class-wpslug-settings.php:167
+#: includes/class-wpslug-settings.php:171
 msgid ""
 "Could not save because the page has expired. Please reload it and try again."
 msgstr "暂时无法保存，页面已过期，请刷新后再试。"
 
-#: includes/class-wpslug-settings.php:168
+#: includes/class-wpslug-settings.php:172
 msgid "Could not finish the action. Please reload the page and try again."
 msgstr "暂时无法完成操作，请刷新页面后再试。"
 
-#: includes/class-wpslug-settings.php:169
+#: includes/class-wpslug-settings.php:173 templates/admin/page.php:50
+#: templates/admin/page.php:413
 msgid "(opens in a new tab)"
 msgstr "（在新标签页打开）"
 
-#: includes/class-wpslug-settings.php:170
+#: includes/class-wpslug-settings.php:174
 msgid "Could not save the key. Please enter a single-line value."
 msgstr "暂时无法保存密钥，请填写单行的值。"
 
-#: includes/class-wpslug-settings.php:332
-#: includes/class-wpslug-settings.php:542 templates/admin/page.php:286
-#: templates/admin/page.php:332
+#: includes/class-wpslug-settings.php:337
+#: includes/class-wpslug-settings.php:547 templates/admin/page.php:287
+#: templates/admin/page.php:333
 msgid "Local pinyin"
 msgstr "本地拼音"
 
-#: includes/class-wpslug-settings.php:336
-#: includes/class-wpslug-settings.php:549 templates/admin/page.php:338
+#: includes/class-wpslug-settings.php:341
+#: includes/class-wpslug-settings.php:554 templates/admin/page.php:339
 msgid "Semantic pinyin (XinSi AI)"
 msgstr "语义拼音（心思 AI）"
 
-#: includes/class-wpslug-settings.php:341
+#: includes/class-wpslug-settings.php:346
 msgid "Semantic pinyin (requires WenPai XinSi)"
 msgstr "语义拼音（需要文派心思）"
 
-#: includes/class-wpslug-settings.php:347
-#: includes/class-wpslug-settings.php:541 templates/admin/page.php:287
-#: templates/admin/page.php:334
+#: includes/class-wpslug-settings.php:352
+#: includes/class-wpslug-settings.php:546 templates/admin/page.php:288
+#: templates/admin/page.php:335
 msgid "Multi-language translation"
 msgstr "多语言翻译"
 
-#: includes/class-wpslug-settings.php:348 templates/admin/page.php:288
-#: templates/admin/page.php:336
+#: includes/class-wpslug-settings.php:353 templates/admin/page.php:289
+#: templates/admin/page.php:337
 msgid "Foreign Language Transliteration"
 msgstr "外文转写"
 
-#: includes/class-wpslug-settings.php:359
+#: includes/class-wpslug-settings.php:364
 msgid "Basic Character Mapping"
 msgstr "基础字符映射"
 
-#: includes/class-wpslug-settings.php:363
+#: includes/class-wpslug-settings.php:368
 msgid "iconv Transliteration"
 msgstr "iconv 转写"
 
-#: includes/class-wpslug-settings.php:367
+#: includes/class-wpslug-settings.php:372
 msgid "PHP Intl Extension"
 msgstr "PHP Intl 扩展"
 
-#: includes/class-wpslug-settings.php:376
+#: includes/class-wpslug-settings.php:381
 msgid "None"
 msgstr "无"
 
-#: includes/class-wpslug-settings.php:377
+#: includes/class-wpslug-settings.php:382
 msgid "Google Translate"
 msgstr "谷歌翻译"
 
-#: includes/class-wpslug-settings.php:378
+#: includes/class-wpslug-settings.php:383
 msgid "Baidu Translate"
 msgstr "百度翻译"
 
-#: includes/class-wpslug-settings.php:385
+#: includes/class-wpslug-settings.php:390
 msgid "XinSi AI (Recommended)"
 msgstr "心思 AI（推荐）"
 
-#: includes/class-wpslug-settings.php:393
+#: includes/class-wpslug-settings.php:398
 msgid "WenPai XinSi (WPMind) (Not Configured)"
 msgstr "文派心思（WPMind）（未配置）"
 
-#: includes/class-wpslug-settings.php:458
+#: includes/class-wpslug-settings.php:463
 msgid "Auto Detect"
 msgstr "自动检测"
 
-#: includes/class-wpslug-settings.php:459
+#: includes/class-wpslug-settings.php:464
 msgid "Chinese (Simplified)"
 msgstr "中文（简体）"
 
-#: includes/class-wpslug-settings.php:460
+#: includes/class-wpslug-settings.php:465
 msgid "Chinese (Traditional)"
 msgstr "中文（繁体）"
 
-#: includes/class-wpslug-settings.php:461
+#: includes/class-wpslug-settings.php:466
 msgid "English"
 msgstr "英语"
 
-#: includes/class-wpslug-settings.php:462
+#: includes/class-wpslug-settings.php:467
 msgid "Spanish"
 msgstr "西班牙语"
 
-#: includes/class-wpslug-settings.php:463
+#: includes/class-wpslug-settings.php:468
 msgid "French"
 msgstr "法语"
 
-#: includes/class-wpslug-settings.php:464
+#: includes/class-wpslug-settings.php:469
 msgid "German"
 msgstr "德语"
 
-#: includes/class-wpslug-settings.php:465
+#: includes/class-wpslug-settings.php:470
 msgid "Japanese"
 msgstr "日语"
 
-#: includes/class-wpslug-settings.php:466
+#: includes/class-wpslug-settings.php:471
 msgid "Korean"
 msgstr "韩语"
 
-#: includes/class-wpslug-settings.php:467
+#: includes/class-wpslug-settings.php:472
 msgid "Russian"
 msgstr "俄语"
 
-#: includes/class-wpslug-settings.php:468
+#: includes/class-wpslug-settings.php:473
 msgid "Arabic"
 msgstr "阿拉伯语"
 
-#: includes/class-wpslug-settings.php:469
+#: includes/class-wpslug-settings.php:474
 msgid "Italian"
 msgstr "意大利语"
 
-#: includes/class-wpslug-settings.php:470
+#: includes/class-wpslug-settings.php:475
 msgid "Portuguese"
 msgstr "葡萄牙语"
 
-#: includes/class-wpslug-settings.php:471
+#: includes/class-wpslug-settings.php:476
 msgid "Dutch"
 msgstr "荷兰语"
 
-#: includes/class-wpslug-settings.php:472
+#: includes/class-wpslug-settings.php:477
 msgid "Polish"
 msgstr "波兰语"
 
-#: includes/class-wpslug-settings.php:473
+#: includes/class-wpslug-settings.php:478
 msgid "Turkish"
 msgstr "土耳其语"
 
-#: includes/class-wpslug-settings.php:474
+#: includes/class-wpslug-settings.php:479
 msgid "Swedish"
 msgstr "瑞典语"
 
-#: includes/class-wpslug-settings.php:475
+#: includes/class-wpslug-settings.php:480
 msgid "Danish"
 msgstr "丹麦语"
 
-#: includes/class-wpslug-settings.php:476
+#: includes/class-wpslug-settings.php:481
 msgid "Norwegian"
 msgstr "挪威语"
 
-#: includes/class-wpslug-settings.php:477
+#: includes/class-wpslug-settings.php:482
 msgid "Finnish"
 msgstr "芬兰语"
 
-#: includes/class-wpslug-settings.php:478
+#: includes/class-wpslug-settings.php:483
 msgid "Czech"
 msgstr "捷克语"
 
-#: includes/class-wpslug-settings.php:479
+#: includes/class-wpslug-settings.php:484
 msgid "Hungarian"
 msgstr "匈牙利语"
 
-#: includes/class-wpslug-settings.php:480
+#: includes/class-wpslug-settings.php:485
 msgid "Romanian"
 msgstr "罗马尼亚语"
 
-#: includes/class-wpslug-settings.php:481
+#: includes/class-wpslug-settings.php:486
 msgid "Bulgarian"
 msgstr "保加利亚语"
 
-#: includes/class-wpslug-settings.php:482
+#: includes/class-wpslug-settings.php:487
 msgid "Croatian"
 msgstr "克罗地亚语"
 
-#: includes/class-wpslug-settings.php:483
+#: includes/class-wpslug-settings.php:488
 msgid "Slovak"
 msgstr "斯洛伐克语"
 
-#: includes/class-wpslug-settings.php:484
+#: includes/class-wpslug-settings.php:489
 msgid "Slovenian"
 msgstr "斯洛文尼亚语"
 
-#: includes/class-wpslug-settings.php:485
+#: includes/class-wpslug-settings.php:490
 msgid "Estonian"
 msgstr "爱沙尼亚语"
 
-#: includes/class-wpslug-settings.php:486
+#: includes/class-wpslug-settings.php:491
 msgid "Latvian"
 msgstr "拉脱维亚语"
 
-#: includes/class-wpslug-settings.php:487
+#: includes/class-wpslug-settings.php:492
 msgid "Lithuanian"
 msgstr "立陶宛语"
 
-#: includes/class-wpslug-settings.php:488
+#: includes/class-wpslug-settings.php:493
 msgid "Maltese"
 msgstr "马耳他语"
 
-#: includes/class-wpslug-settings.php:489
+#: includes/class-wpslug-settings.php:494
 msgid "Greek"
 msgstr "希腊语"
 
-#: includes/class-wpslug-settings.php:490
+#: includes/class-wpslug-settings.php:495
 msgid "Welsh"
 msgstr "威尔士语"
 
-#: includes/class-wpslug-settings.php:540
+#: includes/class-wpslug-settings.php:545
 msgid "Use global conversion mode"
 msgstr "跟随全局转换模式"
 
-#: includes/class-wpslug-settings.php:658
+#: includes/class-wpslug-settings.php:663
 msgid "Invalid import data format."
 msgstr "无效的导入数据格式。"
 
-#: includes/class-wpslug-settings.php:683
+#: includes/class-wpslug-settings.php:688
 msgid "Failed to update options."
 msgstr "更新选项失败。"
 
-#: includes/class-wpslug-settings.php:728
+#: includes/class-wpslug-settings.php:733
 msgid ""
 "Not available with first-letter pinyin. Switch to full pinyin to turn it on."
 msgstr "首字母格式下不能用，改成完整拼音后可开启。"
 
-#: includes/class-wpslug-settings.php:734
+#: includes/class-wpslug-settings.php:739
 msgid "SEO optimization is off. Turn it on to use this."
 msgstr "SEO 优化未开启，开启后可用。"
 
-#: includes/class-wpslug-settings.php:735
+#: includes/class-wpslug-settings.php:740
 msgid "Stop word removal is off. Turn it on to use this."
 msgstr "删除停用词未开启，开启后可用。"
 
-#: includes/class-wpslug-settings.php:741
+#: includes/class-wpslug-settings.php:746
 msgid ""
 "Automatic file name conversion is disabled. Turn off the switch above to use "
 "this."
 msgstr "已禁用自动文件名转换，关掉上面的开关后可用。"
 
-#: includes/class-wpslug-settings.php:748
+#: includes/class-wpslug-settings.php:753
 msgid "Test Connection"
 msgstr "测试连接"
 
-#: includes/class-wpslug-settings.php:751
+#: includes/class-wpslug-settings.php:756
 msgid "Testing"
 msgstr "正在测试"
 
-#: includes/class-wpslug-settings.php:770 templates/admin/page.php:154
-#: templates/admin/page.php:274 templates/admin/page.php:357
+#: includes/class-wpslug-settings.php:775 templates/admin/page.php:155
+#: templates/admin/page.php:275 templates/admin/page.php:358
 msgid "Enable Plugin"
 msgstr "启用插件"
 
-#: includes/class-wpslug-settings.php:771 templates/admin/page.php:155
+#: includes/class-wpslug-settings.php:776 templates/admin/page.php:156
 msgid "Enable automatic slug conversion for your content"
 msgstr "为您的内容启用自动别名转换"
 
-#: includes/class-wpslug-settings.php:775
+#: includes/class-wpslug-settings.php:780
 msgid "Conversion Mode"
 msgstr "转换模式"
 
-#: includes/class-wpslug-settings.php:776
+#: includes/class-wpslug-settings.php:781
 msgid ""
 "Choose local pinyin, semantic pinyin (XinSi AI), multi-language translation, "
 "or transliteration."
 msgstr "可选本地拼音、语义拼音（心思 AI）、多语言翻译或转写。"
 
-#: includes/class-wpslug-settings.php:781
+#: includes/class-wpslug-settings.php:786
 msgid "Auto Convert"
 msgstr "自动转换"
 
-#: includes/class-wpslug-settings.php:782
+#: includes/class-wpslug-settings.php:787
 msgid "Automatically convert slugs when saving posts and terms"
 msgstr "保存文章和分类项时自动转换别名"
 
-#: includes/class-wpslug-settings.php:786
+#: includes/class-wpslug-settings.php:791
 msgid "Convert on Publish Only"
 msgstr "仅发布时转换"
 
-#: includes/class-wpslug-settings.php:787
+#: includes/class-wpslug-settings.php:792
 msgid ""
 "Only convert post slugs when status is publish or future (skips draft "
 "autosaves)"
 msgstr "仅在状态为「已发布」或「定时」时转换文章别名（跳过草稿自动保存）"
 
-#: includes/class-wpslug-settings.php:791
+#: includes/class-wpslug-settings.php:796
 msgid "Force Lowercase"
 msgstr "强制小写"
 
-#: includes/class-wpslug-settings.php:792
+#: includes/class-wpslug-settings.php:797
 msgid "Convert all slugs to lowercase for consistency"
 msgstr "将所有别名转换为小写以保持一致性"
 
-#: includes/class-wpslug-settings.php:795
+#: includes/class-wpslug-settings.php:800
 msgid "Preserve English letters in mixed content"
 msgstr "在混合内容中保留英文字母"
 
-#: includes/class-wpslug-settings.php:796
+#: includes/class-wpslug-settings.php:801
 msgid "Preserve numbers in slugs"
 msgstr "在别名中保留数字"
 
-#: includes/class-wpslug-settings.php:797
+#: includes/class-wpslug-settings.php:802
 msgid "Pinyin Format"
 msgstr "拼音格式"
 
-#: includes/class-wpslug-settings.php:797
+#: includes/class-wpslug-settings.php:802
 msgid ""
 "Choose between full pinyin or first letters only. First letter mode creates "
 "very concise URLs and automatically disables SEO optimization."
 msgstr ""
 "选择完整拼音或仅首字母。首字母模式创建非常简洁的 URL 并自动禁用 SEO 优化。"
 
-#: includes/class-wpslug-settings.php:797
+#: includes/class-wpslug-settings.php:802
 msgid "Full Pinyin (ni-hao)"
 msgstr "完整拼音（ni-hao）"
 
-#: includes/class-wpslug-settings.php:797
+#: includes/class-wpslug-settings.php:802
 msgid "First Letter Only (n-h)"
 msgstr "仅首字母（n-h）"
 
-#: includes/class-wpslug-settings.php:798
+#: includes/class-wpslug-settings.php:803
 msgid "Word Separator"
 msgstr "单词分隔符"
 
-#: includes/class-wpslug-settings.php:798
+#: includes/class-wpslug-settings.php:803
 msgid "Choose the separator between pinyin words."
 msgstr "选择拼音单词之间的分隔符。"
 
-#: includes/class-wpslug-settings.php:798
+#: includes/class-wpslug-settings.php:803
 msgid "Hyphen (-)"
 msgstr "连字符（-）"
 
-#: includes/class-wpslug-settings.php:798
+#: includes/class-wpslug-settings.php:803
 msgid "Underscore (_)"
 msgstr "下划线（_）"
 
-#: includes/class-wpslug-settings.php:798
+#: includes/class-wpslug-settings.php:803
 msgid "No Separator"
 msgstr "无分隔符"
 
-#: includes/class-wpslug-settings.php:799
+#: includes/class-wpslug-settings.php:804
 msgid "Transliteration Method"
 msgstr "转写方法"
 
-#: includes/class-wpslug-settings.php:799
+#: includes/class-wpslug-settings.php:804
 msgid ""
 "Choose the transliteration method. iconv and Intl provide better accuracy if "
 "available."
 msgstr "选择转写方法。如果可用，iconv 和 Intl 提供更好的准确性。"
 
-#: includes/class-wpslug-settings.php:800
+#: includes/class-wpslug-settings.php:805
 msgid "Translation Service"
 msgstr "翻译服务"
 
-#: includes/class-wpslug-settings.php:800
+#: includes/class-wpslug-settings.php:805
 msgid ""
 "Choose translation service. Useful for non-English content to generate "
 "English slugs."
 msgstr "选择翻译服务。对于非英文内容生成英文别名很有用。"
 
-#: includes/class-wpslug-settings.php:801
+#: includes/class-wpslug-settings.php:806
 msgid "Source Language"
 msgstr "源语言"
 
-#: includes/class-wpslug-settings.php:801
+#: includes/class-wpslug-settings.php:806
 msgid "Source language for translation. Auto-detect is recommended."
 msgstr "翻译的源语言。推荐自动检测。"
 
-#: includes/class-wpslug-settings.php:802
+#: includes/class-wpslug-settings.php:807
 msgid "Target Language"
 msgstr "目标语言"
 
-#: includes/class-wpslug-settings.php:802
+#: includes/class-wpslug-settings.php:807
 msgid "Target language for translation. English is recommended for SEO."
 msgstr "翻译的目标语言。推荐英文以获得更好的 SEO 效果。"
 
-#: includes/class-wpslug-settings.php:805
+#: includes/class-wpslug-settings.php:810
 msgid "API Key"
 msgstr "API 密钥"
 
-#: includes/class-wpslug-settings.php:806
+#: includes/class-wpslug-settings.php:811
 msgid "Enter your Google Translate API key."
 msgstr "输入您的谷歌翻译 API 密钥。"
 
-#: includes/class-wpslug-settings.php:811
+#: includes/class-wpslug-settings.php:816
 msgid "App ID"
 msgstr "应用 ID"
 
-#: includes/class-wpslug-settings.php:812
+#: includes/class-wpslug-settings.php:817
 msgid "Enter your Baidu Translate App ID."
 msgstr "输入您的百度翻译应用 ID。"
 
-#: includes/class-wpslug-settings.php:817
+#: includes/class-wpslug-settings.php:822
 msgid "Secret Key"
 msgstr "密钥"
 
-#: includes/class-wpslug-settings.php:818
+#: includes/class-wpslug-settings.php:823
 msgid "Enter your Baidu Translate Secret Key."
 msgstr "输入您的百度翻译密钥。"
 
-#: includes/class-wpslug-settings.php:824
+#: includes/class-wpslug-settings.php:829
 msgid "Post Types"
 msgstr "文章类型"
 
-#: includes/class-wpslug-settings.php:825
+#: includes/class-wpslug-settings.php:830
 msgid ""
 "Select post types to apply slug conversion. If none are selected, every post "
 "type is converted."
 msgstr "选择要应用别名转换的文章类型。都不勾时，所有文章类型都会转换。"
 
-#: includes/class-wpslug-settings.php:830
+#: includes/class-wpslug-settings.php:835
 msgid "Default strategy per post type"
 msgstr "按文章类型的默认策略"
 
-#: includes/class-wpslug-settings.php:831
+#: includes/class-wpslug-settings.php:836
 msgid ""
 "Optional overrides per post type. Example: posts → multi-language "
 "translation; products → semantic pinyin (XinSi AI). Choose “use global” to "
@@ -835,129 +837,139 @@ msgstr ""
 "可按文章类型覆盖。例如：文章 → 多语言翻译；产品 → 语义拼音（心思 AI）。选「跟"
 "随全局」则使用上方的转换模式。"
 
-#: includes/class-wpslug-settings.php:833
+#: includes/class-wpslug-settings.php:838
 msgid "Post type"
 msgstr "文章类型"
 
-#: includes/class-wpslug-settings.php:834
+#: includes/class-wpslug-settings.php:839
 msgid "Default feature"
 msgstr "默认能力"
 
-#: includes/class-wpslug-settings.php:840
+#: includes/class-wpslug-settings.php:845
 msgid "Taxonomies"
 msgstr "分类法"
 
-#: includes/class-wpslug-settings.php:841
+#: includes/class-wpslug-settings.php:846
 msgid ""
 "Select taxonomies to apply slug conversion. If none are selected, every "
 "taxonomy is converted."
 msgstr "选择要应用别名转换的分类法。都不勾时，所有分类法都会转换。"
 
-#: includes/class-wpslug-settings.php:844
+#: includes/class-wpslug-settings.php:849
 msgid "Disable automatic file name conversion for uploaded media"
 msgstr "禁用上传媒体的自动文件名转换"
 
-#: includes/class-wpslug-settings.php:844
+#: includes/class-wpslug-settings.php:849
 msgid "When checked, media files will not be converted automatically."
 msgstr "选中时，媒体文件不会自动转换。"
 
-#: includes/class-wpslug-settings.php:845
+#: includes/class-wpslug-settings.php:850
 msgid "Media Conversion Mode"
 msgstr "媒体转换模式"
 
-#: includes/class-wpslug-settings.php:845
+#: includes/class-wpslug-settings.php:850
 msgid ""
 "Choose how media file names should be processed. MD5 creates unique hashes "
 "for file names."
 msgstr "选择如何处理媒体文件名。MD5 为文件名创建唯一哈希。"
 
-#: includes/class-wpslug-settings.php:846
+#: includes/class-wpslug-settings.php:851
 msgid "Media File Prefix"
 msgstr "媒体文件前缀"
 
-#: includes/class-wpslug-settings.php:846
+#: includes/class-wpslug-settings.php:851
 msgid ""
 "Optional prefix to add to all media file names (e.g., \"img-\", \"file-\")."
 msgstr "可选前缀添加到所有媒体文件名（例如：\"img-\"、\"file-\"）。"
 
-#: includes/class-wpslug-settings.php:847
+#: includes/class-wpslug-settings.php:852
 msgid "Always preserve the original file extension"
 msgstr "始终保留原始文件扩展名"
 
-#: includes/class-wpslug-settings.php:847
+#: includes/class-wpslug-settings.php:852
 msgid "Ensures file extensions are kept even when using MD5 conversion."
 msgstr "确保即使使用 MD5 转换也保留文件扩展名。"
 
-#: includes/class-wpslug-settings.php:848
+#: includes/class-wpslug-settings.php:853
 msgid "Show slug column in post and page lists for easy reference"
 msgstr "在文章和页面列表中显示别名列以便于参考"
 
-#: includes/class-wpslug-settings.php:849
+#: includes/class-wpslug-settings.php:854
+msgid "Show the slug preview panel in the block editor sidebar"
+msgstr "在区块编辑器侧栏显示别名预览面板"
+
+#: includes/class-wpslug-settings.php:854
+msgid ""
+"Adds the AI and semantic pinyin preview buttons to the block editor sidebar. "
+"When off, the panel and its script are not loaded."
+msgstr "在区块编辑器侧栏加入「用 AI 生成」和「用语义拼音」预览按钮。关闭时不显示面板，也不加载相关脚本。"
+
+#: includes/class-wpslug-settings.php:855
 msgid "Enable SEO-friendly slug optimization"
 msgstr "启用 SEO 友好的别名优化"
 
-#: includes/class-wpslug-settings.php:849
+#: includes/class-wpslug-settings.php:855
 msgid "Apply SEO best practices to generated slugs."
 msgstr "将 SEO 最佳实践应用于生成的别名。"
 
-#: includes/class-wpslug-settings.php:850
+#: includes/class-wpslug-settings.php:856
 msgid "Intelligently handle punctuation marks"
 msgstr "智能处理标点符号"
 
-#: includes/class-wpslug-settings.php:850
+#: includes/class-wpslug-settings.php:856
 msgid ""
 "Convert colons, semicolons, and other punctuation to hyphens or remove them."
 msgstr "将冒号、分号和其他标点符号转换为连字符或删除它们。"
 
-#: includes/class-wpslug-settings.php:851
+#: includes/class-wpslug-settings.php:857
 msgid "Optimize mixed language and number content"
 msgstr "优化混合语言和数字内容"
 
-#: includes/class-wpslug-settings.php:851
+#: includes/class-wpslug-settings.php:857
 msgid ""
 "Better handling of content mixing languages with numbers and English text."
 msgstr "更好地处理语言与数字和英文文本混合的内容。"
 
-#: includes/class-wpslug-settings.php:852
+#: includes/class-wpslug-settings.php:858
 msgid "Remove common stop words from slugs"
 msgstr "从别名中删除常见的停用词"
 
-#: includes/class-wpslug-settings.php:852
+#: includes/class-wpslug-settings.php:858
 msgid ""
 "Remove words like \"the\", \"a\", \"an\", \"and\", etc. to create cleaner "
 "slugs."
 msgstr "删除像\"the\"、\"a\"、\"an\"、\"and\"等词语以创建更清洁的别名。"
 
-#: includes/class-wpslug-settings.php:853
+#: includes/class-wpslug-settings.php:859
 msgid "Maximum Words"
 msgstr "最大单词数"
 
-#: includes/class-wpslug-settings.php:853
+#: includes/class-wpslug-settings.php:859
 msgid "Maximum number of words to keep in slug for SEO optimization."
 msgstr "为 SEO 优化在别名中保留的最大单词数。"
 
-#: includes/class-wpslug-settings.php:854
+#: includes/class-wpslug-settings.php:860
 msgid "Stop Words List"
 msgstr "停用词列表"
 
-#: includes/class-wpslug-settings.php:854
+#: includes/class-wpslug-settings.php:860
 msgid "Comma-separated list of stop words to remove from slugs."
 msgstr "从别名中删除的停用词的逗号分隔列表。"
 
-#: includes/class-wpslug-settings.php:896
+#: includes/class-wpslug-settings.php:902
 msgid "WenPai XinSi (WPMind)"
 msgstr "文派心思（WPMind）"
 
-#: includes/class-wpslug-settings.php:945
+#: includes/class-wpslug-settings.php:951
 msgid "Active"
 msgstr "已启用"
 
-#: includes/class-wpslug-settings.php:947
+#: includes/class-wpslug-settings.php:953
 msgid ""
 "WenPai XinSi (WPMind) is active. Credits and BYOK keys are managed there."
 msgstr "文派心思（WPMind）已启用。积分与自备密钥（BYOK）在心思里管理。"
 
-#: includes/class-wpslug-settings.php:948
+#: includes/class-wpslug-settings.php:954
 msgid ""
 "Use it for semantic pinyin (XinSi AI) and multi-language translation. If "
 "quota is exceeded or the provider fails, WPSlug falls back to local pinyin "
@@ -966,19 +978,19 @@ msgstr ""
 "用于语义拼音（心思 AI）与多语言翻译。额度不足或上游失败时，文派素格回退本地拼"
 "音，保存不会中断。"
 
-#: includes/class-wpslug-settings.php:952
+#: includes/class-wpslug-settings.php:958
 msgid "Open WenPai XinSi (WPMind) settings"
 msgstr "打开文派心思（WPMind）设置"
 
-#: includes/class-wpslug-settings.php:958
+#: includes/class-wpslug-settings.php:964
 msgid "Not active"
 msgstr "未启用"
 
-#: includes/class-wpslug-settings.php:960
+#: includes/class-wpslug-settings.php:966
 msgid "WenPai XinSi (WPMind) is not active or not configured."
 msgstr "文派心思（WPMind）未启用或未配置。"
 
-#: includes/class-wpslug-settings.php:961 templates/admin/page.php:165
+#: includes/class-wpslug-settings.php:967 templates/admin/page.php:166
 msgid ""
 "Install WenPai XinSi (WPMind) for semantic pinyin (XinSi AI) and multi-"
 "language translation. Until then, local pinyin remains available."
@@ -986,64 +998,64 @@ msgstr ""
 "安装文派心思（WPMind）以使用语义拼音（心思 AI）与多语言翻译；在此之前仍可使用"
 "本地拼音。"
 
-#: includes/class-wpslug-settings.php:965
+#: includes/class-wpslug-settings.php:971
 msgid "Learn more"
 msgstr "了解更多"
 
-#: includes/class-wpslug-settings.php:980
+#: includes/class-wpslug-settings.php:986
 msgid "插件内置组件转换"
 msgstr "插件内置组件转换"
 
-#: includes/class-wpslug-settings.php:981
+#: includes/class-wpslug-settings.php:987
 msgid "不够时用本地拼音"
 msgstr "不够时用本地拼音"
 
-#: includes/class-wpslug-settings.php:982
+#: includes/class-wpslug-settings.php:988
 msgid "翻译为目标语言"
 msgstr "翻译为目标语言"
 
-#: includes/class-wpslug-settings.php:983
+#: includes/class-wpslug-settings.php:989
 msgid "外文转拉丁字母"
 msgstr "外文转拉丁字母"
 
-#: includes/class-wpslug-settings.php:1156
+#: includes/class-wpslug-settings.php:1163
 msgid "Normal Conversion (same as content)"
 msgstr "普通转换（与内容相同）"
 
-#: includes/class-wpslug-settings.php:1157
+#: includes/class-wpslug-settings.php:1164
 msgid "MD5 Hash (generates unique hash)"
 msgstr "MD5 哈希（生成唯一哈希）"
 
-#: includes/class-wpslug-settings.php:1158
+#: includes/class-wpslug-settings.php:1165
 msgid "No Conversion (keep original)"
 msgstr "不转换（保持原样）"
 
-#: includes/class-wpslug-settings.php:1280
+#: includes/class-wpslug-settings.php:1287
 #: includes/class-wpslug-validator.php:211
 msgid "Google API key is required for Google Translate service."
 msgstr "谷歌翻译服务需要谷歌 API 密钥。"
 
-#: includes/class-wpslug-settings.php:1290
+#: includes/class-wpslug-settings.php:1297
 #: includes/class-wpslug-validator.php:215
 msgid "Baidu App ID and Secret Key are required for Baidu Translate service."
 msgstr "百度翻译服务需要百度应用 ID 和密钥。"
 
-#: includes/class-wpslug-settings.php:1299
+#: includes/class-wpslug-settings.php:1306
 #: includes/class-wpslug-validator.php:242
 msgid "PHP 7.4 or higher is required."
 msgstr "需要 PHP 7.4 或更高版本。"
 
-#: includes/class-wpslug-settings.php:1302
+#: includes/class-wpslug-settings.php:1309
 #: includes/class-wpslug-validator.php:246
 msgid "WordPress 6.0 or higher is required."
 msgstr "需要 WordPress 6.0 或更高版本。"
 
-#: includes/class-wpslug-settings.php:1308
+#: includes/class-wpslug-settings.php:1315
 #: includes/class-wpslug-validator.php:250
 msgid "PHP mbstring extension is required."
 msgstr "需要 PHP mbstring 扩展。"
 
-#: includes/class-wpslug-settings.php:1311
+#: includes/class-wpslug-settings.php:1318
 #: includes/class-wpslug-validator.php:254
 msgid "PHP JSON extension is required."
 msgstr "需要 PHP JSON 扩展。"
@@ -1060,17 +1072,17 @@ msgstr "WPMind 未配置。请在 WPMind 设置中进行配置。"
 msgid "重置前请先勾选确认。"
 msgstr "重置前请先勾选确认。"
 
-#: templates/admin/page.php:39 templates/admin/page.php:66
-#: templates/admin/page.php:309
+#: templates/admin/page.php:39 templates/admin/page.php:67
+#: templates/admin/page.php:310
 msgid "概览"
 msgstr "概览"
 
-#: templates/admin/page.php:41 templates/admin/page.php:225
-#: templates/admin/page.php:315
+#: templates/admin/page.php:41 templates/admin/page.php:226
+#: templates/admin/page.php:316
 msgid "工具"
 msgstr "工具"
 
-#: templates/admin/page.php:44 templates/admin/page.php:256
+#: templates/admin/page.php:44 templates/admin/page.php:257
 msgid "帮助"
 msgstr "帮助"
 
@@ -1078,175 +1090,175 @@ msgstr "帮助"
 msgid "反馈"
 msgstr "反馈"
 
-#: templates/admin/page.php:67
+#: templates/admin/page.php:68
 msgid "将标题改写成拼音或翻译别名，可按文章类型分别选用。"
 msgstr "将标题改写成拼音或翻译别名，可按文章类型分别选用。"
 
-#: templates/admin/page.php:75
+#: templates/admin/page.php:76
 msgid "转换还没开"
 msgstr "转换还没开"
 
-#: templates/admin/page.php:76
+#: templates/admin/page.php:77
 msgid "去设置里选拼音、心思或翻译。"
 msgstr "去设置里选拼音、心思或翻译。"
 
-#: templates/admin/page.php:79 templates/admin/page.php:278
+#: templates/admin/page.php:80 templates/admin/page.php:279
 msgid "去设置"
 msgstr "去设置"
 
-#: templates/admin/page.php:84
+#: templates/admin/page.php:85
 msgid "运行状态"
 msgstr "运行状态"
 
-#: templates/admin/page.php:88 templates/admin/page.php:326
+#: templates/admin/page.php:89 templates/admin/page.php:327
 msgid "转换模式"
 msgstr "转换模式"
 
-#: templates/admin/page.php:89
+#: templates/admin/page.php:90
 msgid "未启用。"
 msgstr "未启用。"
 
-#: templates/admin/page.php:91
+#: templates/admin/page.php:92
 msgid "已开启"
 msgstr "已开启"
 
-#: templates/admin/page.php:91
+#: templates/admin/page.php:92
 msgid "未开启"
 msgstr "未开启"
 
-#: templates/admin/page.php:96
+#: templates/admin/page.php:97
 msgid "文派心思"
 msgstr "文派心思"
 
-#: templates/admin/page.php:97
+#: templates/admin/page.php:98
 msgid "已接通。额度在心思，这里不做充值。"
 msgstr "已接通。额度在心思，这里不做充值。"
 
-#: templates/admin/page.php:97
+#: templates/admin/page.php:98
 msgid "实现智能语义化拼音和多语言翻译。"
 msgstr "实现智能语义化拼音和多语言翻译。"
 
-#: templates/admin/page.php:99
+#: templates/admin/page.php:100
 msgid "已安装"
 msgstr "已安装"
 
-#: templates/admin/page.php:99
+#: templates/admin/page.php:100
 msgid "未安装"
 msgstr "未安装"
 
-#: templates/admin/page.php:104
+#: templates/admin/page.php:105
 msgid "文章类型范围"
 msgstr "文章类型范围"
 
-#: templates/admin/page.php:116
+#: templates/admin/page.php:117
 msgid "一次只看一组。预览在这页下面。"
 msgstr "一次只看一组。预览在这页下面。"
 
-#: templates/admin/page.php:116
+#: templates/admin/page.php:117
 msgid "选好模式后，在下面直接看别名。"
 msgstr "选好模式后，在下面直接看别名。"
 
-#: templates/admin/page.php:120
+#: templates/admin/page.php:121
 msgid "简单"
 msgstr "简单"
 
-#: templates/admin/page.php:121
+#: templates/admin/page.php:122
 msgid "Advanced"
 msgstr "高级"
 
-#: templates/admin/page.php:173 templates/admin/page.php:203
+#: templates/admin/page.php:174 templates/admin/page.php:204
 msgid "Save Settings"
 msgstr "保存设置"
 
-#: templates/admin/page.php:226
+#: templates/admin/page.php:227
 msgid "本页可直接预览别名，不写进文章。重置是危险动作，要先勾选确认。"
 msgstr "本页可直接预览别名，不写进文章。重置是危险动作，要先勾选确认。"
 
-#: templates/admin/page.php:235 templates/admin/page.php:248
+#: templates/admin/page.php:236 templates/admin/page.php:249
 msgid "Reset to Defaults"
 msgstr "重置为默认值"
 
-#: templates/admin/page.php:236
+#: templates/admin/page.php:237
 msgid "把本插件的设置恢复为默认值，不可撤销。"
 msgstr "把本插件的设置恢复为默认值，不可撤销。"
 
-#: templates/admin/page.php:243
+#: templates/admin/page.php:244
 msgid "I confirm I want to restore this plugin's settings to their defaults"
 msgstr "我已确认要把本插件的设置恢复为默认值"
 
-#: templates/admin/page.php:244
+#: templates/admin/page.php:245
 msgid "这会清掉本插件的设置，不清文章别名。"
 msgstr "这会清掉本插件的设置，不清文章别名。"
 
-#: templates/admin/page.php:247
+#: templates/admin/page.php:248
 msgid "未勾选不能点。"
 msgstr "未勾选不能点。"
 
-#: templates/admin/page.php:257
+#: templates/admin/page.php:258
 msgid "新保存的标题按所选模式写成拉丁字母别名。"
 msgstr "新保存的标题按所选模式写成拉丁字母别名。"
 
-#: templates/admin/page.php:264
+#: templates/admin/page.php:265
 msgid "快速开始"
 msgstr "快速开始"
 
-#: templates/admin/page.php:265
+#: templates/admin/page.php:266
 msgid "首次配置按以下顺序完成。"
 msgstr "首次配置按以下顺序完成。"
 
 #. translators: %s: Enable Plugin label
-#: templates/admin/page.php:273
+#: templates/admin/page.php:274
 #, php-format
 msgid "打开「%s」"
 msgstr "打开「%s」"
 
-#: templates/admin/page.php:277
+#: templates/admin/page.php:278
 msgid "关掉后新保存的不再改，已经写进文章的别名不动。"
 msgstr "关掉后新保存的不再改，已经写进文章的别名不动。"
 
-#: templates/admin/page.php:281
+#: templates/admin/page.php:282
 msgid "选一种模式"
 msgstr "选一种模式"
 
 #. translators: 1: Local pinyin, 2: Multi-language translation, 3: Foreign Language Transliteration
-#: templates/admin/page.php:285
+#: templates/admin/page.php:286
 #, php-format
 msgid "%1$s、%2$s或%3$s。没装心思时没有语义拼音。"
 msgstr "%1$s、%2$s或%3$s。没装心思时没有语义拼音。"
 
-#: templates/admin/page.php:293
+#: templates/admin/page.php:294
 msgid "预览别名"
 msgstr "预览别名"
 
-#: templates/admin/page.php:294
+#: templates/admin/page.php:295
 msgid "设置页下面输入标题，立刻看到结果，不写进文章。"
 msgstr "设置页下面输入标题，立刻看到结果，不写进文章。"
 
-#: templates/admin/page.php:303
+#: templates/admin/page.php:304
 msgid "后台页面"
 msgstr "后台页面"
 
-#: templates/admin/page.php:304
+#: templates/admin/page.php:305
 msgid "概览、设置、工具各负责什么。"
 msgstr "概览、设置、工具各负责什么。"
 
-#: templates/admin/page.php:310
+#: templates/admin/page.php:311
 msgid "转换是否开启、心思是否装了、哪些文章类型会改别名。"
 msgstr "转换是否开启、心思是否装了、哪些文章类型会改别名。"
 
-#: templates/admin/page.php:311
+#: templates/admin/page.php:312
 msgid "设置 · 简单"
 msgstr "设置 · 简单"
 
-#: templates/admin/page.php:312
+#: templates/admin/page.php:313
 msgid "启用、转换模式、自动转换 / 仅发布时 / 强制小写。预览在这张表单下面。"
 msgstr "启用、转换模式、自动转换 / 仅发布时 / 强制小写。预览在这张表单下面。"
 
-#: templates/admin/page.php:313
+#: templates/admin/page.php:314
 msgid "设置 · 高级"
 msgstr "设置 · 高级"
 
-#: templates/admin/page.php:314
+#: templates/admin/page.php:315
 msgid ""
 "拼音、转写、翻译、SEO、媒体、内容类型。一次打开一组，没打开的保存时不会被改"
 "掉。"
@@ -1254,61 +1266,61 @@ msgstr ""
 "拼音、转写、翻译、SEO、媒体、内容类型。一次打开一组，没打开的保存时不会被改"
 "掉。"
 
-#: templates/admin/page.php:316
+#: templates/admin/page.php:317
 msgid "再留一份预览，以及重置。重置要先勾选确认。"
 msgstr "再留一份预览，以及重置。重置要先勾选确认。"
 
-#: templates/admin/page.php:317
+#: templates/admin/page.php:318
 msgid "文章列表"
 msgstr "文章列表"
 
-#: templates/admin/page.php:318
+#: templates/admin/page.php:319
 msgid "批量改已有内容在文章列表，不在工具页。"
 msgstr "批量改已有内容在文章列表，不在工具页。"
 
-#: templates/admin/page.php:327
+#: templates/admin/page.php:328
 msgid "按标题语言选。失败会退回本地拼音，保存不会中断。"
 msgstr "按标题语言选。失败会退回本地拼音，保存不会中断。"
 
-#: templates/admin/page.php:333
+#: templates/admin/page.php:334
 msgid "中文标题、不经过心思。没装心思时也用这个。"
 msgstr "中文标题、不经过心思。没装心思时也用这个。"
 
-#: templates/admin/page.php:335
+#: templates/admin/page.php:336
 msgid "标题要先译成另一种语言再写成别名。需要心思或自备翻译服务。"
 msgstr "标题要先译成另一种语言再写成别名。需要心思或自备翻译服务。"
 
-#: templates/admin/page.php:337
+#: templates/admin/page.php:338
 msgid "西里尔、阿拉伯、希腊等字母转成拉丁字母。"
 msgstr "西里尔、阿拉伯、希腊等字母转成拉丁字母。"
 
-#: templates/admin/page.php:339
+#: templates/admin/page.php:340
 msgid "装了心思才会出现这一项。"
 msgstr "装了心思才会出现这一项。"
 
-#: templates/admin/page.php:347
+#: templates/admin/page.php:348
 msgid "常见问题"
 msgstr "常见问题"
 
-#: templates/admin/page.php:348
+#: templates/admin/page.php:349
 msgid "关掉启用、预览、重置、批量。"
 msgstr "关掉启用、预览、重置、批量。"
 
 #. translators: %s: Enable Plugin label
-#: templates/admin/page.php:356
+#: templates/admin/page.php:357
 #, php-format
 msgid "关掉「%s」后，已经写进文章的别名会怎样？"
 msgstr "关掉「%s」后，已经写进文章的别名会怎样？"
 
-#: templates/admin/page.php:360
+#: templates/admin/page.php:361
 msgid "不动。新保存的不再改。模式和三项开关会立刻藏起来，保存过的值还在。"
 msgstr "不动。新保存的不再改。模式和三项开关会立刻藏起来，保存过的值还在。"
 
-#: templates/admin/page.php:361
+#: templates/admin/page.php:362
 msgid "预览会写进文章吗？"
 msgstr "预览会写进文章吗？"
 
-#: templates/admin/page.php:362
+#: templates/admin/page.php:363
 msgid ""
 "不会。设置页下面输入标题，立刻看到结果。启用关掉时，设置页这份跟着藏；工具页"
 "那份还在。"
@@ -1316,79 +1328,79 @@ msgstr ""
 "不会。设置页下面输入标题，立刻看到结果。启用关掉时，设置页这份跟着藏；工具页"
 "那份还在。"
 
-#: templates/admin/page.php:363
+#: templates/admin/page.php:364
 msgid "没装心思能用吗？"
 msgstr "没装心思能用吗？"
 
-#: templates/admin/page.php:364
+#: templates/admin/page.php:365
 msgid "能。用本地拼音。"
 msgstr "能。用本地拼音。"
 
-#: templates/admin/page.php:365
+#: templates/admin/page.php:366
 msgid "翻译或转写失败能保存吗？"
 msgstr "翻译或转写失败能保存吗？"
 
-#: templates/admin/page.php:366
+#: templates/admin/page.php:367
 msgid "能。退回本地拼音，保存不会中断。"
 msgstr "能。退回本地拼音，保存不会中断。"
 
-#: templates/admin/page.php:367
+#: templates/admin/page.php:368
 msgid "重置会清掉文章别名吗？"
 msgstr "重置会清掉文章别名吗？"
 
-#: templates/admin/page.php:368
+#: templates/admin/page.php:369
 msgid "不会。只清本插件选项。要先勾选确认。"
 msgstr "不会。只清本插件选项。要先勾选确认。"
 
-#: templates/admin/page.php:369
+#: templates/admin/page.php:370
 msgid "批量改已有内容在哪？"
 msgstr "批量改已有内容在哪？"
 
-#: templates/admin/page.php:370
+#: templates/admin/page.php:371
 msgid "文章列表。"
 msgstr "文章列表。"
 
-#: templates/admin/page.php:371
+#: templates/admin/page.php:372
 msgid "翻译密钥空着是什么意思？"
 msgstr "翻译密钥空着是什么意思？"
 
-#: templates/admin/page.php:372
+#: templates/admin/page.php:373
 msgid "不改已保存的值。页面上不会再显示密钥。"
 msgstr "不改已保存的值。页面上不会再显示密钥。"
 
-#: templates/admin/page.php:380
+#: templates/admin/page.php:381
 msgid "WP-CLI"
 msgstr "WP-CLI"
 
-#: templates/admin/page.php:381
+#: templates/admin/page.php:382
 msgid "在已激活插件的站点上可用。"
 msgstr "在已激活插件的站点上可用。"
 
-#: templates/admin/page.php:389
+#: templates/admin/page.php:390
 msgid "完整说明在文档站。不要在命令行里粘贴翻译密钥。"
 msgstr "完整说明在文档站。不要在命令行里粘贴翻译密钥。"
 
-#: templates/admin/page.php:396
+#: templates/admin/page.php:397
 msgid "需要更多帮助"
 msgstr "需要更多帮助"
 
-#: templates/admin/page.php:397
+#: templates/admin/page.php:398
 msgid "产品文档与工单支持请访问 wpcy.com。"
 msgstr "产品文档与工单支持请访问 wpcy.com。"
 
-#: templates/admin/page.php:401
+#: templates/admin/page.php:402
 msgid "打开文档"
 msgstr "打开文档"
 
-#: templates/admin/page.php:402
+#: templates/admin/page.php:403
 msgid "提交反馈"
 msgstr "提交反馈"
 
-#: templates/admin/page.php:411
+#: templates/admin/page.php:412
 msgid "文档"
 msgstr "文档"
 
-#: templates/admin/page.php:411
+#: templates/admin/page.php:412
 msgid "支持"
 msgstr "支持"
 
@@ -1402,17 +1414,17 @@ msgid ""
 "version."
 msgstr "文派素格需要 WordPress 6.0 或更高版本。请升级 WordPress。"
 
-#: wpslug.php:189
+#: wpslug.php:188
 msgid ""
 "WP Slug plugin requirements not met. Please check your PHP and WordPress "
 "versions."
 msgstr "文派素格（WP Slug）插件要求未满足。请检查您的 PHP 和 WordPress 版本。"
 
-#: wpslug.php:190 wpslug.php:210
+#: wpslug.php:189 wpslug.php:209
 msgid "Plugin Activation Error"
 msgstr "插件激活错误"
 
-#: wpslug.php:209
+#: wpslug.php:208
 msgid ""
 "An error occurred during plugin activation. Please check your server logs."
 msgstr "插件激活期间发生错误。请检查您的服务器日志。"

@@ -44,6 +44,10 @@ class WPSlug_Settings
             "media_file_prefix" => "",
             "preserve_media_extension" => true,
             "show_slug_column" => false,
+            // Block editor sidebar panel (「用 AI 生成」/「用语义拼音」). Off by
+            // default for new and existing installs: when off, its script and
+            // style are not enqueued at all (WPSlug_Admin::enqueueBlockEditorAssets).
+            "show_editor_panel" => false,
             "enable_seo_optimization" => true,
             "remove_stop_words" => true,
             "smart_punctuation" => true,
@@ -201,6 +205,7 @@ class WPSlug_Settings
                 case "disable_file_convert":
                 case "preserve_media_extension":
                 case "show_slug_column":
+                case "show_editor_panel":
                 case "enable_seo_optimization":
                 case "remove_stop_words":
                 case "smart_punctuation":
@@ -846,6 +851,7 @@ class WPSlug_Settings
             "media_file_prefix" => ["label" => __("Media File Prefix", "wpslug"), "desc" => __("Optional prefix to add to all media file names (e.g., \"img-\", \"file-\").", "wpslug"), "depends_on" => $media_on],
             "preserve_media_extension" => ["label" => __("Always preserve the original file extension", "wpslug"), "desc" => __("Ensures file extensions are kept even when using MD5 conversion.", "wpslug"), "depends_on" => $media_on],
             "show_slug_column" => ["label" => __("Show slug column in post and page lists for easy reference", "wpslug")],
+            "show_editor_panel" => ["label" => __("Show the slug preview panel in the block editor sidebar", "wpslug"), "desc" => __("Adds the AI and semantic pinyin preview buttons to the block editor sidebar. When off, the panel and its script are not loaded.", "wpslug")],
             "enable_seo_optimization" => ["label" => __("Enable SEO-friendly slug optimization", "wpslug"), "desc" => __("Apply SEO best practices to generated slugs.", "wpslug"), "depends_on" => ["mode" => "disable", "rules" => [$not_first_letter]]],
             "smart_punctuation" => ["label" => __("Intelligently handle punctuation marks", "wpslug"), "desc" => __("Convert colons, semicolons, and other punctuation to hyphens or remove them.", "wpslug"), "depends_on" => $seo_group],
             "mixed_content_optimization" => ["label" => __("Optimize mixed language and number content", "wpslug"), "desc" => __("Better handling of content mixing languages with numbers and English text.", "wpslug"), "depends_on" => $seo_group],
@@ -918,7 +924,7 @@ class WPSlug_Settings
             "translate" => ["translation_service", "translation_source_lang", "translation_target_lang", "google_api_key", "baidu_app_id", "baidu_secret_key"],
             "seo" => ["enable_seo_optimization", "smart_punctuation", "mixed_content_optimization", "remove_stop_words", "seo_max_words", "stop_words_list"],
             "media" => ["disable_file_convert", "media_conversion_mode", "media_file_prefix", "preserve_media_extension"],
-            "types" => ["enabled_post_types", "post_type_modes", "enabled_taxonomies", "show_slug_column"],
+            "types" => ["enabled_post_types", "post_type_modes", "enabled_taxonomies", "show_slug_column", "show_editor_panel"],
         ];
         $out = [];
         foreach ($map as $tab => $ids) {
@@ -1110,6 +1116,7 @@ class WPSlug_Settings
             "auto_convert" => $this->getOption("auto_convert"),
             "file_convert" => !$this->getOption("disable_file_convert"),
             "slug_column" => $this->getOption("show_slug_column"),
+            "editor_panel" => $this->getOption("show_editor_panel"),
             "seo_optimization" => $this->getOption("enable_seo_optimization"),
             "stop_words" => $this->getOption("remove_stop_words"),
             "smart_punctuation" => $this->getOption("smart_punctuation"),

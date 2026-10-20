@@ -16,11 +16,6 @@ if ( ! class_exists( 'Wenpai_Admin_Icons', false ) ) {
 	class Wenpai_Admin_Icons {
 
 		/**
-		 * @param string $name  Semantic key from icons/map.json.
-		 * @param string $class CSS class, default wenpai-ico.
-		 * @return string Safe HTML.
-		 */
-		/**
 		 * Lucide stroke icons (ISC). Multi-path; not Remix fill.
 		 *
 		 * @return array<string, list<string>>
@@ -36,7 +31,14 @@ if ( ! class_exists( 'Wenpai_Admin_Icons', false ) ) {
 			);
 		}
 
-		public static function svg( $name, $class = 'wenpai-ico' ) {
+		/**
+		 * Inline SVG markup for a semantic icon name.
+		 *
+		 * @param string $name  Semantic key from icons/map.json.
+		 * @param string $class CSS class, default wenpai-ico.
+		 * @return string Safe HTML.
+		 */
+		public static function svg( $name, $class = 'wenpai-ico' ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.classFound -- Public API; renaming would break PHP 8 named-argument callers.
 			$lucide = self::lucide_paths();
 			if ( isset( $lucide[ $name ] ) ) {
 				$inner = '';
@@ -45,8 +47,8 @@ if ( ! class_exists( 'Wenpai_Admin_Icons', false ) ) {
 				}
 				return '<svg class="' . esc_attr( $class ) . '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . $inner . '</svg>';
 			}
-			$dir = function_exists( 'wenpai_admin_ui_winner_dir' ) ? wenpai_admin_ui_winner_dir() : dirname( __DIR__ );
-			$file = $dir . '/icons/paths.php';
+			$dir   = function_exists( 'wenpai_admin_ui_winner_dir' ) ? wenpai_admin_ui_winner_dir() : dirname( __DIR__ );
+			$file  = $dir . '/icons/paths.php';
 			$paths = is_readable( $file ) ? include $file : array();
 			if ( ! is_array( $paths ) ) {
 				$paths = array();

@@ -109,7 +109,12 @@ class WPSlug_Validator {
             }
         }
         
-        return empty($validated) ? array('post', 'page') : $validated;
+        // Nothing ticked (only the form's empty sentinel) means every post type,
+        // as the field hint and isPostTypeEnabled() say. Only unknown names: keep the defaults.
+        if (empty($validated) && self::hasPicks($post_types)) {
+            return array('post', 'page');
+        }
+        return $validated;
     }
 
     /**
@@ -156,9 +161,30 @@ class WPSlug_Validator {
             }
         }
         
-        return empty($validated) ? array('category', 'post_tag') : $validated;
+        // Nothing ticked (only the form's empty sentinel) means every taxonomy,
+        // as the field hint and isTaxonomyEnabled() say. Only unknown names: keep the defaults.
+        if (empty($validated) && self::hasPicks($taxonomies)) {
+            return array('category', 'post_tag');
+        }
+        return $validated;
     }
     
+    /**
+     * Whether a submitted list has any non-empty entry (the form's empty
+     * sentinel does not count).
+     *
+     * @param array $list Submitted list.
+     * @return bool
+     */
+    private static function hasPicks(array $list) {
+        foreach ($list as $item) {
+            if (is_scalar($item) && '' !== (string) $item) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static function validateConversionMode($mode) {
         $valid_modes = array('pinyin', 'semantic_pinyin', 'transliteration', 'translation');
         return self::validateSelect($mode, $valid_modes, 'pinyin');

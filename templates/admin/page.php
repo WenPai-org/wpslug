@@ -14,8 +14,9 @@ $wpslug_modes = $this->settings->getConversionModes();
 $wpslug_notice = "";
 $wpslug_level = "";
 // phpcs:disable WordPress.Security.NonceVerification.Recommended
-if (isset($_GET["settings-updated"]) && "true" === $_GET["settings-updated"]) {
-    $wpslug_notice = __("已保存。", "wpslug");
+// The settings tab uses the kit notice (receipt / error summary) below.
+if ("settings" !== $tab && isset($_GET["settings-updated"]) && "true" === $_GET["settings-updated"]) {
+    $wpslug_notice = __("Settings saved.", "wpslug");
     $wpslug_level = "ok";
 }
 if (isset($_GET["wpslug_notice"]) && "reset-confirm" === $_GET["wpslug_notice"]) {
@@ -46,8 +47,14 @@ Wenpai_Admin_Shell::open([
     "feedback_label" => __("反馈", "wpslug"),
     "feedback_icon_html" => $wpslug_icon("feedback"),
     "main_class" => "help" === $tab ? "wpslug-help" : "",
+    "new_tab_label" => __("(opens in a new tab)", "wpslug"),
 ]);
 ?>
+    <?php
+    if ("settings" === $tab && ($wpslug_notice_fw = $this->settings->getFramework())) {
+        echo $wpslug_notice_fw->notices_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- kit escapes every part.
+    }
+    ?>
     <?php if ("" !== $wpslug_notice) : ?>
     <div class="wenpai-notice-wrap">
       <div class="notice <?php echo esc_attr($wpslug_level); ?>"><span><?php echo esc_html($wpslug_notice); ?></span></div>
@@ -88,7 +95,7 @@ Wenpai_Admin_Shell::open([
           <div class="tile <?php echo $wpslug_mind ? "ok" : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("sparkle") : ""; ?></div>
           <div>
             <div class="t"><?php esc_html_e("文派心思", "wpslug"); ?></div>
-            <div class="d"><?php echo $wpslug_mind ? esc_html__("已接通。额度在心思，这里不做充值。", "wpslug") : esc_html__("实现智能语义化拼音和多语言翻译。", "wpslug"); ?></div>
+            <div class="d"><?php echo $wpslug_mind ? esc_html__("已装好。充值请到文派心思。", "wpslug") : esc_html__("装上后才能用语义拼音和翻译。", "wpslug"); ?></div>
           </div>
           <div class="r"><span class="pill <?php echo $wpslug_mind ? "ok" : ""; ?>"><?php echo $wpslug_mind ? esc_html__("已安装", "wpslug") : esc_html__("未安装", "wpslug"); ?></span></div>
         </div>
@@ -128,82 +135,43 @@ Wenpai_Admin_Shell::open([
     <?php endif; ?>
     <form method="post" action="options.php" id="wpslug-settings-form">
       <?php settings_fields("wpslug_settings"); ?>
-      <input type="hidden" name="wpslug_current_tab" value="<?php echo esc_attr($tab); ?>">
+      <?php
+      // Kit per-tab save: this form writes only the simple page's fields or the
+      // open advanced section's fields (schema 'tab'); the other sections are
+      // still in the form for depends_on, but the kit keeps their saved values.
+      if ($wpslug_form_fw = $this->settings->getFramework()) {
+          echo $wpslug_form_fw->tab_input_html("advanced" === $mode ? $section : "simple"); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- kit-escaped hidden inputs.
+      }
+      ?>
         <?php if ("simple" === $mode) : ?>
         <section class="card wpslug-simple">
+          <?php
+          $wpslug_fw = $this->settings->getFramework();
+          $wpslug_on_attrs = $wpslug_fw ? $wpslug_fw->depends_on_attrs(["field" => "enable_conversion", "value" => true]) : "";
+          ?>
           <div class="simple-row">
             <div class="tile accent"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("flash") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
             <div>
-              <div class="t"><?php esc_html_e("Enable Plugin", "wpslug"); ?></div>
-              <div class="d"><?php esc_html_e("Enable automatic slug conversion for your content", "wpslug"); ?></div>
+              <div class="t" id="wpslug-row-enable_conversion-t"><?php esc_html_e("Enable Plugin", "wpslug"); ?></div>
+              <div class="d" id="wpslug-row-enable_conversion-d"><?php esc_html_e("Enable automatic slug conversion for your content", "wpslug"); ?></div>
             </div>
             <div class="r">
-              <?php $this->renderToggle("enable_conversion", "wpslug_options[enable_conversion]", $wpslug_enabled); ?>
+              <?php if ($wpslug_fw) { $wpslug_fw->render_control("enable_conversion", ["labelledby" => "wpslug-row-enable_conversion-t", "describedby" => "wpslug-row-enable_conversion-d"]); } ?>
             </div>
           </div>
-          <div class="wpslug-when-on"<?php echo $wpslug_enabled ? "" : " hidden"; ?>>
-          <div class="field">
-            <div class="field-label"><?php esc_html_e("Conversion Mode", "wpslug"); ?></div>
-            <div class="field-ctl">
-              <p class="hint"><?php esc_html_e("Choose local pinyin, semantic pinyin (XinSi AI), multi-language translation, or transliteration.", "wpslug"); ?></p>
-              <div class="choice-cards wpslug-modes">
-                <?php foreach ($wpslug_modes as $wpslug_mode_id => $wpslug_label) :
-                    $wpslug_on = $wpslug_conv === $wpslug_mode_id;
-                    ?>
-                <label class="choice<?php echo $wpslug_on ? " is-on" : ""; ?>">
-                  <input type="radio" name="wpslug_options[conversion_mode]" value="<?php echo esc_attr($wpslug_mode_id); ?>" <?php checked($wpslug_conv, $wpslug_mode_id); ?>>
-                  <span>
-                    <div class="t"><?php echo esc_html($wpslug_label); ?></div>
-                    <div class="d"><?php
-                    if ("pinyin" === $wpslug_mode_id) {
-                        esc_html_e("插件内置组件转换", "wpslug");
-                    } elseif ("semantic_pinyin" === $wpslug_mode_id) {
-                        esc_html_e("不够时用本地拼音", "wpslug");
-                    } elseif ("translation" === $wpslug_mode_id) {
-                        esc_html_e("翻译为目标语言", "wpslug");
-                    } else {
-                        esc_html_e("外文转拉丁字母", "wpslug");
-                    }
-                    ?></div>
-                  </span>
-                </label>
-                <?php endforeach; ?>
-              </div>
-              <?php if (!$wpslug_mind) : ?>
-              <div class="notice info"><span><?php esc_html_e("Install WenPai XinSi (WPMind) for semantic pinyin (XinSi AI) and multi-language translation. Until then, local pinyin remains available.", "wpslug"); ?></span></div>
-              <?php endif; ?>
-            </div>
+          <div class="wpslug-on-group"<?php echo $wpslug_on_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- kit-escaped data attributes. ?>>
+          <div class="wpslug-mode-field">
+            <?php if ($wpslug_fw) { $wpslug_fw->render_field("conversion_mode"); } ?>
+            <?php if (!$wpslug_mind) : ?>
+            <div class="notice info"><span><?php esc_html_e("Install WenPai XinSi (WPMind) for semantic pinyin (XinSi AI) and multi-language translation. Until then, local pinyin remains available.", "wpslug"); ?></span></div>
+            <?php endif; ?>
           </div>
-          <div class="simple-row">
-            <div>
-              <div class="t"><?php esc_html_e("Auto Convert", "wpslug"); ?></div>
-              <div class="d"><?php esc_html_e("Automatically convert slugs when saving posts and terms", "wpslug"); ?></div>
-            </div>
-            <div class="r">
-              <?php $this->renderToggle("wpslug-auto-convert", "wpslug_options[auto_convert]", !empty($options["auto_convert"])); ?>
-            </div>
-          </div>
-          <div class="simple-row">
-            <div>
-              <div class="t"><?php esc_html_e("Convert on Publish Only", "wpslug"); ?></div>
-              <div class="d"><?php esc_html_e("Only convert post slugs when status is publish or future (skips draft autosaves)", "wpslug"); ?></div>
-            </div>
-            <div class="r">
-              <?php $this->renderToggle("wpslug-publish-only", "wpslug_options[convert_on_publish_only]", !empty($options["convert_on_publish_only"])); ?>
-            </div>
-          </div>
-          <div class="simple-row">
-            <div>
-              <div class="t"><?php esc_html_e("Force Lowercase", "wpslug"); ?></div>
-              <div class="d"><?php esc_html_e("Convert all slugs to lowercase for consistency", "wpslug"); ?></div>
-            </div>
-            <div class="r">
-              <?php $this->renderToggle("wpslug-force-lower", "wpslug_options[force_lowercase]", !empty($options["force_lowercase"])); ?>
-            </div>
-          </div>
+          <?php $this->renderSwitchRow("auto_convert"); ?>
+          <?php $this->renderSwitchRow("convert_on_publish_only"); ?>
+          <?php $this->renderSwitchRow("force_lowercase"); ?>
           </div>
           <div class="card-foot">
-            <button type="submit" class="btn btn-primary"><?php esc_html_e("Save Changes", "wpslug"); ?></button>
+            <button type="submit" class="btn btn-primary"><?php esc_html_e("Save Settings", "wpslug"); ?></button>
           </div>
         </section>
         <?php else : ?>
@@ -217,6 +185,9 @@ Wenpai_Admin_Shell::open([
             "types" => "renderAdvancedSettings",
         ];
         foreach ($wpslug_renderers as $wpslug_section_id => $wpslug_method) :
+            if (!isset($adv_sections[$wpslug_section_id])) {
+                continue;
+            }
             $wpslug_meta = $adv_sections[$wpslug_section_id];
             ?>
         <section class="card"<?php echo $section === $wpslug_section_id ? "" : " hidden"; ?>>
@@ -230,14 +201,21 @@ Wenpai_Admin_Shell::open([
           <?php $this->{$wpslug_method}($options); ?>
           <?php if ($section === $wpslug_section_id) : ?>
           <div class="card-foot">
-            <button type="submit" class="btn btn-primary"><?php esc_html_e("Save Changes", "wpslug"); ?></button>
+            <button type="submit" class="btn btn-primary"><?php esc_html_e("Save Settings", "wpslug"); ?></button>
           </div>
           <?php endif; ?>
         </section>
         <?php endforeach; ?>
         <?php endif; ?>
     </form>
-    <div class="wpslug-when-on"<?php echo $wpslug_enabled ? "" : " hidden"; ?>>
+    <?php
+    // Simple page: the preview follows the switch (kit depends_on). Advanced page
+    // has no switch on it, so it uses the saved state.
+    $wpslug_preview_attrs = "simple" === $mode
+        ? $this->settings->getFramework()->depends_on_attrs(["field" => "enable_conversion", "value" => true])
+        : ($wpslug_enabled ? "" : " hidden");
+    ?>
+    <div class="wpslug-preview-wrap"<?php echo $wpslug_preview_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- kit-escaped data attributes. ?>>
     <?php $this->renderPreviewCard(); ?>
     </div>
     </div>
@@ -256,14 +234,15 @@ Wenpai_Admin_Shell::open([
           <span class="tile bad"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("info") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
           <div>
             <h2 class="card-title"><?php esc_html_e("Reset to Defaults", "wpslug"); ?></h2>
-            <p class="card-sub"><?php esc_html_e("不可恢复。", "wpslug"); ?></p>
+            <p class="card-sub"><?php esc_html_e("把本插件的设置恢复为默认值，不可撤销。", "wpslug"); ?></p>
           </div>
         </div>
         <form method="post" action="<?php echo esc_url(admin_url("admin-post.php")); ?>">
           <?php wp_nonce_field("wpslug_reset"); ?>
           <input type="hidden" name="action" value="wpslug_reset">
           <div class="wenpai-gate">
-            <label><input type="checkbox" name="wpslug_reset_confirm" value="1"> <?php esc_html_e("Are you sure you want to reset all settings to default values?", "wpslug"); ?> <?php esc_html_e("这会清掉本插件的设置，不清文章别名。", "wpslug"); ?></label>
+            <label><input type="checkbox" name="wpslug_reset_confirm" value="1"> <?php esc_html_e("I confirm I want to restore this plugin's settings to their defaults", "wpslug"); ?></label>
+            <p class="meta"><?php esc_html_e("这会清掉本插件的设置，不清文章别名。", "wpslug"); ?></p>
           </div>
           <div class="card-foot start">
             <span class="meta"><?php esc_html_e("未勾选不能点。", "wpslug"); ?></span>
@@ -352,13 +331,13 @@ Wenpai_Admin_Shell::open([
         <div class="wpslug-help-body">
           <dl class="wpslug-help-dl">
             <dt><?php esc_html_e("Local pinyin", "wpslug"); ?></dt>
-            <dd><?php esc_html_e("中文标题、不经过心思。没装心思时也用这个。", "wpslug"); ?></dd>
+            <dd><?php esc_html_e("本插件按字转拼音。没装心思时也用这个。", "wpslug"); ?></dd>
             <dt><?php esc_html_e("Multi-language translation", "wpslug"); ?></dt>
             <dd><?php esc_html_e("标题要先译成另一种语言再写成别名。需要心思或自备翻译服务。", "wpslug"); ?></dd>
             <dt><?php esc_html_e("Foreign Language Transliteration", "wpslug"); ?></dt>
             <dd><?php esc_html_e("西里尔、阿拉伯、希腊等字母转成拉丁字母。", "wpslug"); ?></dd>
-            <dt><?php esc_html_e("Semantic pinyin (XinSi AI)", "wpslug"); ?></dt>
-            <dd><?php esc_html_e("装了心思才会出现这一项。", "wpslug"); ?></dd>
+            <dt><?php esc_html_e("Semantic pinyin", "wpslug"); ?></dt>
+            <dd><?php esc_html_e("用文派心思生成。装了心思才会出现。", "wpslug"); ?></dd>
           </dl>
         </div>
       </details>
@@ -431,4 +410,5 @@ wp slug doctor</code></pre>
 Wenpai_Admin_Shell::close([
     "version" => wpslug_plugin_name() . " " . WPSLUG_VERSION,
     "links" => [["url" => "https://wpcy.com/slug", "label" => __("文档", "wpslug")], ["url" => "https://wpcy.com/support", "label" => __("支持", "wpslug")]],
+    "new_tab_label" => __("(opens in a new tab)", "wpslug"),
 ]);

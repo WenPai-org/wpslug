@@ -4,7 +4,7 @@
 Plugin Name: WPSlug
 Plugin URI: https://wpcy.com/slug
 Description: Advanced slug management plugin with Chinese Pinyin support and SEO optimization.
-Version: 1.3.2
+Version: 1.3.3
 Author: WPCY.COM
 Author URI: https://wpcy.com/slug
 License: GPLv2 or later
@@ -20,10 +20,16 @@ if (!defined("ABSPATH")) {
     exit();
 }
 
-define("WPSLUG_VERSION", "1.3.2");
+define("WPSLUG_VERSION", "1.3.3");
 define("WPSLUG_PLUGIN_DIR", plugin_dir_path(__FILE__));
 define("WPSLUG_PLUGIN_URL", plugin_dir_url(__FILE__));
 define("WPSLUG_PLUGIN_BASENAME", plugin_basename(__FILE__));
+
+// Admin kit: register this copy at load time, as the kit expects, so its
+// plugins_loaded@1 boot picks the newest copy before anything runs. Required
+// later (inside plugins_loaded@10) the boot hook never fired, so the settings
+// framework, and its secret handling, was missing on options.php saves.
+require_once WPSLUG_PLUGIN_DIR . "lib/wenpai-admin-ui/php/load.php";
 
 function wpslug_brand_name() {
     $name = apply_filters("wpslug_brand_name", "文派素格");
@@ -131,7 +137,6 @@ class WPSlug
         require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-converter.php";
         require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-core.php";
         require_once WPSLUG_PLUGIN_DIR . "includes/class-wenpai-updater.php";
-        require_once WPSLUG_PLUGIN_DIR . "lib/wenpai-admin-ui/php/load.php";
 
         if (is_admin()) {
             require_once WPSLUG_PLUGIN_DIR . "includes/class-wpslug-admin.php";

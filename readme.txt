@@ -4,7 +4,7 @@ Tags: slug, pinyin, transliteration, translation, media
 Requires at least: 6.0
 Tested up to: 7.2
 Requires PHP: 7.4
-Stable tag: 1.3.2
+Stable tag: 1.3.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,6 +23,14 @@ Media conversion applies only to newly uploaded filenames. Bulk conversion is an
 3. Configure it under Settings > Slug.
 
 == Changelog ==
+
+= 1.3.3 =
+* Changed: bundled wenpai-admin-ui 0.2.5 → 0.3.1; settings fields use the kit's two-column row (280px label column, top-aligned, WPSlug 1.3.1 layout) and stack at ≤960px with controls filling the row.
+* Changed: settings save per tab on the simple page and every advanced section (kit 0.3.0 field actions, disable-mode depends_on and status field).
+* Added: show_editor_panel setting for the block editor panel (default off).
+* Fixed: block editor sidebar preview buttons use core Button + Flex with equal height.
+* Fixed: 「获取 API 密钥」 links open with noopener noreferrer and a new-tab note.
+* Changed: plain Chinese copy for WPMind status and mode cards.
 
 = 1.3.2 =
 * Changed: bundled wenpai-admin-ui 0.2.3.3 → 0.2.5; admin menu and page chrome come from the kit (Wenpai_Admin_Menu / Wenpai_Admin_Shell) instead of hand-written markup.

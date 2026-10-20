@@ -282,12 +282,19 @@
             ? el("p", { className: "description" }, strings.wpmindMissing || "")
             : null,
           el(
-            "div",
-            { className: "wpslug-block-actions" },
+            Flex,
+            {
+              className: "wpslug-block-actions",
+              justify: "flex-start",
+              align: "center",
+              gap: 2,
+              wrap: true,
+            },
             el(
               Button,
               {
                 variant: "secondary",
+                __next40pxDefaultSize: true,
                 isBusy: busy,
                 disabled: busy,
                 onClick: function () {
@@ -300,6 +307,7 @@
               Button,
               {
                 variant: "secondary",
+                __next40pxDefaultSize: true,
                 isBusy: busy,
                 disabled: busy,
                 onClick: function () {
@@ -328,6 +336,7 @@
                   Button,
                   {
                     variant: "primary",
+                    __next40pxDefaultSize: true,
                     onClick: apply,
                   },
                   strings.applyButton || "Apply"

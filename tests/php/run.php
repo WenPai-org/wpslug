@@ -1010,4 +1010,11 @@ check(array_diff($kit_keys, $our_keys) === [], 'WPSlug translates every kit stri
 check(substr($settings->getFrameworkStrings()['action_busy'], -3) !== '…', 'action_busy has no ellipsis (kit JS appends one)');
 $page_tpl = file_get_contents(WPSLUG_PLUGIN_DIR . 'templates/admin/page.php');
 check(substr_count($page_tpl, '"new_tab_label" => __("(opens in a new tab)", "wpslug")') === 2, 'Shell open() and close() get the translated new-tab hint (kit default is fixed Chinese)');
+// ---- Block editor sidebar panel: core Button/Flex, no hand-rolled spacing ----
+$editor_js = file_get_contents(WPSLUG_PLUGIN_DIR . 'assets/editor.js');
+$editor_css = file_get_contents(WPSLUG_PLUGIN_DIR . 'assets/editor.css');
+check(strpos($editor_js, 'isSecondary') === false && strpos($editor_js, 'isPrimary') === false, 'block panel buttons use the Button variant prop, not deprecated isSecondary/isPrimary');
+check(substr_count($editor_js, 'variant: "secondary",' . "\n" . '                __next40pxDefaultSize: true,') === 2, 'both preview buttons are secondary at the 40px core size');
+check(preg_match('/className: "wpslug-block-actions",\s+justify: "flex-start",\s+align: "center",\s+gap: 2,\s+wrap: true,/', $editor_js) === 1, 'preview buttons sit in a core Flex row: centered, 8px gap, wraps in a narrow sidebar');
+check(strpos($editor_css, '.components-button + .components-button') === false, 'no margin hack between sidebar buttons (it pushed the second one down)');
 echo "PASS: {$tests} assertions\n";

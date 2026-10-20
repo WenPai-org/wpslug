@@ -202,12 +202,12 @@
     }
 
     var el = wp.element.createElement;
-    var Fragment = wp.element.Fragment;
     var useState = wp.element.useState;
     var registerPlugin = wp.plugins.registerPlugin;
     var PluginDocumentSettingPanel = wp.editPost.PluginDocumentSettingPanel;
     var Button = wp.components.Button;
-    var TextControl = wp.components.TextControl || null;
+    // Core Flex (WP 5.4+) does the layout: gap 2 is the 8px core step.
+    var Flex = wp.components.Flex;
 
     function Panel() {
       var state = useState("");
@@ -266,59 +266,87 @@
           className: "wpslug-block-panel",
         },
         el(
-          "p",
-          { className: "description" },
-          strings.hint || ""
-        ),
-        !cfg.wpmindReady
-          ? el("p", { className: "description" }, strings.wpmindMissing || "")
-          : null,
-        el(
-          Button,
+          Flex,
           {
-            isSecondary: true,
-            isBusy: busy,
-            disabled: busy,
-            onClick: function () {
-              generate("seo_slug");
-            },
+            className: "wpslug-block-body",
+            direction: "column",
+            align: "stretch",
+            gap: 2,
           },
-          strings.seoButton || "SEO"
-        ),
-        el(
-          Button,
-          {
-            isSecondary: true,
-            isBusy: busy,
-            disabled: busy,
-            onClick: function () {
-              generate("semantic_pinyin");
+          el(
+            "p",
+            { className: "description" },
+            strings.hint || ""
+          ),
+          !cfg.wpmindReady
+            ? el("p", { className: "description" }, strings.wpmindMissing || "")
+            : null,
+          el(
+            Flex,
+            {
+              className: "wpslug-block-actions",
+              justify: "flex-start",
+              align: "center",
+              gap: 2,
+              wrap: true,
             },
-          },
-          strings.pinyinButton || "Pinyin"
-        ),
-        slug
-          ? el(
-              Fragment,
-              null,
-              el(
-                "p",
-                null,
-                el("span", null, (strings.previewLabel || "Preview") + ": "),
-                el("code", { className: "wpslug-editor-preview-value" }, slug)
-              ),
-              el(
-                Button,
-                {
-                  isPrimary: true,
-                  onClick: apply,
+            el(
+              Button,
+              {
+                variant: "secondary",
+                __next40pxDefaultSize: true,
+                isBusy: busy,
+                disabled: busy,
+                onClick: function () {
+                  generate("seo_slug");
                 },
-                strings.applyButton || "Apply"
-              )
+              },
+              strings.seoButton || "SEO"
+            ),
+            el(
+              Button,
+              {
+                variant: "secondary",
+                __next40pxDefaultSize: true,
+                isBusy: busy,
+                disabled: busy,
+                onClick: function () {
+                  generate("semantic_pinyin");
+                },
+              },
+              strings.pinyinButton || "Pinyin"
             )
-          : null,
-        message ? el("p", { className: "description" }, message) : null,
-        TextControl ? null : null
+          ),
+          slug
+            ? el(
+                Flex,
+                {
+                  className: "wpslug-block-preview",
+                  direction: "column",
+                  align: "flex-start",
+                  gap: 2,
+                },
+                el(
+                  "p",
+                  null,
+                  el("span", null, (strings.previewLabel || "Preview") + ": "),
+                  el("code", { className: "wpslug-editor-preview-value" }, slug)
+                ),
+                el(
+                  Button,
+                  {
+                    variant: "primary",
+                    __next40pxDefaultSize: true,
+                    onClick: apply,
+                  },
+                  strings.applyButton || "Apply"
+                )
+              )
+            : null,
+          message
+            ? el("p", { className: "description wpslug-block-message" }, message)
+            : null
+        )
       );
     }
 

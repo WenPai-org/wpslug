@@ -37,6 +37,11 @@
   word-break: break-all;
 }
 
-.wpslug-block-panel .components-button + .components-button {
-  margin-top: 6px;
+/*
+ * Block sidebar: layout comes from core Flex (gap 2 = 8px) and Button
+ * (variant secondary, 40px). Only drop paragraph margins so the Flex gap
+ * is the one spacing between hint, actions, preview and message.
+ */
+.wpslug-block-panel .wpslug-block-body p {
+  margin: 0;
 }

@@ -965,8 +965,8 @@ msgid "Active"
 msgstr "已启用"
 
 #: includes/class-wpslug-settings.php:954
-msgid "Credits and keys live in XinSi. Falls back to local pinyin if needed."
-msgstr "积分与密钥在心思管理；不够时回退本地拼音。"
+msgid "Top up and manage keys in WenPai XinSi. This page does not sell credits."
+msgstr "充值和密钥请到文派心思。本页不售卖额度。"
 
 #: includes/class-wpslug-settings.php:958
 msgid "XinSi settings"
@@ -977,8 +977,8 @@ msgid "Not active"
 msgstr "未启用"
 
 #: includes/class-wpslug-settings.php:966
-msgid "XinSi is not active. Local pinyin still works."
-msgstr "文派心思未启用。仍可用本地拼音。"
+msgid "WenPai XinSi is off. Local pinyin still works."
+msgstr "文派心思未启用，仍可用本地拼音。"
 
 #: templates/admin/page.php:166
 msgid ""
@@ -993,20 +993,20 @@ msgid "Learn more"
 msgstr "了解更多"
 
 #: includes/class-wpslug-settings.php:986
-msgid "中文直接转拼音，不经过心思。"
-msgstr "中文直接转拼音，不经过心思。"
+msgid "本插件按字转拼音。"
+msgstr "本插件按字转拼音。"
 
 #: includes/class-wpslug-settings.php:987
-msgid "心思按词义转拼音；失败则用本地拼音。"
-msgstr "心思按词义转拼音；失败则用本地拼音。"
+msgid "文派心思生成拼音；连不上就用本插件拼音。"
+msgstr "文派心思生成拼音；连不上就用本插件拼音。"
 
 #: includes/class-wpslug-settings.php:988
-msgid "先翻译，再写成英文别名。"
-msgstr "先翻译，再写成英文别名。"
+msgid "先译成英文，再做成别名。"
+msgstr "先译成英文，再做成别名。"
 
 #: includes/class-wpslug-settings.php:989
-msgid "外文字母转成拉丁字母。"
-msgstr "外文字母转成拉丁字母。"
+msgid "外文字母改成拉丁字母。"
+msgstr "外文字母改成拉丁字母。"
 
 #: includes/class-wpslug-settings.php:1163
 msgid "Normal Conversion (same as content)"
@@ -1121,12 +1121,12 @@ msgid "文派心思"
 msgstr "文派心思"
 
 #: templates/admin/page.php:98
-msgid "已启用。积分与密钥在心思设置里管理。"
-msgstr "已启用。积分与密钥在心思设置里管理。"
+msgid "已装好。充值请到文派心思。"
+msgstr "已装好。充值请到文派心思。"
 
 #: templates/admin/page.php:98
-msgid "安装后可用语义拼音与多语言翻译。"
-msgstr "安装后可用语义拼音与多语言翻译。"
+msgid "装上后才能用语义拼音和翻译。"
+msgstr "装上后才能用语义拼音和翻译。"
 
 #: templates/admin/page.php:100
 msgid "已安装"
@@ -1273,8 +1273,8 @@ msgid "按标题语言选。失败会退回本地拼音，保存不会中断。"
 msgstr "按标题语言选。失败会退回本地拼音，保存不会中断。"
 
 #: templates/admin/page.php:334
-msgid "中文标题、不经过心思。没装心思时也用这个。"
-msgstr "中文标题、不经过心思。没装心思时也用这个。"
+msgid "本插件按字转拼音。没装心思时也用这个。"
+msgstr "本插件按字转拼音。没装心思时也用这个。"
 
 #: templates/admin/page.php:336
 msgid "标题要先译成另一种语言再写成别名。需要心思或自备翻译服务。"
@@ -1285,8 +1285,8 @@ msgid "西里尔、阿拉伯、希腊等字母转成拉丁字母。"
 msgstr "西里尔、阿拉伯、希腊等字母转成拉丁字母。"
 
 #: templates/admin/page.php:340
-msgid "装了心思才会出现这一项。"
-msgstr "装了心思才会出现这一项。"
+msgid "用文派心思生成。装了心思才会出现。"
+msgstr "用文派心思生成。装了心思才会出现。"
 
 #: templates/admin/page.php:348
 msgid "常见问题"

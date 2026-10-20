@@ -951,7 +951,7 @@ class WPSlug_Settings
                 "text" => __("Active", "wpslug"),
                 // Pill already says Active; keep one short line (matches overview card tone).
                 "desc" => [
-                    __("Credits and keys live in XinSi. Falls back to local pinyin if needed.", "wpslug"),
+                    __("Top up and manage keys in WenPai XinSi. This page does not sell credits.", "wpslug"),
                 ],
                 "link" => [
                     "url" => function_exists("admin_url") ? admin_url("options-general.php?page=wpmind") : "options-general.php?page=wpmind",
@@ -963,7 +963,7 @@ class WPSlug_Settings
             "level" => "warn",
             "text" => __("Not active", "wpslug"),
             "desc" => [
-                __("XinSi is not active. Local pinyin still works.", "wpslug"),
+                __("WenPai XinSi is off. Local pinyin still works.", "wpslug"),
             ],
             "link" => [
                 "url" => "https://wpcy.com/mind/",
@@ -982,10 +982,10 @@ class WPSlug_Settings
     public function getConversionModeChoices()
     {
         $desc = [
-            "pinyin" => __("中文直接转拼音，不经过心思。", "wpslug"),
-            "semantic_pinyin" => __("心思按词义转拼音；失败则用本地拼音。", "wpslug"),
-            "translation" => __("先翻译，再写成英文别名。", "wpslug"),
-            "transliteration" => __("外文字母转成拉丁字母。", "wpslug"),
+            "pinyin" => __("本插件按字转拼音。", "wpslug"),
+            "semantic_pinyin" => __("文派心思生成拼音；连不上就用本插件拼音。", "wpslug"),
+            "translation" => __("先译成英文，再做成别名。", "wpslug"),
+            "transliteration" => __("外文字母改成拉丁字母。", "wpslug"),
         ];
         $out = [];
         foreach ($this->getConversionModes() as $mode => $label) {

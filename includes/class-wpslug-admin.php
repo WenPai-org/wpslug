@@ -633,17 +633,20 @@ class WPSlug_Admin
             ];
         }
 
+        // filemtime so sidebar CSS/JS updates land without a plugin version bump.
+        $editor_css = WPSLUG_PLUGIN_DIR . "assets/editor.css";
+        $editor_js = WPSLUG_PLUGIN_DIR . "assets/editor.js";
         wp_enqueue_style(
             "wpslug-editor",
             WPSLUG_PLUGIN_URL . "assets/editor.css",
             [],
-            WPSLUG_VERSION
+            is_readable($editor_css) ? (string) filemtime($editor_css) : WPSLUG_VERSION
         );
         wp_enqueue_script(
             "wpslug-editor",
             WPSLUG_PLUGIN_URL . "assets/editor.js",
             $deps,
-            WPSLUG_VERSION,
+            is_readable($editor_js) ? (string) filemtime($editor_js) : WPSLUG_VERSION,
             true
         );
 

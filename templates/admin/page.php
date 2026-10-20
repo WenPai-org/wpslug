@@ -95,7 +95,7 @@ Wenpai_Admin_Shell::open([
           <div class="tile <?php echo $wpslug_mind ? "ok" : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("sparkle") : ""; ?></div>
           <div>
             <div class="t"><?php esc_html_e("文派心思", "wpslug"); ?></div>
-            <div class="d"><?php echo $wpslug_mind ? esc_html__("已启用。积分与密钥在心思设置里管理。", "wpslug") : esc_html__("安装后可用语义拼音与多语言翻译。", "wpslug"); ?></div>
+            <div class="d"><?php echo $wpslug_mind ? esc_html__("已装好。充值请到文派心思。", "wpslug") : esc_html__("装上后才能用语义拼音和翻译。", "wpslug"); ?></div>
           </div>
           <div class="r"><span class="pill <?php echo $wpslug_mind ? "ok" : ""; ?>"><?php echo $wpslug_mind ? esc_html__("已安装", "wpslug") : esc_html__("未安装", "wpslug"); ?></span></div>
         </div>
@@ -331,13 +331,13 @@ Wenpai_Admin_Shell::open([
         <div class="wpslug-help-body">
           <dl class="wpslug-help-dl">
             <dt><?php esc_html_e("Local pinyin", "wpslug"); ?></dt>
-            <dd><?php esc_html_e("中文标题、不经过心思。没装心思时也用这个。", "wpslug"); ?></dd>
+            <dd><?php esc_html_e("本插件按字转拼音。没装心思时也用这个。", "wpslug"); ?></dd>
             <dt><?php esc_html_e("Multi-language translation", "wpslug"); ?></dt>
             <dd><?php esc_html_e("标题要先译成另一种语言再写成别名。需要心思或自备翻译服务。", "wpslug"); ?></dd>
             <dt><?php esc_html_e("Foreign Language Transliteration", "wpslug"); ?></dt>
             <dd><?php esc_html_e("西里尔、阿拉伯、希腊等字母转成拉丁字母。", "wpslug"); ?></dd>
-            <dt><?php esc_html_e("Semantic pinyin (XinSi AI)", "wpslug"); ?></dt>
-            <dd><?php esc_html_e("装了心思才会出现这一项。", "wpslug"); ?></dd>
+            <dt><?php esc_html_e("Semantic pinyin", "wpslug"); ?></dt>
+            <dd><?php esc_html_e("用文派心思生成。装了心思才会出现。", "wpslug"); ?></dd>
           </dl>
         </div>
       </details>

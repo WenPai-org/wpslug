@@ -45,3 +45,20 @@
 .wpslug-block-panel .wpslug-block-body p {
   margin: 0;
 }
+
+/* Keep the two generate buttons on one baseline in the block sidebar. */
+.wpslug-block-panel .wpslug-block-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.wpslug-block-panel .wpslug-block-actions .components-button {
+  margin: 0;
+  height: 36px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}

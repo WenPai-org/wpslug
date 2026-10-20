@@ -433,7 +433,7 @@ check(!empty($settings_defaults['convert_on_publish_only']), 'defaults convert_o
 check(array_key_exists('post_type_modes', $settings_defaults), 'defaults include post_type_modes map');
 $modes = (new WPSlug_Settings())->getConversionModes();
 check($modes['pinyin'] === 'Local pinyin', 'labels local pinyin without fallback parenthetical');
-check(($modes['semantic_pinyin'] ?? '') === 'Semantic pinyin (XinSi AI)' || ($modes['semantic_pinyin'] ?? '') === 'Semantic pinyin (requires WenPai XinSi)', 'labels semantic pinyin as XinSi AI');
+check(($modes['semantic_pinyin'] ?? '') === 'Semantic pinyin' || ($modes['semantic_pinyin'] ?? '') === 'Semantic pinyin (requires WenPai XinSi)', 'labels semantic pinyin');
 
 $feature_options = (new WPSlug_Settings())->applyFeatureToOptions(
     ['conversion_mode' => 'pinyin', 'translation_service' => 'none'],
@@ -673,7 +673,7 @@ check(strpos($auto_html, 'class="wenpai-switch"') !== false && strpos($auto_html
 check(strpos($google_html, 'data-wenpai-depends-on="wpslug_options[translation_service]"') !== false && strpos($google_html, 'data-wenpai-depends-value="google"') !== false, 'Google key follows translation service through depends_on');
 check(strpos($fw->field_html('baidu_app_id'), 'data-wenpai-depends-value="baidu"') !== false, 'Baidu App ID follows translation service through depends_on');
 $mode_html = $fw->field_html('conversion_mode');
-check(strpos($mode_html, 'choice-cards') !== false && strpos($mode_html, '插件内置组件转换') !== false, 'conversion mode cards keep their one-line descriptions');
+check(strpos($mode_html, 'choice-cards') !== false && strpos($mode_html, '中文直接转拼音，不经过心思。') !== false, 'conversion mode cards keep their one-line descriptions');
 check(strpos($mode_html, 'data-wenpai-depends-on="wpslug_options[enable_conversion]"') !== false, 'conversion mode follows the enable switch');
 
 $GLOBALS['wpslug_options']['conversion_mode'] = 'pinyin';

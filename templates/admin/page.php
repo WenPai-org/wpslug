@@ -95,7 +95,7 @@ Wenpai_Admin_Shell::open([
           <div class="tile <?php echo $wpslug_mind ? "ok" : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("sparkle") : ""; ?></div>
           <div>
             <div class="t"><?php esc_html_e("文派心思", "wpslug"); ?></div>
-            <div class="d"><?php echo $wpslug_mind ? esc_html__("已接通。额度在心思，这里不做充值。", "wpslug") : esc_html__("实现智能语义化拼音和多语言翻译。", "wpslug"); ?></div>
+            <div class="d"><?php echo $wpslug_mind ? esc_html__("已启用。积分与密钥在心思设置里管理。", "wpslug") : esc_html__("安装后可用语义拼音与多语言翻译。", "wpslug"); ?></div>
           </div>
           <div class="r"><span class="pill <?php echo $wpslug_mind ? "ok" : ""; ?>"><?php echo $wpslug_mind ? esc_html__("已安装", "wpslug") : esc_html__("未安装", "wpslug"); ?></span></div>
         </div>

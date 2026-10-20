@@ -339,7 +339,7 @@ class WPSlug_Settings
 
         if (function_exists("wpmind_is_available") && wpmind_is_available()) {
             $modes["semantic_pinyin"] = __(
-                "Semantic pinyin (XinSi AI)",
+                "Semantic pinyin",
                 "wpslug"
             );
         } elseif (class_exists("\\WPMind\\WPMind")) {
@@ -552,7 +552,7 @@ class WPSlug_Settings
             $features = [
                 "inherit" => $features["inherit"],
                 "semantic_pinyin" => __(
-                    "Semantic pinyin (XinSi AI)",
+                    "Semantic pinyin",
                     "wpslug"
                 ),
                 "seo_slug" => $features["seo_slug"],
@@ -982,10 +982,10 @@ class WPSlug_Settings
     public function getConversionModeChoices()
     {
         $desc = [
-            "pinyin" => __("插件内置组件转换", "wpslug"),
-            "semantic_pinyin" => __("不够时用本地拼音", "wpslug"),
-            "translation" => __("翻译为目标语言", "wpslug"),
-            "transliteration" => __("外文转拉丁字母", "wpslug"),
+            "pinyin" => __("中文直接转拼音，不经过心思。", "wpslug"),
+            "semantic_pinyin" => __("心思按词义转拼音；失败则用本地拼音。", "wpslug"),
+            "translation" => __("先翻译，再写成英文别名。", "wpslug"),
+            "transliteration" => __("外文字母转成拉丁字母。", "wpslug"),
         ];
         $out = [];
         foreach ($this->getConversionModes() as $mode => $label) {

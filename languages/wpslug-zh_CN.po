@@ -441,8 +441,8 @@ msgstr "本地拼音"
 
 #: includes/class-wpslug-settings.php:341
 #: includes/class-wpslug-settings.php:554 templates/admin/page.php:339
-msgid "Semantic pinyin (XinSi AI)"
-msgstr "语义拼音（心思 AI）"
+msgid "Semantic pinyin"
+msgstr "语义拼音"
 
 #: includes/class-wpslug-settings.php:346
 msgid "Semantic pinyin (requires WenPai XinSi)"
@@ -993,20 +993,20 @@ msgid "Learn more"
 msgstr "了解更多"
 
 #: includes/class-wpslug-settings.php:986
-msgid "插件内置组件转换"
-msgstr "插件内置组件转换"
+msgid "中文直接转拼音，不经过心思。"
+msgstr "中文直接转拼音，不经过心思。"
 
 #: includes/class-wpslug-settings.php:987
-msgid "不够时用本地拼音"
-msgstr "不够时用本地拼音"
+msgid "心思按词义转拼音；失败则用本地拼音。"
+msgstr "心思按词义转拼音；失败则用本地拼音。"
 
 #: includes/class-wpslug-settings.php:988
-msgid "翻译为目标语言"
-msgstr "翻译为目标语言"
+msgid "先翻译，再写成英文别名。"
+msgstr "先翻译，再写成英文别名。"
 
 #: includes/class-wpslug-settings.php:989
-msgid "外文转拉丁字母"
-msgstr "外文转拉丁字母"
+msgid "外文字母转成拉丁字母。"
+msgstr "外文字母转成拉丁字母。"
 
 #: includes/class-wpslug-settings.php:1163
 msgid "Normal Conversion (same as content)"
@@ -1121,12 +1121,12 @@ msgid "文派心思"
 msgstr "文派心思"
 
 #: templates/admin/page.php:98
-msgid "已接通。额度在心思，这里不做充值。"
-msgstr "已接通。额度在心思，这里不做充值。"
+msgid "已启用。积分与密钥在心思设置里管理。"
+msgstr "已启用。积分与密钥在心思设置里管理。"
 
 #: templates/admin/page.php:98
-msgid "实现智能语义化拼音和多语言翻译。"
-msgstr "实现智能语义化拼音和多语言翻译。"
+msgid "安装后可用语义拼音与多语言翻译。"
+msgstr "安装后可用语义拼音与多语言翻译。"
 
 #: templates/admin/page.php:100
 msgid "已安装"

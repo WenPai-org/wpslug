@@ -172,6 +172,48 @@ class WPSlug_Settings
             "action_denied" => __("Could not finish the action. Please reload the page and try again.", "wpslug"),
             "new_tab" => __("(opens in a new tab)", "wpslug"),
             "secret_multiline" => __("Could not save the key. Please enter a single-line value.", "wpslug"),
+            "secret_show" => __("Show", "wpslug"),
+            "secret_hide" => __("Hide", "wpslug"),
+            "confirm_needed" => __("Please tick the confirmation box first.", "wpslug"),
+            "invalid_email" => __("Please enter a valid email address.", "wpslug"),
+            "invalid_url" => __("Please enter an address starting with http:// or https://.", "wpslug"),
+            "dismiss" => __("Dismiss", "wpslug"),
+            /* translators: %s: the recommended product (status dismiss context, else the field label). Screen-reader only. */
+            "dismiss_context" => __(": recommendation for %s", "wpslug"),
+            "dismissed" => __("Recommendation dismissed.", "wpslug"),
+            "imported" => __("Settings imported.", "wpslug"),
+            /* translators: %d: number of fields that were not imported. */
+            "imported-partial" => __("Settings imported; %d invalid entries kept their previous values.", "wpslug"),
+            "import-invalid" => __("Could not import this file. Please use a file exported by this plugin.", "wpslug"),
+            "import-newer" => __("Could not import settings from a newer version. Please upgrade the plugin first.", "wpslug"),
+            "import-size" => __("Could not import this file. Please keep it under 256 KB.", "wpslug"),
+            "reset" => __("Settings restored to defaults.", "wpslug"),
+            "reset-confirm" => __("Please tick the confirmation box before resetting.", "wpslug"),
+            "import-confirm" => __("Please tick the confirmation box before importing.", "wpslug"),
+            "reset_confirm" => __("I confirm I want to restore this plugin's settings to their defaults", "wpslug"),
+            "tools_export_title" => __("Export settings", "wpslug"),
+            "tools_export_sub" => __("Download a settings file (JSON) without secrets.", "wpslug"),
+            "tools_export_button" => __("Export settings", "wpslug"),
+            "tools_import_title" => __("Import settings", "wpslug"),
+            "tools_import_sub" => __("Restore settings from a previous export. Secrets stay unchanged.", "wpslug"),
+            "tools_import_button" => __("Import settings", "wpslug"),
+            "tools_import_file" => __("Settings file", "wpslug"),
+            "tools_import_confirm" => __("I confirm this file should overwrite the current settings", "wpslug"),
+            "tools_import_need_file" => __("Choose a file first", "wpslug"),
+            "tools_reset_title" => __("Reset settings", "wpslug"),
+            /* translators: %s: in-page link labelled export a copy. */
+            "tools_reset_sub" => __("Restores this plugin's settings to their defaults. This cannot be undone. Please %s first.", "wpslug"),
+            "tools_reset_export" => __("export a copy", "wpslug"),
+            "tools_reset_button" => __("Reset settings", "wpslug"),
+            "tools_reset_clear" => __("Also clear saved secrets", "wpslug"),
+            "tools_reset_busy" => __("Resetting", "wpslug"),
+            /* translators: %d: item position. */
+            "repeater_item" => __("Item %d", "wpslug"),
+            /* translators: %d: item position. */
+            "repeater_delete" => __("Delete item %d", "wpslug"),
+            "repeater_add" => __("Add an item", "wpslug"),
+            "repeater_move_up" => __("Move up", "wpslug"),
+            "repeater_move_down" => __("Move down", "wpslug"),
         ];
     }
 

@@ -70,43 +70,44 @@ Wenpai_Admin_Shell::open([
     </div>
     <div class="wenpai-stack">
       <?php if (!$wpslug_enabled) : ?>
-      <div class="next">
-        <span class="tile"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("flash") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
-        <div>
-          <strong><?php esc_html_e("转换还没开", "wpslug"); ?></strong>
-          <div class="meta"><?php esc_html_e("去设置里选拼音、心思或翻译。", "wpslug"); ?></div>
-        </div>
-        <div class="next-actions">
-          <a class="btn btn-primary" href="<?php echo esc_url($url("settings")); ?>"><?php esc_html_e("去设置", "wpslug"); ?></a>
-        </div>
-      </div>
+      <?php
+      Wenpai_Admin_UI::next([
+          "icon" => "flash",
+          "title" => __("转换还没开", "wpslug"),
+          "desc" => __("去设置里选拼音、心思或翻译。", "wpslug"),
+          "actions" => [[
+              "label" => __("去设置", "wpslug"),
+              "variant" => "primary",
+              "href" => $url("settings"),
+          ]],
+      ]);
+      ?>
       <?php endif; ?>
       <section class="card">
         <h2 class="section-title"><?php esc_html_e("运行状态", "wpslug"); ?></h2>
-        <div class="simple-row is-static">
-          <div class="tile <?php echo $wpslug_enabled ? "ok" : "warn"; ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("flash") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
-          <div>
-            <div class="t"><?php esc_html_e("转换模式", "wpslug"); ?></div>
-            <div class="d"><?php echo $wpslug_enabled ? esc_html($wpslug_modes[$wpslug_conv] ?? $wpslug_conv) : esc_html__("未启用。", "wpslug"); ?></div>
-          </div>
-          <div class="r"><span class="pill <?php echo $wpslug_enabled ? "ok" : "warn"; ?>"><?php echo $wpslug_enabled ? esc_html__("已开启", "wpslug") : esc_html__("未开启", "wpslug"); ?></span></div>
-        </div>
-        <div class="simple-row is-static">
-          <div class="tile <?php echo $wpslug_mind ? "ok" : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("sparkle") : ""; ?></div>
-          <div>
-            <div class="t"><?php esc_html_e("文派心思", "wpslug"); ?></div>
-            <div class="d"><?php echo $wpslug_mind ? esc_html__("已装好。充值请到文派心思。", "wpslug") : esc_html__("装上后才能用语义拼音和翻译。", "wpslug"); ?></div>
-          </div>
-          <div class="r"><span class="pill <?php echo $wpslug_mind ? "ok" : ""; ?>"><?php echo $wpslug_mind ? esc_html__("已安装", "wpslug") : esc_html__("未安装", "wpslug"); ?></span></div>
-        </div>
-        <div class="simple-row is-static">
-          <div class="tile ok"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("info") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
-          <div>
-            <div class="t"><?php esc_html_e("文章类型范围", "wpslug"); ?></div>
-            <div class="d"><?php echo esc_html(implode("、", $wpslug_types)); ?></div>
-          </div>
-          <div class="r"><span class="scope"><?php echo esc_html(implode(" / ", $wpslug_types)); ?></span></div>
-        </div>
+        <?php
+        echo Wenpai_Admin_UI::row_html([
+            "icon" => "flash",
+            "state" => $wpslug_enabled ? "ok" : "warn",
+            "title" => __("转换模式", "wpslug"),
+            "desc" => $wpslug_enabled ? ($wpslug_modes[$wpslug_conv] ?? $wpslug_conv) : __("未启用。", "wpslug"),
+            "pill" => ["text" => $wpslug_enabled ? __("已开启", "wpslug") : __("未开启", "wpslug"), "state" => $wpslug_enabled ? "ok" : "warn"],
+        ]);
+        echo Wenpai_Admin_UI::row_html([
+            "icon" => "sparkle",
+            "state" => $wpslug_mind ? "ok" : "",
+            "title" => __("文派心思", "wpslug"),
+            "desc" => $wpslug_mind ? __("已装好。充值请到文派心思。", "wpslug") : __("装上后才能用语义拼音和翻译。", "wpslug"),
+            "pill" => ["text" => $wpslug_mind ? __("已安装", "wpslug") : __("未安装", "wpslug"), "state" => $wpslug_mind ? "ok" : ""],
+        ]);
+        echo Wenpai_Admin_UI::row_html([
+            "icon" => "info",
+            "state" => "ok",
+            "title" => __("文章类型范围", "wpslug"),
+            "desc" => implode("、", $wpslug_types),
+            "right_html" => '<span class="scope">' . esc_html(implode(" / ", $wpslug_types)) . '</span>',
+        ]);
+        ?>
       </section>
     </div>
 
@@ -116,22 +117,31 @@ Wenpai_Admin_Shell::open([
         <h1 class="wenpai-h1"><?php esc_html_e("设置", "wpslug"); ?></h1>
         <p class="wenpai-lede"><?php echo "advanced" === $mode ? esc_html__("一次只看一组。预览在这页下面。", "wpslug") : esc_html__("选好模式后，在下面直接看别名。", "wpslug"); ?></p>
       </div>
-      <div class="mode">
-        <span class="seg">
-          <a class="<?php echo "simple" === $mode ? "on" : ""; ?>" href="<?php echo esc_url($url("settings", ["mode" => "simple"])); ?>"><?php esc_html_e("简单", "wpslug"); ?></a>
-          <a class="<?php echo "advanced" === $mode ? "on" : ""; ?>" href="<?php echo esc_url($url("settings", ["mode" => "advanced", "section" => $section])); ?>"><?php esc_html_e("Advanced", "wpslug"); ?></a>
-        </span>
-      </div>
+      <?php
+      echo Wenpai_Admin_UI::mode_switch_html([
+          "label" => __("设置深度", "wpslug"),
+          "items" => [
+              ["label" => __("简单", "wpslug"), "href" => $url("settings", ["mode" => "simple"]), "current" => "simple" === $mode],
+              ["label" => __("Advanced", "wpslug"), "href" => $url("settings", ["mode" => "advanced", "section" => $section]), "current" => "advanced" === $mode],
+          ],
+      ]);
+      ?>
     </div>
     <div class="wenpai-stack">
     <?php if ("advanced" === $mode) : ?>
-    <div class="mode wpslug-sections">
-      <span class="seg">
-        <?php foreach ($adv_sections as $wpslug_section_id => $wpslug_meta) : ?>
-        <a class="<?php echo $section === $wpslug_section_id ? "on" : ""; ?>" href="<?php echo esc_url($url("settings", ["mode" => "advanced", "section" => $wpslug_section_id])); ?>"><?php echo esc_html($wpslug_meta["label"]); ?></a>
-        <?php endforeach; ?>
-      </span>
-    </div>
+    <?php
+    echo Wenpai_Admin_UI::subnav_html([
+        "current" => $section,
+        "label" => __("设置分组", "wpslug"),
+        "items" => array_map(static function ($wpslug_id, $wpslug_meta) use ($url) {
+            return [
+                "id" => $wpslug_id,
+                "label" => $wpslug_meta["label"],
+                "url" => $url("settings", ["mode" => "advanced", "section" => $wpslug_id]),
+            ];
+        }, array_keys($adv_sections), array_values($adv_sections)),
+    ]);
+    ?>
     <?php endif; ?>
     <form method="post" action="options.php" id="wpslug-settings-form">
       <?php settings_fields("wpslug_settings"); ?>
@@ -149,16 +159,23 @@ Wenpai_Admin_Shell::open([
           $wpslug_fw = $this->settings->getFramework();
           $wpslug_on_attrs = $wpslug_fw ? $wpslug_fw->depends_on_attrs(["field" => "enable_conversion", "value" => true]) : "";
           ?>
-          <div class="simple-row">
-            <div class="tile accent"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("flash") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
-            <div>
-              <div class="t" id="wpslug-row-enable_conversion-t"><?php esc_html_e("Enable Plugin", "wpslug"); ?></div>
-              <div class="d" id="wpslug-row-enable_conversion-d"><?php esc_html_e("Enable automatic slug conversion for your content", "wpslug"); ?></div>
-            </div>
-            <div class="r">
-              <?php if ($wpslug_fw) { $wpslug_fw->render_control("enable_conversion", ["labelledby" => "wpslug-row-enable_conversion-t", "describedby" => "wpslug-row-enable_conversion-d"]); } ?>
-            </div>
-          </div>
+          <?php
+          $wpslug_control = "";
+          if ($wpslug_fw) {
+              ob_start();
+              $wpslug_fw->render_control("enable_conversion", ["labelledby" => "wpslug-row-enable_conversion-t", "describedby" => "wpslug-row-enable_conversion-d"]);
+              $wpslug_control = (string) ob_get_clean();
+          }
+          echo Wenpai_Admin_UI::row_html([
+              "icon" => "flash",
+              "state" => "accent",
+              "title" => __("Enable Plugin", "wpslug"),
+              "title_id" => "wpslug-row-enable_conversion-t",
+              "desc" => __("Enable automatic slug conversion for your content", "wpslug"),
+              "desc_id" => "wpslug-row-enable_conversion-d",
+              "control_html" => $wpslug_control,
+          ]);
+          ?>
           <div class="wpslug-on-group"<?php echo $wpslug_on_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- kit-escaped data attributes. ?>>
           <div class="wpslug-mode-field">
             <?php if ($wpslug_fw) { $wpslug_fw->render_field("conversion_mode"); } ?>
@@ -190,14 +207,15 @@ Wenpai_Admin_Shell::open([
             }
             $wpslug_meta = $adv_sections[$wpslug_section_id];
             ?>
-        <section class="card"<?php echo $section === $wpslug_section_id ? "" : " hidden"; ?>>
-          <div class="card-head">
-            <span class="tile accent"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg($wpslug_meta["icon"]) : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
-            <div>
-              <h2 class="card-title"><?php echo esc_html($wpslug_meta["label"]); ?></h2>
-              <p class="card-sub"><?php echo esc_html($wpslug_meta["sub"]); ?></p>
-            </div>
-          </div>
+        <?php
+        echo Wenpai_Admin_UI::card_open_html([
+            "title" => $wpslug_meta["label"],
+            "sub" => $wpslug_meta["sub"],
+            "icon" => $wpslug_meta["icon"],
+            "state" => "accent",
+            "attrs" => $section === $wpslug_section_id ? [] : ["hidden" => true],
+        ]);
+        ?>
           <?php $this->{$wpslug_method}($options); ?>
           <?php if ($section === $wpslug_section_id) : ?>
           <div class="card-foot">
@@ -229,21 +247,24 @@ Wenpai_Admin_Shell::open([
     </div>
     <div class="wenpai-stack">
       <?php $this->renderPreviewCard(); ?>
-      <section class="card">
-        <div class="card-head">
-          <span class="tile bad"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("info") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
-          <div>
-            <h2 class="card-title"><?php esc_html_e("Reset to Defaults", "wpslug"); ?></h2>
-            <p class="card-sub"><?php esc_html_e("把本插件的设置恢复为默认值，不可撤销。", "wpslug"); ?></p>
-          </div>
-        </div>
+      <?php
+      echo Wenpai_Admin_UI::card_open_html([
+          "title" => __("Reset to Defaults", "wpslug"),
+          "sub" => __("把本插件的设置恢复为默认值，不可撤销。", "wpslug"),
+          "icon" => "info",
+          "state" => "bad",
+      ]);
+      ?>
         <form method="post" action="<?php echo esc_url(admin_url("admin-post.php")); ?>">
           <?php wp_nonce_field("wpslug_reset"); ?>
           <input type="hidden" name="action" value="wpslug_reset">
-          <div class="wenpai-gate">
-            <label><input type="checkbox" name="wpslug_reset_confirm" value="1"> <?php esc_html_e("I confirm I want to restore this plugin's settings to their defaults", "wpslug"); ?></label>
-            <p class="meta"><?php esc_html_e("这会清掉本插件的设置，不清文章别名。", "wpslug"); ?></p>
-          </div>
+          <?php
+          echo Wenpai_Admin_UI::gate_html([
+              "name" => "wpslug_reset_confirm",
+              "label" => __("I confirm I want to restore this plugin's settings to their defaults", "wpslug"),
+              "note" => __("这会清掉本插件的设置，不清文章别名。", "wpslug"),
+          ]);
+          ?>
           <div class="card-foot start">
             <span class="meta"><?php esc_html_e("未勾选不能点。", "wpslug"); ?></span>
             <button type="submit" class="btn btn-danger" data-wenpai-need-apply disabled><?php esc_html_e("Reset to Defaults", "wpslug"); ?></button>
@@ -258,14 +279,15 @@ Wenpai_Admin_Shell::open([
         <p class="wenpai-lede"><?php esc_html_e("新保存的标题按所选模式写成拉丁字母别名。", "wpslug"); ?></p>
       </div>
     </div>
-    <section class="card wpslug-help-card">
-      <div class="card-head">
-        <span class="tile ok"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("flash") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
-        <div>
-          <h2 class="card-title"><?php esc_html_e("快速开始", "wpslug"); ?></h2>
-          <p class="card-sub"><?php esc_html_e("首次配置按以下顺序完成。", "wpslug"); ?></p>
-        </div>
-      </div>
+    <?php
+    echo Wenpai_Admin_UI::card_open_html([
+        "class" => "wpslug-help-card",
+        "title" => __("快速开始", "wpslug"),
+        "sub" => __("首次配置按以下顺序完成。", "wpslug"),
+        "icon" => "flash",
+        "state" => "ok",
+    ]);
+    ?>
       <ol class="wpslug-help-steps">
         <li>
           <strong><?php
@@ -299,7 +321,7 @@ Wenpai_Admin_Shell::open([
     <div class="wpslug-help-stack">
       <details class="card wpslug-help-details" open>
         <summary>
-          <span class="tile"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("home") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+          <?php echo Wenpai_Admin_UI::tile_html(["icon" => "home"]); ?>
           <span class="wpslug-help-summary-text">
             <strong><?php esc_html_e("后台页面", "wpslug"); ?></strong>
             <span><?php esc_html_e("概览、设置、工具各负责什么。", "wpslug"); ?></span>
@@ -322,7 +344,7 @@ Wenpai_Admin_Shell::open([
       </details>
       <details class="card wpslug-help-details">
         <summary>
-          <span class="tile"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("equalizer") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+          <?php echo Wenpai_Admin_UI::tile_html(["icon" => "equalizer"]); ?>
           <span class="wpslug-help-summary-text">
             <strong><?php esc_html_e("转换模式", "wpslug"); ?></strong>
             <span><?php esc_html_e("按标题语言选。失败会退回本地拼音，保存不会中断。", "wpslug"); ?></span>
@@ -343,7 +365,7 @@ Wenpai_Admin_Shell::open([
       </details>
       <details class="card wpslug-help-details">
         <summary>
-          <span class="tile"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("help") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+          <?php echo Wenpai_Admin_UI::tile_html(["icon" => "help"]); ?>
           <span class="wpslug-help-summary-text">
             <strong><?php esc_html_e("常见问题", "wpslug"); ?></strong>
             <span><?php esc_html_e("关掉启用、预览、重置、批量。", "wpslug"); ?></span>
@@ -376,7 +398,7 @@ Wenpai_Admin_Shell::open([
       </details>
       <details class="card wpslug-help-details">
         <summary>
-          <span class="tile"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("server") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+          <?php echo Wenpai_Admin_UI::tile_html(["icon" => "server"]); ?>
           <span class="wpslug-help-summary-text">
             <strong><?php esc_html_e("WP-CLI", "wpslug"); ?></strong>
             <span><?php esc_html_e("在已激活插件的站点上可用。", "wpslug"); ?></span>
@@ -390,14 +412,14 @@ wp slug doctor</code></pre>
           <p class="wpslug-help-note"><?php esc_html_e("完整说明在文档站。不要在命令行里粘贴翻译密钥。", "wpslug"); ?></p>
         </div>
       </details>
-      <section class="card wpslug-help-card">
-        <div class="card-head">
-          <span class="tile"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("feedback") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
-          <div>
-            <h2 class="card-title"><?php esc_html_e("需要更多帮助", "wpslug"); ?></h2>
-            <p class="card-sub"><?php esc_html_e("产品文档与工单支持请访问 wpcy.com。", "wpslug"); ?></p>
-          </div>
-        </div>
+      <?php
+      echo Wenpai_Admin_UI::card_open_html([
+          "class" => "wpslug-help-card",
+          "title" => __("需要更多帮助", "wpslug"),
+          "sub" => __("产品文档与工单支持请访问 wpcy.com。", "wpslug"),
+          "icon" => "feedback",
+      ]);
+      ?>
         <div class="card-foot start">
           <a class="btn btn-secondary" href="https://wpcy.com/slug" target="_blank" rel="noopener"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("external") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php esc_html_e("打开文档", "wpslug"); ?></a>
           <a class="btn btn-ghost" href="https://wpcy.com/support" target="_blank" rel="noopener"><?php esc_html_e("提交反馈", "wpslug"); ?></a>

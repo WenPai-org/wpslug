@@ -143,7 +143,7 @@ Wenpai_Admin_Shell::open([
     ]);
     ?>
     <?php endif; ?>
-    <form method="post" action="options.php" id="wpslug-settings-form">
+    <form method="post" action="options.php" id="wpslug-settings-form" data-wenpai-groups data-wenpai-groups-default="<?php echo esc_attr(array_key_first($adv_sections)); ?>">
       <?php settings_fields("wpslug_settings"); ?>
       <?php
       // Kit per-tab save: this form writes only the simple page's fields or the
@@ -206,6 +206,13 @@ Wenpai_Admin_Shell::open([
                 continue;
             }
             $wpslug_meta = $adv_sections[$wpslug_section_id];
+            // Kit 0.10 group contract: same markers as Wenpai_Admin_UI::group_attrs()
+            // (card_open_html takes an attrs array, not a raw attribute string).
+            $wpslug_card_attrs = ["data-wenpai-group" => $wpslug_section_id];
+            if ($section !== $wpslug_section_id) {
+                $wpslug_card_attrs["hidden"] = true;
+                $wpslug_card_attrs["data-wenpai-view-hidden"] = true;
+            }
             ?>
         <?php
         echo Wenpai_Admin_UI::card_open_html([
@@ -213,7 +220,7 @@ Wenpai_Admin_Shell::open([
             "sub" => $wpslug_meta["sub"],
             "icon" => $wpslug_meta["icon"],
             "state" => "accent",
-            "attrs" => $section === $wpslug_section_id ? [] : ["hidden" => true],
+            "attrs" => $wpslug_card_attrs,
         ]);
         ?>
           <?php $this->{$wpslug_method}($options); ?>

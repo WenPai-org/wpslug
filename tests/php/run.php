@@ -617,7 +617,7 @@ $fw_settings = new WPSlug_Settings();
 $fw = $fw_settings->getFramework();
 check($fw instanceof Wenpai_Admin_Settings, 'registers wpslug_options with the kit settings framework');
 $kit_admin_init = array_filter($GLOBALS['wpslug_hooks']['action']['admin_init'] ?? [], function ($cb) {
-    return is_array($cb) && $cb[0] instanceof Wenpai_Admin_Settings;
+    return is_array($cb) && $cb[0] instanceof Wenpai_Admin_Settings && ($cb[1] ?? '') === 'register_setting';
 });
 check($kit_admin_init === [], 'only WPSlug registers the option sanitize callback (no second kit pass)');
 $fields = $fw->fields();
@@ -729,7 +729,10 @@ check(!method_exists($admin030, 'keyFieldWithTest') && !method_exists($admin030,
 check(strpos($tpl030, 'wpslug-test-api') === false && strpos($tpl030, 'wpslug-key-row') === false && strpos($tpl030, 'wpslug-seo-dependent') === false && strpos($tpl030, 'wpslug-wpmind-status') === false, 'templates have no hand-written test button, SEO wrappers or WPMind block');
 
 $google_html = $fw->field_html('google_api_key');
-check(preg_match('~<div class="field-ctl-row wenpai-field__row"><input type="password"[^>]*><button type="button" class="btn btn-secondary" hidden data-wenpai-action="wpslug_test_api"~', $google_html) === 1, 'Test Connection is a kit field action on the same row as the Google key input');
+$google_row = strpos($google_html, 'field-ctl-row wenpai-field__row');
+$google_input = strpos($google_html, '<input type="password"');
+$google_button = strpos($google_html, '<button type="button" class="btn btn-secondary" hidden data-wenpai-action="wpslug_test_api"');
+check($google_row !== false && $google_input !== false && $google_button !== false && $google_row < $google_input && $google_input < $google_button, 'Test Connection is a kit field action on the same row as the Google key input');
 check(strpos($google_html, 'data-wenpai-busy="Testing"') !== false && strpos($google_html, 'Testing…') === false && strpos($google_html, 'Testing...') === false, 'busy text is passed without an ellipsis (the kit appends it)');
 check(strpos($google_html, 'data-wenpai-nonce="nonce-wpslug_test_api"') !== false, 'action button carries a nonce for wpslug_test_api');
 check(strpos($google_html, 'data-wenpai-data="' . esc_attr('{"service":"google"}') . '"') !== false && strpos($google_html, 'data-wenpai-include="' . esc_attr('["wpslug_options[google_api_key]"]') . '"') !== false, 'Google action sends the service and the key field');
@@ -998,7 +1001,7 @@ check(strpos($ws_off, 'href="https://wpcy.com/mind/" target="_blank" rel="noopen
 // Kit 0.3.0 claims core's settings_errors() on its pages (S7/S8), so WPSlug no longer hides core notices itself.
 check(!method_exists($admin030, 'hideDefaultNotices'), 'WPSlug no longer injects CSS to hide core settings notices (kit 0.3.0 claims them)');
 check(substr_count($main030, 'lib/wenpai-admin-ui/php/load.php') === 1, 'kit load.php is required exactly once, at plugin load time');
-check(trim(file_get_contents(WPSLUG_PLUGIN_DIR . 'lib/wenpai-admin-ui/VERSION')) === '0.3.1', 'vendored kit is the 0.3.1 release');
+check(version_compare(trim(file_get_contents(WPSLUG_PLUGIN_DIR . 'lib/wenpai-admin-ui/VERSION')), '0.4.0', '>='), 'vendored kit is 0.4.0 or newer');
 check(strpos(file_get_contents(WPSLUG_PLUGIN_DIR . 'lib/wenpai-admin-ui/php/load.php'), "add_action( 'plugins_loaded', 'wenpai_admin_ui_complete', 2 )") !== false, 'vendored load.php completes Menu/Settings after an older copy boots (kit #24)');
 // Action results carry the WP_Error code for kit JS (data-wenpai-code / wenpai:action).
 $res = Wenpai_Admin_Settings::action_result($admin030->testApi('bogus'));

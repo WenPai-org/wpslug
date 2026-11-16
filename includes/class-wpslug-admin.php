@@ -236,6 +236,23 @@ class WPSlug_Admin
     }
 
     /**
+     * Same attributes as dependsAttrs(), as an array for Wenpai_Admin_UI attrs.
+     *
+     * @param array $depends_on Same shape as the schema key.
+     * @return array<string, string>
+     */
+    private function dependsAttrList(array $depends_on)
+    {
+        $attrs = [];
+        if (preg_match_all('/([a-zA-Z0-9-]+)="([^"]*)"/', $this->dependsAttrs($depends_on), $m, PREG_SET_ORDER)) {
+            foreach ($m as $pair) {
+                $attrs[$pair[1]] = html_entity_decode($pair[2], ENT_QUOTES);
+            }
+        }
+        return $attrs;
+    }
+
+    /**
      * Simple-page row: title and description on the left, the kit switch on the right.
      *
      * @param string $id Toggle field id.
@@ -248,30 +265,31 @@ class WPSlug_Admin
         }
         $f = $fw->fields()[$id];
         $rid = "wpslug-row-" . $id;
-        ?>
-          <div class="simple-row"<?php echo $this->dependsAttrs((array) $f["depends_on"]); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts. ?>>
-            <div>
-              <div class="t" id="<?php echo esc_attr($rid); ?>-t"><?php echo esc_html($f["label"]); ?></div>
-              <div class="d" id="<?php echo esc_attr($rid); ?>-d"><?php echo esc_html($f["desc"]); ?></div>
-            </div>
-            <div class="r">
-              <?php $fw->render_control($id, ["labelledby" => $rid . "-t", "describedby" => $rid . "-d"]); ?>
-            </div>
-          </div>
-        <?php
+        ob_start();
+        $fw->render_control($id, ["labelledby" => $rid . "-t", "describedby" => $rid . "-d"]);
+        $control = (string) ob_get_clean();
+        echo Wenpai_Admin_UI::row_html([
+            "title" => $f["label"],
+            "title_id" => $rid . "-t",
+            "desc" => $f["desc"],
+            "desc_id" => $rid . "-d",
+            "control_html" => $control,
+            "attrs" => $this->dependsAttrList((array) $f["depends_on"]),
+        ]);
     }
 
     private function renderPreviewCard()
     {
         ?>
-        <section class="card wpslug-preview">
-          <div class="card-head">
-            <span class="tile accent"><?php echo class_exists("Wenpai_Admin_Icons", false) ? Wenpai_Admin_Icons::svg("eye") : ""; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
-            <div>
-              <h2 class="card-title"><?php esc_html_e("Preview", "wpslug"); ?></h2>
-              <p class="card-sub"><?php esc_html_e("Test your conversion settings with live preview.", "wpslug"); ?></p>
-            </div>
-          </div>
+        <?php
+        echo Wenpai_Admin_UI::card_open_html([
+            "class" => "wpslug-preview",
+            "title" => __("Preview", "wpslug"),
+            "sub" => __("Test your conversion settings with live preview.", "wpslug"),
+            "icon" => "eye",
+            "state" => "accent",
+        ]);
+        ?>
           <div class="wpslug-preview-fields">
             <div class="field">
               <label class="field-label" for="wpslug-preview-input"><?php esc_html_e("原文", "wpslug"); ?></label>

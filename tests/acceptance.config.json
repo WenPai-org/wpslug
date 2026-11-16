@@ -1,0 +1,12 @@
+{
+  "slug": "wpslug",
+  "out": "/tmp/wpslug-acceptance-out",
+  "tabs": [
+    { "id": "overview", "query": "&tab=overview" },
+    { "id": "settings", "query": "&tab=settings" },
+    { "id": "settings-advanced", "query": "&tab=settings&mode=advanced" },
+    { "id": "tools", "query": "&tab=tools" },
+    { "id": "help", "query": "&tab=help" }
+  ],
+  "widths": [1280, 782, 390]
+}

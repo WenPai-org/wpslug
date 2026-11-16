@@ -600,6 +600,7 @@ function remove_action($hook, $callback) {
     }
     return true;
 }
+require_once WPSLUG_PLUGIN_DIR . 'lib/wenpai-admin-ui/php/class-wenpai-admin-ui.php';
 require_once WPSLUG_PLUGIN_DIR . 'lib/wenpai-admin-ui/php/class-wenpai-admin-settings.php';
 
 $kit_version = trim((string) file_get_contents(WPSLUG_PLUGIN_DIR . 'lib/wenpai-admin-ui/VERSION'));
@@ -826,6 +827,21 @@ foreach ($tab_map as $id => $t) {
     if ($fields[$id]['tab'] !== $t) { check(false, "schema tab of {$id}"); }
 }
 check($fields['wpmind_status']['tab'] === 'translate', 'schema carries each field\'s tab (WPMind status on translate)');
+
+// Kit 0.10 group contract: advanced-section fields carry 'group' = section id;
+// simple-tab and untabbed fields have none. field_html() then prints
+// data-wenpai-group and hides fields of other ?section= values server-side.
+check($fields['smart_punctuation']['group'] === 'seo' && $fields['media_conversion_mode']['group'] === 'media' && $fields['wpmind_status']['group'] === 'translate', 'advanced fields carry their section as group');
+check($fields['auto_convert']['group'] === '' && $fields['conversion_mode']['group'] === '' && $fields['max_length']['group'] === '', 'simple-tab and untabbed fields have no group');
+$pinyin_field_html = $fw->field_html('pinyin_format');
+check(strpos($pinyin_field_html, 'data-wenpai-group="pinyin"') !== false && strpos($pinyin_field_html, 'data-wenpai-view-hidden') === false, 'field of the fallback section is not view-hidden without ?section=');
+$seo_field_html = $fw->field_html('smart_punctuation');
+check(strpos($seo_field_html, 'data-wenpai-group="seo"') !== false && strpos($seo_field_html, 'data-wenpai-view-hidden') !== false && strpos($seo_field_html, ' hidden') !== false, 'field of another section is view-hidden server-side');
+$_GET['section'] = 'seo';
+$seo_field_html = $fw->field_html('smart_punctuation');
+$media_field_html = $fw->field_html('media_conversion_mode');
+unset($_GET['section']);
+check(strpos($seo_field_html, 'data-wenpai-view-hidden') === false && strpos($media_field_html, 'data-wenpai-view-hidden') !== false, '?section=seo shows seo fields and keeps media fields view-hidden');
 
 // Each form renders exactly the fields of its tab (else an unrendered checkbox would read as unticked).
 $GLOBALS['wpslug_options'] = array_merge((new WPSlug_Settings())->getDefaults(), ['conversion_mode' => 'translation', 'translation_service' => 'google']);

@@ -120,6 +120,17 @@ class WPSlug_Settings
         if (!class_exists("Wenpai_Admin_Settings")) {
             return null;
         }
+        // Kit 0.10 view contract: fields carry 'group' => section id and the
+        // framework gets the visible sections map, so field_html() prints
+        // data-wenpai-group + server-side hidden for sections other than the
+        // open ?section=. The map is recomputed per request from saved options.
+        $visible = $this->visibleSections($this->getOptions());
+        $sections = [];
+        foreach ($this->advancedSections() as $id => $meta) {
+            if (in_array($id, $visible, true)) {
+                $sections[$id] = $meta["label"];
+            }
+        }
         $fw = Wenpai_Admin_Settings::get_instance($this->option_name);
         if (null === $fw) {
             $fw = Wenpai_Admin_Settings::register(
@@ -128,6 +139,7 @@ class WPSlug_Settings
                 [
                     "group" => "wpslug_settings",
                     "strings" => $this->getFrameworkStrings(),
+                    "sections" => $sections,
                 ]
             );
             if (function_exists("remove_action")) {
@@ -949,6 +961,9 @@ class WPSlug_Settings
                 "max" => isset($m["max"]) ? $m["max"] : null,
                 "depends_on" => isset($m["depends_on"]) ? $m["depends_on"] : [],
                 "tab" => isset($tabs[$key]) ? $tabs[$key] : "",
+                // Kit 0.10 group contract: advanced-section fields join the
+                // ?section= view rules; simple-tab and untabbed fields have no group.
+                "group" => isset($tabs[$key]) && "" !== $tabs[$key] && "simple" !== $tabs[$key] ? $tabs[$key] : "",
                 // WPSlug validators keep the stored shapes of 1.3.x (see tests).
                 "sanitize" => function ($v) use ($fn, $default) { return $fn(null === $v ? $default : $v); },
             ];
@@ -967,8 +982,77 @@ class WPSlug_Settings
             "depends_on" => ["field" => "translation_service", "value" => "wpmind"],
             "status" => function () use ($settings) { return $settings->getWpmindStatus(); },
             "tab" => "translate",
+            "group" => "translate",
         ];
         return $schema;
+    }
+
+    /**
+     * Advanced settings sections (kit 0.10 group contract): id => meta used by
+     * the settings template for the subnav and cards, and by getFramework()
+     * for the 'sections' map. Order matters: pinyin is always first, which is
+     * also the fallback section.
+     *
+     * @return array<string, array{label: string, icon: string, sub: string}>
+     */
+    public function advancedSections()
+    {
+        return [
+            "pinyin" => [
+                "label" => __("Pinyin", "wpslug"),
+                "icon" => "flash",
+                "sub" => __("Configure Chinese characters to Pinyin romanization.", "wpslug"),
+            ],
+            "translit" => [
+                "label" => __("Transliteration", "wpslug"),
+                "icon" => "map",
+                "sub" => __("Convert foreign scripts (Cyrillic, Arabic, Greek) to Latin alphabet.", "wpslug"),
+            ],
+            "translate" => [
+                "label" => __("Translation", "wpslug"),
+                "icon" => "sparkle",
+                "sub" => __("Use online translation services to convert text to English slugs.", "wpslug"),
+            ],
+            "seo" => [
+                "label" => __("SEO Optimization", "wpslug"),
+                "icon" => "equalizer",
+                "sub" => __("Optimize slugs for better search engine performance and user experience.", "wpslug"),
+            ],
+            "media" => [
+                "label" => __("Media Files", "wpslug"),
+                "icon" => "image",
+                "sub" => __("Configure how media file names are handled during upload.", "wpslug"),
+            ],
+            "types" => [
+                "label" => __("Content Types", "wpslug"),
+                "icon" => "server",
+                "sub" => __("哪些文章类型和分类法参与转换。", "wpslug"),
+            ],
+        ];
+    }
+
+    /**
+     * Advanced sections shown for the saved settings. Decided on the server
+     * from saved values (no live switching): transliteration only when it is
+     * the global mode; translation when it is the global mode or a post type
+     * uses multi-language translation. Pinyin is the fallback of every mode,
+     * so it always shows.
+     *
+     * @param array $options Saved options.
+     * @return string[] Section ids.
+     */
+    public function visibleSections($options)
+    {
+        $mode = isset($options["conversion_mode"]) ? (string) $options["conversion_mode"] : "pinyin";
+        $map = isset($options["post_type_modes"]) && is_array($options["post_type_modes"]) ? $options["post_type_modes"] : [];
+        $ids = ["pinyin"];
+        if ("transliteration" === $mode) {
+            $ids[] = "translit";
+        }
+        if ("translation" === $mode || in_array("seo_slug", $map, true)) {
+            $ids[] = "translate";
+        }
+        return array_merge($ids, ["seo", "media", "types"]);
     }
 
     /**

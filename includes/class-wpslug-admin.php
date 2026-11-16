@@ -329,40 +329,8 @@ class WPSlug_Admin
         }
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin view parameter.
         $section = isset($_GET["section"]) ? sanitize_key(wp_unslash($_GET["section"])) : "pinyin";
-        $adv_sections = [
-            "pinyin" => [
-                "label" => __("Pinyin", "wpslug"),
-                "icon" => "flash",
-                "sub" => __("Configure Chinese characters to Pinyin romanization.", "wpslug"),
-            ],
-            "translit" => [
-                "label" => __("Transliteration", "wpslug"),
-                "icon" => "map",
-                "sub" => __("Convert foreign scripts (Cyrillic, Arabic, Greek) to Latin alphabet.", "wpslug"),
-            ],
-            "translate" => [
-                "label" => __("Translation", "wpslug"),
-                "icon" => "sparkle",
-                "sub" => __("Use online translation services to convert text to English slugs.", "wpslug"),
-            ],
-            "seo" => [
-                "label" => __("SEO Optimization", "wpslug"),
-                "icon" => "equalizer",
-                "sub" => __("Optimize slugs for better search engine performance and user experience.", "wpslug"),
-            ],
-            "media" => [
-                "label" => __("Media Files", "wpslug"),
-                "icon" => "image",
-                "sub" => __("Configure how media file names are handled during upload.", "wpslug"),
-            ],
-            "types" => [
-                "label" => __("Content Types", "wpslug"),
-                "icon" => "server",
-                "sub" => __("哪些文章类型和分类法参与转换。", "wpslug"),
-            ],
-        ];
         $adv_sections = array_intersect_key(
-            $adv_sections,
+            $this->settings->advancedSections(),
             array_flip($this->visibleSections($options))
         );
         if (!isset($adv_sections[$section])) {
@@ -391,16 +359,7 @@ class WPSlug_Admin
      */
     public function visibleSections($options)
     {
-        $mode = isset($options["conversion_mode"]) ? (string) $options["conversion_mode"] : "pinyin";
-        $map = isset($options["post_type_modes"]) && is_array($options["post_type_modes"]) ? $options["post_type_modes"] : [];
-        $ids = ["pinyin"];
-        if ("transliteration" === $mode) {
-            $ids[] = "translit";
-        }
-        if ("translation" === $mode || in_array("seo_slug", $map, true)) {
-            $ids[] = "translate";
-        }
-        return array_merge($ids, ["seo", "media", "types"]);
+        return $this->settings->visibleSections($options);
     }
 
     private function renderPinyinSettings($options)

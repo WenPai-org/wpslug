@@ -220,8 +220,9 @@ if ( ! function_exists( 'wenpai_admin_ui_complete' ) ) {
 			return;
 		}
 		$dir = $GLOBALS['wenpai_admin_ui_winner']['dir'] . '/php/';
-		foreach ( array( 'class-wenpai-admin-menu.php', 'class-wenpai-admin-ui.php', 'class-wenpai-admin-settings.php', 'class-wenpai-admin-action.php', 'class-wenpai-admin-capability.php', 'class-wenpai-admin-tools.php', 'class-wenpai-admin-collection.php' ) as $file ) {
-			$path = $dir . $file;
+		// Glob, not a hard-coded list: this function body may come from an older
+		// copy that was required first, so it must load whatever the winner ships.
+		foreach ( (array) glob( $dir . 'class-wenpai-admin-*.php' ) as $path ) {
 			if ( is_readable( $path ) ) {
 				require_once $path;
 			}

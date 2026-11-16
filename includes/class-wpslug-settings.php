@@ -214,6 +214,28 @@ class WPSlug_Settings
             "repeater_add" => __("Add an item", "wpslug"),
             "repeater_move_up" => __("Move up", "wpslug"),
             "repeater_move_down" => __("Move down", "wpslug"),
+            // Kit 0.7–0.10 field-type strings.
+            "media_select" => __("Select", "wpslug"),
+            "media_clear" => __("Clear", "wpslug"),
+            "media_empty" => __("None selected", "wpslug"),
+            /* translators: 1: selected count, 2: total count. */
+            "checkgroup_count" => __("Selected %1$d / %2$d", "wpslug"),
+            "checkgroup_all" => __("Select all", "wpslug"),
+            "checkgroup_none" => __("Clear", "wpslug"),
+            "catalog_filter" => __("Filter…", "wpslug"),
+            "entity_search" => __("Search…", "wpslug"),
+            "entity_empty" => __("No matches", "wpslug"),
+            "entity_clear" => __("Clear", "wpslug"),
+            "file_choose" => __("Choose file", "wpslug"),
+            "file_drop" => __("Drop files here or click to choose", "wpslug"),
+            "file_remove" => __("Remove", "wpslug"),
+            "file_uploading" => __("Uploading…", "wpslug"),
+            "file_failed" => __("Upload failed", "wpslug"),
+            "tags_placeholder" => __("Type and press Enter to add", "wpslug"),
+            /* translators: %s: next scheduled run time. */
+            "schedule_next" => __("Next run: %s", "wpslug"),
+            "schedule_none" => __("Not scheduled", "wpslug"),
+            "generate" => __("Generate", "wpslug"),
         ];
     }
 

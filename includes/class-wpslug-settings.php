@@ -231,7 +231,7 @@ class WPSlug_Settings
             "media_clear" => __("Clear", "wpslug"),
             "media_empty" => __("None selected", "wpslug"),
             /* translators: 1: selected count, 2: total count. */
-            "checkgroup_count" => __("Selected %1$d / %2$d", "wpslug"),
+            "checkgroup_count" => __('Selected %1$d / %2$d', "wpslug"),
             "checkgroup_all" => __("Select all", "wpslug"),
             "checkgroup_none" => __("Clear", "wpslug"),
             "catalog_filter" => __("Filter…", "wpslug"),

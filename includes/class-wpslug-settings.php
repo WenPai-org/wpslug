@@ -248,6 +248,15 @@ class WPSlug_Settings
             "schedule_next" => __("Next run: %s", "wpslug"),
             "schedule_none" => __("Not scheduled", "wpslug"),
             "generate" => __("Generate", "wpslug"),
+            /* translators: %s: item title (sortable move-up button aria-label). */
+            "sortable_move_up" => __("Move %s up", "wpslug"),
+            /* translators: %s: item title (sortable move-down button aria-label). */
+            "sortable_move_down" => __("Move %s down", "wpslug"),
+            /* translators: 1: item title, 2: new position, 3: item count. */
+            "sortable_moved" => __("%1$s moved to position %2$d of %3$d", "wpslug"),
+            "chart_data" => __("View data", "wpslug"),
+            "statbar_empty" => __("No data yet", "wpslug"),
+            "copy_hint" => __("(click to copy)", "wpslug"),
         ];
     }
 

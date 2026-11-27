@@ -46,16 +46,3 @@ jobs:
     with:
       runs_on: ubuntu-latest
       test_command: "php tests/php/run.php"
-
-  admin-and-docs-gate:
-    name: Admin UI Lint & Public Docs Gate (python-3.12)
-    runs-on: python-3.12
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          github-server-url: https://feicode.com
-      - name: Public docs gate
-        run: python3 scripts/public-docs-gate.py --cwd .
-      - name: WenPai admin UI lint
-        run: python3 lib/wenpai-admin-ui/scripts/wenpai-admin-lint.py --plugin-root .

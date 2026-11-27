@@ -14,9 +14,9 @@
 #       tags: ["v*"]
 #   jobs:
 #     release:
-#       uses: https://feicode.com/WenPai-org/ci-workflows/.forgejo/workflows/reusable-wp-plugin-release.yml@main
+#       uses: WenPai-org/ci-workflows/.forgejo/workflows/reusable-wp-plugin-release.yml@main
 #       with:
-#         runs_on: php-8.3
+#         runs_on: ubuntu-latest
 #         plugin_slug: wpslug
 #         test_command: "php tests/php/run.php"
 #         build_command: 'python3 scripts/build-candidate.py --version "${VERSION}" --output-dir "${RELEASE_DIR}" --archive-name "${ZIP_NAME}"'
@@ -44,7 +44,7 @@ jobs:
   wp-plugin-ci:
     uses: WenPai-org/ci-workflows/.forgejo/workflows/reusable-wp-plugin-ci.yml@main
     with:
-      runs_on: php-8.3
+      runs_on: ubuntu-latest
       test_command: "php tests/php/run.php"
       admin_lint: true
       public_docs_gate: true

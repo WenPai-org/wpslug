@@ -37,12 +37,12 @@ on:
 
 jobs:
   secret-scan:
-    uses: https://feicode.com/WenPai-org/ci-workflows/.forgejo/workflows/reusable-gitleaks.yml@main
+    uses: WenPai-org/ci-workflows/.forgejo/workflows/reusable-gitleaks.yml@main
     with:
       runs_on: ubuntu-latest
 
   wp-plugin-ci:
-    uses: https://feicode.com/WenPai-org/ci-workflows/.forgejo/workflows/reusable-wp-plugin-ci.yml@main
+    uses: WenPai-org/ci-workflows/.forgejo/workflows/reusable-wp-plugin-ci.yml@main
     with:
       runs_on: php-8.3
       test_command: "php tests/php/run.php"

@@ -440,4 +440,11 @@ Wenpai_Admin_Shell::close([
     "version" => wpslug_plugin_name() . " " . WPSLUG_VERSION,
     "links" => [["url" => "https://wpcy.com/slug", "label" => __("文档", "wpslug")], ["url" => "https://wpcy.com/support", "label" => __("支持", "wpslug")]],
     "new_tab_label" => __("(opens in a new tab)", "wpslug"),
+    "feedback" => [
+        "category_id" => 15,
+        "tags" => ["wpslug", "bug"],
+        "plugin_slug" => "wpslug",
+        "plugin_version" => WPSLUG_VERSION,
+        "label" => __("问题反馈", "wpslug"),
+    ],
 ]);

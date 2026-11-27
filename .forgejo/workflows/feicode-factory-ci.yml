@@ -1,0 +1,48 @@
+# FeiCode Software Factory v2 标杆接入（WPSlug）
+#
+# 本工作流通过 Forgejo Actions `workflow_call` 复用 WenPai-org/ci-workflows v2 共享模板，
+# 与仓库既有 `.forgejo/workflows/wp-plugin-ci.yml`、`.forgejo/workflows/release.yml` 及
+# `scripts/build-candidate.py` 打包白名单完全兼容并行，不改动原有发版链路。
+#
+# ---------------------------------------------------------------------------
+# 可复用自动发版接入参考（v* Tag 触发，无需在此处打测试 Tag）：
+# 当后续切至共享发版模板时，可在 `.forgejo/workflows/release.yml` 中改为：
+#
+#   name: Release Plugin (FeiCode Factory)
+#   on:
+#     push:
+#       tags: ["v*"]
+#   jobs:
+#     release:
+#       uses: WenPai-org/ci-workflows/.forgejo/workflows/reusable-wp-plugin-release.yml@main
+#       with:
+#         runs_on: ubuntu-latest
+#         plugin_slug: wpslug
+#         test_command: "php tests/php/run.php"
+#         build_command: 'python3 scripts/build-candidate.py --version "${VERSION}" --output-dir "${RELEASE_DIR}" --archive-name "${ZIP_NAME}"'
+#         publish_package: true
+#       secrets:
+#         RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+#         BRIDGE_WEBHOOK_URL: ${{ secrets.BRIDGE_WEBHOOK_URL }}
+#         BRIDGE_WEBHOOK_SECRET: ${{ secrets.BRIDGE_WEBHOOK_SECRET }}
+#         MM_WEBHOOK_URL: ${{ secrets.MM_WEBHOOK_URL }}
+# ---------------------------------------------------------------------------
+name: FeiCode Factory CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  secret-scan:
+    uses: WenPai-org/ci-workflows/.forgejo/workflows/reusable-gitleaks.yml@main
+    with:
+      runs_on: ubuntu-latest
+
+  wp-plugin-ci:
+    uses: WenPai-org/ci-workflows/.forgejo/workflows/reusable-wp-plugin-ci.yml@main
+    with:
+      runs_on: ubuntu-latest
+      test_command: "php tests/php/run.php"
